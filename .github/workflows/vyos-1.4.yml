@@ -1,0 +1,53 @@
+---
+name: VyOS 1.4
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: write
+    container:
+      image: vyos/vyos-build:sagitta
+      env:
+        TZ: Australia/Brisbane
+      options: --privileged
+
+    steps:
+      - name: Clone vyos-build repository
+        run: |
+          set -eux
+          git clone -b sagitta --single-branch https://github.com/vyos/vyos-build
+      - name: Get version number
+        working-directory: vyos-build
+        run: |
+          echo "RELEASE_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - name: Checkout to latest tag
+        working-directory: vyos-build
+        run: |
+          set -eux
+          git checkout tags/${{ env.RELEASE_VERSION }}
+      - name: Build ISO
+        working-directory: vyos-build
+        run: |
+          set -eux
+          ./build-vyos-image iso \
+            --architecture amd64
+            --build-by matthew@tech.bymatt.au \
+            --build-type release \
+            --version ${{ env.RELEASE_VERSION }}
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: "VyOS ${{ env.RELEASE_VERSION }}"
+          tag: "${{ github.ref }}"
+          artifacts: "vyos-build/build/vyos-${{ env.RELEASE_VERSION }}-amd64.iso"
+          artifactContentType: application/x-iso9660-image
+          draft: true
+          skipIfReleaseExists: true
