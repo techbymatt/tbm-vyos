@@ -123,6 +123,13 @@ jobs:
         run: |
           set -eux
           git reset --hard ${{ steps.get-tag-commit-id.outputs.commit }}
+      - name: Ignore other kernels
+        id: ignore-other-kernels
+        working-directory: vyos-build
+        run: |
+          set -eux
+          export KERNEL_VERSION=$(cat data/defaults.toml | grep kernel_version | awk '/kernel_version/{gsub(/"/, "", $2); gsub(/,/, "", $2); print $2}')
+          sed -i --follow-symlinks "/fi/a find /boot/ -maxdepth 1 ! -type d ! -name *$KERNEL_VERSION* -delete" data/live-build-config/hooks/live/17-gen_initramfs.chroot
       - name: Configure the VyOS build
         id: configure-build
         working-directory: vyos-build
@@ -134,7 +141,7 @@ jobs:
         working-directory: vyos-build
         run: |
           set -eux
-          make iso
+          sudo make iso
       - name: Create a new release
         id: create-release
         uses: ncipollo/release-action@v1
