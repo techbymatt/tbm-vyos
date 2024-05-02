@@ -13,11 +13,11 @@ on:
       - 1.4 Blog Release
 
 jobs:
-  get-version:
-    name: Get latest VyOS version number
+  get-versions:
+    name: Get latest VyOS version numbers
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ env.VERSION }}
+      vyos-version: ${{ env.VERSION }}
     steps:
       - name: Get version number from workflow dispatch
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -31,19 +31,6 @@ jobs:
         run: |
           set -eux
           echo "VERSION=${{ github.event.client_payload.version }}" >> "$GITHUB_ENV"
-      - name: Clone the `vyos-build` repository
-        if: ${{ github.event_name == 'repository_dispatch' && !github.event.client_payload.version }}
-        id: clone-vyos-build
-        run: |
-          set -eux
-          git clone -b sagitta --single-branch https://github.com/vyos/vyos-build
-      - name: Get the latest upstream tag from Git
-        if: ${{ github.event_name == 'repository_dispatch' && !github.event.client_payload.version }}
-        id: get-upstream-tag
-        working-directory: vyos-build
-        run: |
-          set -eux
-          echo "VERSION=$(git describe --tags --abbrev=0)" >> "$GITHUB_ENV"
 
   build-and-push-container:
     name: Build and push `vyos-build` container
@@ -62,18 +49,6 @@ jobs:
         run: |
           set -eux
           git clone -b sagitta --single-branch https://github.com/vyos/vyos-build
-      - name: Get the commit ID for the latest upstream tag
-        id: get-tag-commit-id
-        working-directory: vyos-build
-        run: |
-          set -eux
-          echo "commit=$(git rev-list --max-count=1 tags/${{ needs.get-version.outputs.version }})" >> "$GITHUB_OUTPUT"
-      - name: Reset the repository to the latest tag's commit ID
-        id: reset-repo-to-tag
-        working-directory: vyos-build
-        run: |
-          set -eux
-          git reset --hard ${{ steps.get-tag-commit-id.outputs.commit }}
       - name: Log into registry ${{ vars.REGISTRY }}
         uses: docker/login-action@v3
         with:
@@ -87,11 +62,72 @@ jobs:
           push: true
           tags: ${{ vars.REGISTRY }}/${{ vars.REPO_OWNER }}/vyos-build:sagitta
 
+#   build-kernel:
+#     name: Build VyOS kernel
+#     runs-on: ubuntu-latest
+#     needs: build-kernel
+#     defaults:
+#       run:
+#         shell: bash
+#     permissions:
+#       contents: write
+#       packages: read
+#     container:
+#       image: ${{ vars.REGISTRY }}/${{ vars.REPO_OWNER }}/vyos-build:sagitta
+#       credentials:
+#         username: ${{ github.actor }}
+#         password: ${{ secrets.github_token }}
+#       env:
+#         TZ: Australia/Brisbane
+#       options: --privileged
+#     steps:
+#       - name: Clone the `vyos-build` repository
+#         id: clone-vyos-build
+#         run: |
+#           set -eux
+#           git clone -b sagitta --single-branch https://github.com/vyos/vyos-build
+#       - name: Get the commit ID for the latest upstream tag
+#         id: get-tag-commit-id
+#         working-directory: vyos-build
+#         run: |
+#           set -eux
+#           echo "commit=$(git rev-list --max-count=1 tags/${{ needs.get-versions.outputs.vyos-version }})" >> "$GITHUB_OUTPUT"
+#       - name: Reset the repository to the latest tag's commit ID
+#         id: reset-repo-to-tag
+#         working-directory: vyos-build
+#         run: |
+#           set -eux
+#           git reset --hard ${{ steps.get-tag-commit-id.outputs.commit }}
+#       - name: Clone the vanilla kernel repository
+#         id: clone-vanilla-kernel
+#         working-directory: vyos-build/packages/linux-kernel
+#         run: |
+#           set -eux
+#           git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+#           cd linux
+#           git reset --hard v${{ needs.get-versions.outputs.vyos-version }}
+#       - name: Build kernel
+#         id: build-kernel
+#         working-directory: vyos-build/packages/linux-kernel
+#         run: |
+#           set -eux
+#           ./build-kernel.sh
+#       - name: Build the vanilla kernel firmware
+#         id: build-vanilla-firmware
+#         working-directory: vyos-build/packages/linux-kernel
+#         run: |
+#           set -eux
+#           git clone https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
+#           cd linux-firmware
+#           git reset --hard $(-v sq="'" '/.name....linux-firmware./ { gsub(/,/, "", $4); gsub(sq, "", $4); print $4 }')
+#           cd ..
+#           ./build-linux-firmware.sh
+#       - name:
 
   build-iso:
     name: Build and release VyOS ISO
     runs-on: ubuntu-latest
-    needs: [get-version, build-and-push-container]
+    needs: build-and-push-container
     defaults:
       run:
         shell: bash
@@ -112,47 +148,28 @@ jobs:
         run: |
           set -eux
           git clone -b sagitta --single-branch https://github.com/vyos/vyos-build
-      - name: Get the commit ID for the latest upstream tag
-        id: get-tag-commit-id
-        working-directory: vyos-build
-        run: |
-          set -eux
-          echo "commit=$(git rev-list --max-count=1 tags/${{ needs.get-version.outputs.version }})" >> "$GITHUB_OUTPUT"
-      - name: Reset the repository to the latest tag's commit ID
-        id: reset-repo-to-tag
-        working-directory: vyos-build
-        run: |
-          set -eux
-          git reset --hard ${{ steps.get-tag-commit-id.outputs.commit }}
-      - name: Ignore other kernels
-        id: ignore-other-kernels
-        working-directory: vyos-build
-        run: |
-          set -eux
-          export KERNEL_VERSION=$(cat data/defaults.toml | grep kernel_version | awk '/kernel_version/{gsub(/"/, "", $3); print $3}')
-          sed -i --follow-symlinks "/echo \"E: if your repository is up to date, then there is a bug\"/a \ \ \ \ find /boot/ -maxdepth 1 ! -type d ! -name *$KERNEL_VERSION* -delete" data/live-build-config/hooks/live/17-gen_initramfs.chroot
       - name: Build the VyOS ISO
         id: build-iso
         working-directory: vyos-build
         run: |
           set -eux
           sudo make clean
-          sudo ./build-vyos-image iso --architecture amd64 --build-by vyos-autobuild@tech.bymatt.au --build-type release --version ${{ needs.get-version.outputs.version }}
+          sudo ./build-vyos-image iso --architecture amd64 --build-by vyos-autobuild@tech.bymatt.au --build-type release --version ${{ needs.get-versions.outputs.vyos-version }} --custom-package intel-microcode --custom-package amd64-microcode
       - name: Create a new release
         id: create-release
         uses: ncipollo/release-action@v1
         with:
-          name: "VyOS ${{ needs.get-version.outputs.version }}"
-          tag: "${{ needs.get-version.outputs.version }}"
-          artifacts: "vyos-build/build/vyos-${{ needs.get-version.outputs.version }}-amd64.iso"
+          name: "VyOS ${{ needs.get-versions.outputs.vyos-version }}"
+          tag: "${{ needs.get-versions.outputs.vyos-version }}"
+          artifacts: "vyos-build/build/vyos-${{ needs.get-versions.outputs.vyos-version }}-amd64.iso"
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
           body: |
             Last included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ steps.get-tag-commit-id.outputs.commit }}
 
-            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.get-version.outputs.version }}...sagitta
+            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.get-versions.outputs.vyos-version }}...sagitta
 
-            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.get-version.outputs.version }}...sagitta
+            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.get-versions.outputs.vyos-version }}...sagitta
           draft: true
           allowUpdates: false
           omitDraftDuringUpdate: true
