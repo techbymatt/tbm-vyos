@@ -111,7 +111,7 @@ jobs:
           dpkg-buildpackage -uc -us -tc -b
       - name: 'Create a new packages release'
         id: create-packages-release
-        uses: ncipollo/release-action@v1.11.1
+        uses: ncipollo/release-action@v1.14.0
         with:
           name: "VyOS Packages ${{ needs.get-vyos-version.outputs.vyos-version }}"
           tag: "packages-${{ needs.get-vyos-version.outputs.vyos-version }}-equuleus"
