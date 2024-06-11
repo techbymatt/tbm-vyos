@@ -1,0 +1,161 @@
+---
+name: TBM VyOS Automated Builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      build-image:
+        description: 'Build the `vyos-build` image?'
+        required: true
+        default: 'Yes'
+        type: choice
+        options:
+          - 'Yes'
+          - 'No'
+      run-smoketests:
+        description: 'Run smoketests on the ISO?'
+        required: true
+        default: 'Yes'
+        type: choice
+        options:
+          - 'Yes'
+          - 'No'
+      patch-string:
+        description: 'Patch version? (leave blank for none)'
+        required: false
+        type: string
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  create-version-number:
+    name: Create version number
+    runs-on: self-hosted
+    outputs:
+      version: ${{ env.VERSION }}
+      vyos-build-commit: ${{ env.VYOS_BUILD_COMMIT }}
+      vyos-1x-commit: ${{ env.VYOS_1X_COMMIT }}
+    steps:
+      - name: Run `date` and format
+        id: date-format
+        run: |
+          set -eux
+          echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
+      - name: Add patch string
+        if: ${{ inputs.patch-string != '' }}
+        id: patch-string
+        run: |
+          set -eux
+          echo "VERSION=$VERSION-${{ inputs.patch-string }}" >> "$GITHUB_ENV"
+      - name: Fetch the `vyos-build` repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'vyos/vyos-build'
+          ref: 'current'
+          path: 'vyos-build'
+      - name: Get last `vyos-build` commit
+        working-directory: vyos-build
+        run: |
+          set -eux
+          echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
+      - name: Fetch the `vyos-1x` repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'vyos/vyos-1x'
+          ref: 'current'
+          path: 'vyos-1x'
+      - name: Get last `vyos-1x` commit
+        working-directory: vyos-1x
+        run: |
+          set -eux
+          echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
+
+  build-and-push-container:
+    name: Build and push `vyos-build` container
+    needs: create-version-number
+    if: ${{ inputs.build-image != 'No' }}
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/vyos-build-docker.yaml
+
+  build-iso:
+    name: Build and smoketest ISO
+    runs-on: self-hosted
+    if: ${{ always() }}
+    needs: [create-version-number, build-and-push-container]
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: write
+      packages: read
+    container:
+      image: ${{ vars.REGISTRY }}/${{ vars.REPO_OWNER }}/vyos-build:current
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+      env:
+        TZ: Australia/Brisbane
+      options: '--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0'
+    steps:
+      - name: Remount the work directory
+        id: remount-workdir
+        run: |
+          set -eux
+          mount -i -o remount,exec,dev /__w
+      - name: Build the VyOS ISO
+        id: build-iso
+        working-directory: vyos-build
+        run: |
+          set -eux
+          sudo make clean
+          sudo ./build-vyos-image \
+            --architecture amd64 \
+            --build-by 'tbm-vyos@tech.bymatt.au' \
+            --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
+            --build-type release \
+            --version ${{ needs.create-version-number.outputs.version }} \
+            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm non-free-firmware' \
+            --custom-apt-entry 'deb http://deb.debian.org/debian-security bookworm-security non-free-firmware' \
+            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm-updates non-free-firmware' \
+            --custom-package intel-microcode \
+            --custom-package amd64-microcode \
+            --custom-package vyos-1x-smoketest \
+            generic
+      - name: Run smoketests
+        id: run-smoketests
+        if: ${{ inputs.run-smoketests != 'No' }}
+        working-directory: vyos-build
+        run: |
+          set -eux
+          sudo make test
+
+  draft-release:
+    name: Create a new draft release
+    runs-on: self-hosted
+    if: ${{ always() && needs.build-iso.result == 'success' }}
+    needs: [create-version-number, build-iso]
+    permissions:
+      contents: write
+    steps:
+      - name: Create a new draft release
+        id: draft-release
+        uses: ncipollo/release-action@v1
+        with:
+          name: "TBM VyOS ${{ needs.create-version-number.outputs.version }}"
+          tag: "${{ needs.create-version-number.outputs.version }}"
+          artifacts: "vyos-build/build/vyos-*.iso"
+          artifactContentType: application/x-iso9660-image
+          artifactErrorsFailBuild: true
+          body: |
+            Build log: https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
+
+            Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.create-version-number.outputs.vyos-build-commit }}
+            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.create-version-number.outputs.vyos-build-commit }}...current
+
+            Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.create-version-number.outputs.vyos-1x-commit }}
+            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.create-version-number.outputs.vyos-1x-commit }}...current
+          draft: true
+          allowUpdates: false
+          omitDraftDuringUpdate: true
