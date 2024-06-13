@@ -17,7 +17,7 @@ jobs:
         id: fetch-vyos-build
         uses: actions/checkout@v4
         with:
-          repository: 'vyos/vyos-build'
+          repository: 'MattKobayashi/vyos-build'
           ref: 'current'
           path: 'vyos-build'
       - name: Log into registry ${{ vars.REGISTRY }}

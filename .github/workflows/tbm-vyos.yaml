@@ -50,7 +50,7 @@ jobs:
       - name: Fetch the `vyos-build` repository
         uses: actions/checkout@v4
         with:
-          repository: 'vyos/vyos-build'
+          repository: 'MattKobayashi/vyos-build'
           ref: 'current'
           path: 'vyos-build'
       - name: Get last `vyos-build` commit
