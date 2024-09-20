@@ -95,7 +95,8 @@ jobs:
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
-    needs: [create-version-number, create-runner]
+    if: ${{ always() }}
+    needs: [create-version-number, create-runner, build-and-push-container]
     defaults:
       run:
         shell: bash
