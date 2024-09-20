@@ -1,0 +1,37 @@
+---
+name: Destroy self-hosted Actions runner
+
+on:
+  workflow_call:
+    inputs:
+      runner-id:
+        required: true
+        type: string
+
+jobs:
+  destroy-runner:
+    name: 'Destroy runner'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Create ephemeral Tailscale node'
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          version: 1.74.1
+      - name: 'Update SSH known hosts'
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir ~/.ssh
+          chmod 700 ~/.ssh
+          cat << EOF >> ~/.ssh/known_hosts
+          $SSH_KNOWN_HOSTS
+          EOF
+          chmod 600 ~/.ssh/known_hosts
+      - name: 'Stop runner container'
+        id: start-runner
+        run: |
+          set -eux
+          ssh matthew@100.102.37.118 docker container stop ${{ inputs.runner-id }}
