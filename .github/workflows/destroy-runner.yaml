@@ -34,4 +34,5 @@ jobs:
         id: start-runner
         run: |
           set -eux
-          ssh matthew@100.102.37.118 docker container stop ${{ inputs.runner-id }}
+          ssh matthew@100.102.37.118
+          docker container stop ${{ inputs.runner-id }}
