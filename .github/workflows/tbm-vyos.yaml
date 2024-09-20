@@ -70,9 +70,22 @@ jobs:
           set -eux
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
 
+  create-runner:
+    name: 'Create ephemeral GitHub Actions runners'
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        runner-name: [
+          tbm-vyos
+        ]
+    uses: ./.github/workflows/create-runner.yaml
+    with:
+      runner-name: ${{ matrix.runner-name }}
+
   build-and-push-container:
     name: Build and push `vyos-build` container
-    needs: create-version-number
+    needs: [create-version-number, create-runner]
     if: ${{ inputs.build-image != 'No' }}
     permissions:
       contents: read
@@ -82,8 +95,7 @@ jobs:
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
-    if: ${{ always() }}
-    needs: [create-version-number, build-and-push-container]
+    needs: [create-version-number, create-runner]
     defaults:
       run:
         shell: bash
