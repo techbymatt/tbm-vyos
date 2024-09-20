@@ -41,28 +41,28 @@ jobs:
         id: start-runner
         run: |
           set -e
-          echo "runner-id=$(ssh matthew@100.102.37.118 docker container run
-            --cgroupns=private
-            --cgroup-parent=/mattflix/actions-runners
-            --detach
-            --env=APP_ID=${{ secrets.GH_APP_ID }}
-            --env=APP_LOGIN=MattKobayashi
-            --env=APP_PRIVATE_KEY='${{ secrets.GH_APP_PRIVATE_KEY }}'
-            --env=LABELS=linux,x64
-            --env=REPO_URL=${{ github.server_url }}/${{ github.repository }}
-            --env=RUNNER_NAME_PREFIX=${{ inputs.runner-name }}
-            --env=RUNNER_WORKDIR=/tmp/actions-runners/${{ inputs.runner-name }}/work
-            --log-driver=syslog
-            --log-opt=syslog-address=udp://127.0.0.1:55514
-            --log-opt=syslog-format=rfc5424micro
-            --log-opt=mode=non-blocking
-            --log-opt=tag={{.Name}}-mattflix
-            --network=mattflix
-            --restart=no
-            --rm
-            --security-opt=label=disable
-            --stop-signal=SIGTERM
-            --stop-timeout=10
-            --volume /var/run/docker.sock:/var/run/docker.sock
-            --volume /tmp/actions-runners/${{ inputs.runner-name }}:/tmp/actions-runners/${{ inputs.runner-name }}
+          echo "runner-id=$(ssh matthew@100.102.37.118 docker container run \
+            --cgroupns=private \
+            --cgroup-parent=/mattflix/actions-runners \
+            --detach \
+            --env=APP_ID=${{ secrets.GH_APP_ID }} \
+            --env=APP_LOGIN=MattKobayashi \
+            --env=APP_PRIVATE_KEY='${{ secrets.GH_APP_PRIVATE_KEY }}' \
+            --env=LABELS=linux,x64 \
+            --env=REPO_URL=${{ github.server_url }}/${{ github.repository }} \
+            --env=RUNNER_NAME_PREFIX=${{ inputs.runner-name }} \
+            --env=RUNNER_WORKDIR=/tmp/actions-runners/${{ inputs.runner-name }}/work \
+            --log-driver=syslog \
+            --log-opt=syslog-address=udp://127.0.0.1:55514 \
+            --log-opt=syslog-format=rfc5424micro \
+            --log-opt=mode=non-blocking \
+            --log-opt=tag={{.Name}}-mattflix \
+            --network=mattflix \
+            --restart=no \
+            --rm \
+            --security-opt=label=disable \
+            --stop-signal=SIGTERM \
+            --stop-timeout=10 \
+            --volume /var/run/docker.sock:/var/run/docker.sock \
+            --volume /tmp/actions-runners/${{ inputs.runner-name }}:/tmp/actions-runners/${{ inputs.runner-name }} \
             ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm)" >> $GITHUB_OUTPUT
