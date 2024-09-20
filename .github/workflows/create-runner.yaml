@@ -40,8 +40,7 @@ jobs:
         id: start-runner
         run: |
           set -eux
-          ssh matthew@100.102.37.118
-          echo runner-id="$(docker container run \
+          ssh matthew@100.102.37.118 docker container run \
             --cgroupns=private \
             --cgroup-parent=/mattflix/actions-runners \
             --detach \
@@ -65,4 +64,5 @@ jobs:
             --stop-timeout=10 \
             --volume /var/run/docker.sock:/var/run/docker.sock \
             --volume /tmp/actions-runners/${{ inputs.runner-name }}:/tmp/actions-runners/${{ inputs.runner-name }} \
-            ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm)" >> $GITHUB_OUTPUT
+            ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm >> "$RUNNER_ID"
+          echo "runner-id=$RUNNER_ID" >> "$GITHUB_OUTPUT"
