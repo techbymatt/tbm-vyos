@@ -41,7 +41,7 @@ jobs:
         id: start-runner
         run: |
           set -ex
-          RUNNER_ID=""
+          export RUNNER_ID
           ssh matthew@100.102.37.118 docker container run \
             --cgroupns=private \
             --cgroup-parent=/mattflix/actions-runners \
