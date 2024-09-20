@@ -17,7 +17,7 @@ jobs:
     name: 'Create runner'
     runs-on: ubuntu-latest
     outputs:
-      runner-id: ${{ steps.start-runner.outputs.* }}
+      runner-id: ${{ steps.start-runner.outputs.runner-id }}
     steps:
       - name: 'Create ephemeral Tailscale node'
         uses: tailscale/github-action@v2
@@ -41,6 +41,7 @@ jobs:
         id: start-runner
         run: |
           set -ex
+          RUNNER_ID=""
           ssh matthew@100.102.37.118 docker container run \
             --cgroupns=private \
             --cgroup-parent=/mattflix/actions-runners \
@@ -65,4 +66,5 @@ jobs:
             --stop-timeout=10 \
             --volume /var/run/docker.sock:/var/run/docker.sock \
             --volume /tmp/actions-runners/${{ inputs.runner-name }}:/tmp/actions-runners/${{ inputs.runner-name }} \
-              ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm >> $GITHUB_OUTPUT
+              ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm >> $RUNNER_ID
+          ssh matthew@100.102.37.118 'echo "runner-id=$RUNNER_ID"' >> $GITHUB_OUTPUT
