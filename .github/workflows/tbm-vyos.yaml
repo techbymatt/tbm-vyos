@@ -175,6 +175,7 @@ jobs:
   destroy-runner:
     name: 'Destroy self-hosted Actions runner'
     secrets: inherit
+    if: ${{ always() && needs.create-runner.result == 'success' }}
     needs: create-runner
     uses: ./.github/workflows/destroy-runner.yaml
     with:
