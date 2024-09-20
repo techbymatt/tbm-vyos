@@ -47,7 +47,7 @@ jobs:
             --detach \
             --env=APP_ID=${{ secrets.GH_APP_ID }} \
             --env=APP_LOGIN=MattKobayashi \
-            --env=APP_PRIVATE_KEY="${{ secrets.GH_APP_PRIVATE_KEY }}" \
+            --env=APP_PRIVATE_KEY='${{ secrets.GH_APP_PRIVATE_KEY }}' \
             --env=LABELS=linux,x64 \
             --env=REPO_URL=${{ github.server_url }}/${{ github.repository }} \
             --env=RUNNER_NAME_PREFIX=${{ inputs.runner-name }} \
