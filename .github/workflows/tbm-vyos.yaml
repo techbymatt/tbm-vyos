@@ -30,7 +30,7 @@ on:
 jobs:
   create-version-number:
     name: Create version number
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ env.VERSION }}
       vyos-build-commit: ${{ env.VYOS_BUILD_COMMIT }}
@@ -71,7 +71,7 @@ jobs:
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
 
   create-runner:
-    name: 'Create ephemeral GitHub Actions runners'
+    name: 'Create self-hosted Actions runner'
     secrets: inherit
     strategy:
       fail-fast: false
@@ -171,3 +171,11 @@ jobs:
           draft: true
           allowUpdates: false
           omitDraftDuringUpdate: true
+
+  destroy-runner:
+    name: 'Destroy self-hosted Actions runner'
+    secrets: inherit
+    needs: create-runner
+    uses: ./.github/workflows/destroy-runner.yaml
+    with:
+      runner-id: ${{ needs.create-runner.outputs.runner-id }}
