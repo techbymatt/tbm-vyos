@@ -65,4 +65,4 @@ jobs:
             --stop-timeout=10 \
             --volume /var/run/docker.sock:/var/run/docker.sock \
             --volume /tmp/actions-runners/${{ inputs.runner-name }}:/tmp/actions-runners/${{ inputs.runner-name }} \
-            ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm)" >> $GITHUB_OUTPUT
+            ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm)" >> "$GITHUB_OUTPUT"
