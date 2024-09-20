@@ -30,6 +30,7 @@ jobs:
         env:
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
+          set -e
           mkdir ~/.ssh
           chmod 700 ~/.ssh
           cat << EOF >> ~/.ssh/known_hosts
@@ -39,7 +40,7 @@ jobs:
       - name: 'Start runner container'
         id: start-runner
         run: |
-          set -eux
+          set -e
           ssh matthew@100.102.37.118 docker container run \
             --cgroupns=private \
             --cgroup-parent=/mattflix/actions-runners \
@@ -65,4 +66,4 @@ jobs:
             --volume /var/run/docker.sock:/var/run/docker.sock \
             --volume /tmp/actions-runners/${{ inputs.runner-name }}:/tmp/actions-runners/${{ inputs.runner-name }} \
             ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm >> "$RUNNER_ID"
-          ssh matthew@100.102.37.118 echo "runner-id=$RUNNER_ID" >> "$GITHUB_OUTPUT"
+          ssh matthew@100.102.37.118 'echo "runner-id=$RUNNER_ID"' >> "$GITHUB_OUTPUT"
