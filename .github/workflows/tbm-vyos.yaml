@@ -26,8 +26,6 @@ on:
         type: string
   schedule:
     - cron: '0 0 1 * *'
-  pull_request:
-    branches: [main]
 
 jobs:
   create-version-number:
