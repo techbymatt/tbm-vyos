@@ -30,7 +30,7 @@ jobs:
         env:
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
-          set -e
+          set -ex
           mkdir ~/.ssh
           chmod 700 ~/.ssh
           cat << EOF >> ~/.ssh/known_hosts
@@ -40,7 +40,7 @@ jobs:
       - name: 'Start runner container'
         id: start-runner
         run: |
-          set -e
+          set -ex
           echo "runner-id=$(ssh matthew@100.102.37.118 docker container run \
             --cgroupns=private \
             --cgroup-parent=/mattflix/actions-runners \
