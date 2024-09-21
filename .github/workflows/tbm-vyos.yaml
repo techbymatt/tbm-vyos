@@ -149,7 +149,7 @@ jobs:
   draft-release:
     name: 'Create a new draft release'
     runs-on: self-hosted
-    if: ${{ always() && needs.build-iso.result == 'success' && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ always() && needs.build-iso.result == 'success' }}
     needs: [create-version-number, build-iso, create-runners]
     permissions:
       contents: write
