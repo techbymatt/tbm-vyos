@@ -4,7 +4,10 @@ name: Create self-hosted runner
 on:
   workflow_call:
     inputs:
-      shared-workdir:
+      runner-name:
+        required: true
+        type: string
+      workdir:
         required: true
         type: string
 
@@ -46,7 +49,7 @@ jobs:
             --env=LABELS=linux,x64 \
             --env=REPO_URL=${{ github.server_url }}/${{ github.repository }} \
             --env=RUNNER_NAME_PREFIX=${{ inputs.runner-name }} \
-            --env=RUNNER_WORKDIR=${{ inputs.shared-workdir }}/work \
+            --env=RUNNER_WORKDIR=${{ inputs.workdir }}/work \
             --log-driver=syslog \
             --log-opt=syslog-address=udp://127.0.0.1:55514 \
             --log-opt=syslog-format=rfc5424micro \
@@ -59,5 +62,5 @@ jobs:
             --stop-signal=SIGTERM \
             --stop-timeout=10 \
             --volume /var/run/docker.sock:/var/run/docker.sock \
-            --volume ${{ inputs.shared-workdir }}:${{ inputs.shared-workdir }} \
+            --volume ${{ inputs.workdir }}:${{ inputs.workdir }} \
               ghcr.io/myoung34/docker-github-actions-runner:debian-bookworm
