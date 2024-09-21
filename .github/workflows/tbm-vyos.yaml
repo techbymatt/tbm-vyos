@@ -31,42 +31,42 @@ on:
 
 jobs:
   create-version-number:
-    name: Create version number
+    name: 'Create version number'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ env.VERSION }}
       vyos-build-commit: ${{ env.VYOS_BUILD_COMMIT }}
       vyos-1x-commit: ${{ env.VYOS_1X_COMMIT }}
     steps:
-      - name: Run `date` and format
+      - name: 'Run `date` and format'
         id: date-format
         run: |
           set -ex
           echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
-      - name: Add patch string
+      - name: 'Add patch string'
         if: ${{ inputs.patch-string != '' }}
         id: patch-string
         run: |
           set -ex
           echo "VERSION=$VERSION-${{ inputs.patch-string }}" >> "$GITHUB_ENV"
-      - name: Fetch the `vyos-build` repository
+      - name: 'Fetch the `vyos-build` repository'
         uses: actions/checkout@v4.1.7
         with:
           repository: 'vyos/vyos-build'
           ref: 'current'
           path: 'vyos-build'
-      - name: Get last `vyos-build` commit
+      - name: 'Get last `vyos-build` commit'
         working-directory: vyos-build
         run: |
           set -ex
           echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-      - name: Fetch the `vyos-1x` repository
+      - name: 'Fetch the `vyos-1x` repository'
         uses: actions/checkout@v4.1.7
         with:
           repository: 'vyos/vyos-1x'
           ref: 'current'
           path: 'vyos-1x'
-      - name: Get last `vyos-1x` commit
+      - name: 'Get last `vyos-1x` commit'
         working-directory: vyos-1x
         run: |
           set -ex
@@ -87,7 +87,7 @@ jobs:
       runner-name: ${{ matrix.runner-name }}
       workdir: /tmp/actions-runners/tbm-vyos
   build-and-push-container:
-    name: Build and push `vyos-build` container
+    name: 'Build and push `vyos-build` container'
     needs: [create-version-number, create-runners]
     if: ${{ inputs.build-image != 'No' }}
     permissions:
@@ -95,7 +95,7 @@ jobs:
       packages: write
     uses: ./.github/workflows/vyos-build-docker.yaml
   build-iso:
-    name: Build and smoketest ISO
+    name: 'Build and smoketest ISO'
     runs-on: self-hosted
     if: ${{ always() }}
     needs: [create-version-number, create-runners, build-and-push-container]
@@ -114,12 +114,12 @@ jobs:
         TZ: Australia/Brisbane
       options: '--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0'
     steps:
-      - name: Remount the work directory
+      - name: 'Remount the work directory'
         id: remount-workdir
         run: |
           set -ex
           mount -i -o remount,exec,dev /__w
-      - name: Build the VyOS ISO
+      - name: 'Build the VyOS ISO'
         id: build-iso
         if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         working-directory: vyos-build
@@ -139,7 +139,7 @@ jobs:
             --custom-package amd64-microcode \
             --custom-package vyos-1x-smoketest \
             generic
-      - name: Run smoketests
+      - name: 'Run smoketests'
         id: run-smoketests
         if: ${{ inputs.run-smoketests != 'No' && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         working-directory: vyos-build
@@ -147,20 +147,23 @@ jobs:
           set -ex
           sudo make test
   draft-release:
-    name: Create a new draft release
+    name: 'Create a new draft release'
     runs-on: self-hosted
     if: ${{ always() && needs.build-iso.result == 'success' && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [create-version-number, build-iso, create-runners]
     permissions:
       contents: write
     steps:
-      - name: Create a new draft release
+      - name: 'Use runner on PR'
+        run: |
+          set -ex
+      - name: 'Create a new draft release'
         id: draft-release
         uses: ncipollo/release-action@v1.14.0
         with:
-          name: "TBM VyOS ${{ needs.create-version-number.outputs.version }}"
-          tag: "${{ needs.create-version-number.outputs.version }}"
-          artifacts: "vyos-build/build/vyos-*.iso"
+          name: 'TBM VyOS ${{ needs.create-version-number.outputs.version }}'
+          tag: '${{ needs.create-version-number.outputs.version }}'
+          artifacts: 'vyos-build/build/vyos-*.iso'
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
           body: |
