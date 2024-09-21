@@ -39,13 +39,13 @@ jobs:
       - name: Run `date` and format
         id: date-format
         run: |
-          set -eux
+          set -ex
           echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
       - name: Add patch string
         if: ${{ inputs.patch-string != '' }}
         id: patch-string
         run: |
-          set -eux
+          set -ex
           echo "VERSION=$VERSION-${{ inputs.patch-string }}" >> "$GITHUB_ENV"
       - name: Fetch the `vyos-build` repository
         uses: actions/checkout@v4.1.7
@@ -56,7 +56,7 @@ jobs:
       - name: Get last `vyos-build` commit
         working-directory: vyos-build
         run: |
-          set -eux
+          set -ex
           echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
       - name: Fetch the `vyos-1x` repository
         uses: actions/checkout@v4.1.7
@@ -67,10 +67,10 @@ jobs:
       - name: Get last `vyos-1x` commit
         working-directory: vyos-1x
         run: |
-          set -eux
+          set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
 
-  create-runner:
+  create-runner-container:
     name: 'Create self-hosted Actions runner'
     secrets: inherit
     strategy:
@@ -85,18 +85,31 @@ jobs:
 
   build-and-push-container:
     name: Build and push `vyos-build` container
-    needs: [create-version-number, create-runner]
+    needs: [create-version-number, create-runner-container]
     if: ${{ inputs.build-image != 'No' }}
     permissions:
       contents: read
       packages: write
     uses: ./.github/workflows/vyos-build-docker.yaml
 
+  create-runner-iso:
+    name: 'Create self-hosted Actions runner'
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        runner-name: [
+          tbm-vyos
+        ]
+    uses: ./.github/workflows/create-runner.yaml
+    with:
+      runner-name: ${{ matrix.runner-name }}
+
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
     if: ${{ always() }}
-    needs: [create-version-number, create-runner, build-and-push-container]
+    needs: [create-version-number, create-runner-iso, build-and-push-container]
     defaults:
       run:
         shell: bash
@@ -115,13 +128,13 @@ jobs:
       - name: Remount the work directory
         id: remount-workdir
         run: |
-          set -eux
+          set -ex
           mount -i -o remount,exec,dev /__w
       - name: Build the VyOS ISO
         id: build-iso
         working-directory: vyos-build
         run: |
-          set -eux
+          set -ex
           sudo make clean
           sudo ./build-vyos-image \
             --architecture amd64 \
@@ -141,14 +154,27 @@ jobs:
         if: ${{ inputs.run-smoketests != 'No' }}
         working-directory: vyos-build
         run: |
-          set -eux
+          set -ex
           sudo make test
+
+  create-runner-release:
+    name: 'Create self-hosted Actions runner'
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        runner-name: [
+          tbm-vyos
+        ]
+    uses: ./.github/workflows/create-runner.yaml
+    with:
+      runner-name: ${{ matrix.runner-name }}
 
   draft-release:
     name: Create a new draft release
     runs-on: self-hosted
     if: ${{ always() && needs.build-iso.result == 'success' }}
-    needs: [create-version-number, build-iso]
+    needs: [create-version-number, build-iso, create-runner-release]
     permissions:
       contents: write
     steps:
@@ -172,12 +198,3 @@ jobs:
           draft: true
           allowUpdates: false
           omitDraftDuringUpdate: true
-
-  destroy-runner:
-    name: 'Destroy self-hosted Actions runner'
-    secrets: inherit
-    if: ${{ always() && needs.create-runner.result == 'success' }}
-    needs: [create-runner,draft-release]
-    uses: ./.github/workflows/destroy-runner.yaml
-    with:
-      runner-id: ${{ needs.create-runner.outputs.runner-id }}
