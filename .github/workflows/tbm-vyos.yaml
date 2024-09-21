@@ -83,7 +83,7 @@ jobs:
     uses: ./.github/workflows/create-runner.yaml
     with:
       runner-name: ${{ matrix.runner-name }}
-      shared-workdir: /tmp/actions-runners/tbm-vyos
+      workdir: /tmp/actions-runners/tbm-vyos
   build-and-push-container:
     name: Build and push `vyos-build` container
     needs: [create-version-number, create-runners]
