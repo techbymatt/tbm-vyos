@@ -69,47 +69,33 @@ jobs:
         run: |
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-
-  create-runner-container:
-    name: 'Create self-hosted Actions runner'
+  create-runners:
+    name: 'Create self-hosted Actions runners'
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         runner-name: [
-          tbm-vyos
+          tbm-vyos-build,
+          tbm-vyos-iso,
+          tbm-vyos-release
         ]
     uses: ./.github/workflows/create-runner.yaml
     with:
       runner-name: ${{ matrix.runner-name }}
-
   build-and-push-container:
     name: Build and push `vyos-build` container
-    needs: [create-version-number, create-runner-container]
+    needs: [create-version-number, create-runners]
     if: ${{ inputs.build-image != 'No' }}
     permissions:
       contents: read
       packages: write
     uses: ./.github/workflows/vyos-build-docker.yaml
-
-  create-runner-iso:
-    name: 'Create self-hosted Actions runner'
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      matrix:
-        runner-name: [
-          tbm-vyos
-        ]
-    uses: ./.github/workflows/create-runner.yaml
-    with:
-      runner-name: ${{ matrix.runner-name }}
-
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
     if: ${{ always() }}
-    needs: [create-version-number, create-runner-iso, build-and-push-container]
+    needs: [create-version-number, create-runners, build-and-push-container]
     defaults:
       run:
         shell: bash
@@ -156,25 +142,11 @@ jobs:
         run: |
           set -ex
           sudo make test
-
-  create-runner-release:
-    name: 'Create self-hosted Actions runner'
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      matrix:
-        runner-name: [
-          tbm-vyos
-        ]
-    uses: ./.github/workflows/create-runner.yaml
-    with:
-      runner-name: ${{ matrix.runner-name }}
-
   draft-release:
     name: Create a new draft release
     runs-on: self-hosted
     if: ${{ always() && needs.build-iso.result == 'success' }}
-    needs: [create-version-number, build-iso, create-runner-release]
+    needs: [create-version-number, build-iso, create-runners]
     permissions:
       contents: write
     steps:
