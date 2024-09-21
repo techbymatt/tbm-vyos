@@ -2,6 +2,8 @@
 name: TBM VyOS Automated Builds
 
 on:
+  pull_request:
+    branch: [main]
   workflow_dispatch:
     inputs:
       build-image:
@@ -95,7 +97,7 @@ jobs:
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
-    if: ${{ always() }}
+    if: ${{ always() && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}}}
     needs: [create-version-number, create-runners, build-and-push-container]
     defaults:
       run:
@@ -146,7 +148,7 @@ jobs:
   draft-release:
     name: Create a new draft release
     runs-on: self-hosted
-    if: ${{ always() && needs.build-iso.result == 'success' }}
+    if: ${{ always() && needs.build-iso.result == 'success' && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [create-version-number, build-iso, create-runners]
     permissions:
       contents: write
