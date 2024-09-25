@@ -91,11 +91,8 @@ jobs:
     needs: [create-version-number, create-runners]
     if: |
       (
-        github.event_name == 'push' ||
-        github.event_name == 'schedule' ||
-        github.event_name == 'workflow_dispatch'
+        inputs.build-image != 'No'
       )
-      && inputs.build-image != 'No'
     permissions:
       contents: read
       packages: write
