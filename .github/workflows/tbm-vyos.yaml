@@ -50,7 +50,7 @@ jobs:
           set -ex
           echo "VERSION=$VERSION-${{ inputs.patch-string }}" >> "$GITHUB_ENV"
       - name: 'Fetch the `vyos-build` repository'
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
         with:
           repository: 'vyos/vyos-build'
           ref: 'current'
@@ -61,7 +61,7 @@ jobs:
           set -ex
           echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
       - name: 'Fetch the `vyos-1x` repository'
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
         with:
           repository: 'vyos/vyos-1x'
           ref: 'current'
