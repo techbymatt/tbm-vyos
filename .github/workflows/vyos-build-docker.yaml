@@ -1,12 +1,12 @@
 ---
-name: Build `vyos-build` container image
+name: Build and push `vyos-build` container image
 
 on:
   workflow_call:
 
 jobs:
-  build-and-push-container:
-    name: Build and push `vyos-build` container
+  build-push-container:
+    name: Build and push `vyos-build` container image
     runs-on: self-hosted
     steps:
       - name: Set up QEMU
