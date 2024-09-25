@@ -86,9 +86,6 @@ jobs:
           tbm-vyos-release
         ]
     uses: ./.github/workflows/create-runner.yaml
-    with:
-      runner-name: ${{ matrix.runner-name }}
-      workdir: /tmp/actions-runners/tbm-vyos
   build-push-container:
     name: Build and push `vyos-build` container
     needs: [create-version-number, create-runners]
