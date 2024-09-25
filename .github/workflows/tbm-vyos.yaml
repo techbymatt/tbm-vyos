@@ -103,7 +103,10 @@ jobs:
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
-    if: ${{ always() }}
+    if: |
+      (
+        always()
+      )
     needs: [create-version-number, create-runners, build-push-container]
     defaults:
       run:
@@ -154,7 +157,12 @@ jobs:
         id: run-smoketests
         if: |
           (
-            inputs.run-smoketests != 'No'
+            (
+              github.event_name == 'push' ||
+              github.event_name == 'schedule' ||
+              github.event_name == 'workflow_dispatch'
+            )
+            && inputs.run-smoketests != 'No'
           )
         working-directory: vyos-build
         run: |
