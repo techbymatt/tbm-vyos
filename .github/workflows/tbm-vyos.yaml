@@ -133,7 +133,8 @@ jobs:
         id: build-iso
         if: |
           ${{
-            github.event_name != 'pull_request'
+            github.event_name == 'push'
+            && github.head_ref == 'main'
           }}
         working-directory: vyos-build
         run: |
@@ -157,7 +158,8 @@ jobs:
         if: |
           ${{
             (
-              github.event_name != 'pull_request'
+              github.event_name == 'push'
+              && github.head_ref == 'main'
             )
             && inputs.run-smoketests != 'No'
           }}
@@ -169,7 +171,8 @@ jobs:
         id: draft-release
         if: |
           ${{
-            github.event_name != 'pull_request'
+            github.event_name == 'push'
+            && github.head_ref == 'main'
           }}
         uses: ncipollo/release-action@v1.14.0
         with:
