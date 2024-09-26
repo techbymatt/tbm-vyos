@@ -3,6 +3,7 @@ name: Build and push `vyos-build` container image
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   build-push-container:
