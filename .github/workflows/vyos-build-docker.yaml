@@ -1,12 +1,13 @@
 ---
-name: Build `vyos-build` container image
+name: Build and push `vyos-build` container image
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
-  build-and-push-container:
-    name: Build and push `vyos-build` container
+  build-push-container:
+    name: Build and push `vyos-build` container image
     runs-on: self-hosted
     steps:
       - name: Set up QEMU
@@ -16,13 +17,21 @@ jobs:
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.6.1
+        with:
+          buildkitd-config-inline: |
+            [registry."docker.io"]
+              mirrors = ["registry-mirror:5000"]
+            [registry."registry-mirror:5000"]
+              http = true
+          driver-opts: |
+            network=mattflix
       - name: Fetch the `vyos-build` repository
         id: fetch-vyos-build
         uses: actions/checkout@v4.2.0
         with:
-          repository: 'vyos/vyos-build'
-          ref: 'current'
-          path: 'vyos-build'
+          repository: vyos/vyos-build
+          ref: current
+          path: vyos-build
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ vars.REGISTRY }}
@@ -45,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v6.7.0
         with:
           context: vyos-build/docker
-          push: ${{ github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+          push: ${{ github.event.pull_request.merged == 1 }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
