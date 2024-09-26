@@ -119,6 +119,10 @@ jobs:
         TZ: Australia/Brisbane
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: 20
       - name: Fetch the `vyos-build` repository
         id: fetch-vyos-build
         uses: actions/checkout@v4.2.0
