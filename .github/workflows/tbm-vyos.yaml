@@ -85,8 +85,7 @@ jobs:
   build-push-container:
     name: Build and push `vyos-build` container image
     needs: [create-version-number, create-runners]
-    if: |
-      inputs.build-image != 'No'
+    if: ${{ inputs.build-image != 'No' }}
     permissions:
       contents: read
       packages: write
@@ -122,7 +121,7 @@ jobs:
           mount -i -o remount,exec,dev /__w/
       - name: Build the VyOS ISO
         id: build-iso
-        if: ${{ github.event.pull_request.merged == 1 }}
+        if: ${{ github.event_name != 'pull_request' }}
         working-directory: vyos-build
         run: |
           set -ex
@@ -142,14 +141,14 @@ jobs:
             generic
       - name: Run smoketests
         id: run-smoketests
-        if: ${{ github.event.pull_request.merged == 1 }}
+        if: ${{ github.event_name != 'pull_request' }}
         working-directory: vyos-build
         run: |
           set -ex
           sudo make test
       - name: Create a new draft release
         id: draft-release
-        if: ${{ github.event.pull_request.merged == 1 }}
+        if: ${{ github.event_name != 'pull_request' }}
         uses: ncipollo/release-action@v1.14.0
         with:
           name: TBM VyOS ${{ needs.create-version-number.outputs.version }}
