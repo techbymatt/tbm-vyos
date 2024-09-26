@@ -124,11 +124,11 @@ jobs:
         run: |
           set -ex
           git clone --depth=1 https://github.com/vyos/vyos-build.git
-      # - name: Remount the work directory
-      #   id: remount-workdir
-      #   run: |
-      #     set -ex
-      #     mount -i -o remount,exec,dev /__w
+      - name: Remount the work directory
+        id: remount-workdir
+        run: |
+          set -ex
+          mount -i -o remount,exec,dev /__w/
       - name: Build the VyOS ISO
         id: build-iso
         if: |
