@@ -95,8 +95,6 @@ jobs:
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
-    if: |
-      github.event.pull_request.merged == 'True'
     needs: [create-version-number, create-runners, build-push-container]
     defaults:
       run:
