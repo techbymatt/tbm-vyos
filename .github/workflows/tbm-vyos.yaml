@@ -82,12 +82,11 @@ jobs:
       matrix:
         runner-name: [
           tbm-vyos-build,
-          tbm-vyos-iso,
-          tbm-vyos-release
+          tbm-vyos-iso
         ]
     uses: ./.github/workflows/create-runner.yaml
   build-push-container:
-    name: Build and push `vyos-build` container
+    name: Build and push `vyos-build` container image
     needs: [create-version-number, create-runners]
     if: |
       ${{
@@ -165,21 +164,6 @@ jobs:
         run: |
           set -ex
           sudo make test
-  draft-release:
-    name: Create a new draft release
-    runs-on: self-hosted
-    if: |
-      ${{
-        always() &&
-        needs.build-iso.result == 'success'
-      }}
-    needs: [create-version-number, build-iso, create-runners]
-    permissions:
-      contents: write
-    steps:
-      - name: Use runner on PR
-        run: |
-          set -ex
       - name: Create a new draft release
         id: draft-release
         if: |
