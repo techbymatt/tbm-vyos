@@ -119,6 +119,13 @@ jobs:
         TZ: Australia/Brisbane
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     steps:
+      - name: Fetch the `vyos-build` repository
+        id: fetch-vyos-build
+        uses: actions/checkout@v4.2.0
+        with:
+          repository: vyos/vyos-build
+          ref: current
+          path: vyos-build
       - name: Remount the work directory
         id: remount-workdir
         run: |
