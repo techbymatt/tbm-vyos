@@ -96,7 +96,7 @@ jobs:
     name: Build and smoketest ISO
     runs-on: self-hosted
     if: |
-      github.event.pull_request.merged == True
+      github.event.pull_request.merged == 'True'
     needs: [create-version-number, create-runners, build-push-container]
     defaults:
       run:
@@ -126,7 +126,7 @@ jobs:
       - name: Build the VyOS ISO
         id: build-iso
         if: |
-          github.event.pull_request.merged == True
+          github.event.pull_request.merged == 'True'
         working-directory: vyos-build
         run: |
           set -ex
@@ -147,7 +147,7 @@ jobs:
       - name: Run smoketests
         id: run-smoketests
         if: |
-          github.event.pull_request.merged == True
+          github.event.pull_request.merged == 'True'
         working-directory: vyos-build
         run: |
           set -ex
@@ -155,7 +155,7 @@ jobs:
       - name: Create a new draft release
         id: draft-release
         if: |
-          github.event.pull_request.merged == True
+          github.event.pull_request.merged == 'True'
         uses: ncipollo/release-action@v1.14.0
         with:
           name: TBM VyOS ${{ needs.create-version-number.outputs.version }}
