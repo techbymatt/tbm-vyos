@@ -72,8 +72,8 @@ jobs:
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
   create-runners:
-    name: Create self-hosted Actions runners
-    secrets: inherit
+    name: Create self-hosted Actions runner
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -81,6 +81,20 @@ jobs:
           tbm-vyos-build,
           tbm-vyos-iso
         ]
+    steps:
+      - name: Create self-hosted Actions runner
+        uses: MattKobayashi/tailscale-runner-action@v1.0.2
+        with:
+          gh-app-id: ${{ secrets.GH_APP_ID }}
+          gh-app-login: MattKobayashi
+          gh-app-private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          runner-network: mattflix
+          ssh-host: 100.102.37.118
+          ssh-known-hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          ssh-user: matthew
+          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          ts-tag: ci
     uses: ./.github/workflows/create-runner.yaml
   build-push-container:
     name: Build and push `vyos-build` container image
