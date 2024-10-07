@@ -27,7 +27,7 @@ jobs:
             network=mattflix
       - name: Fetch the `vyos-build` repository
         id: fetch-vyos-build
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           repository: vyos/vyos-build
           ref: current
