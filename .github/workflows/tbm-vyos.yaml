@@ -72,12 +72,12 @@ jobs:
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
   create-runners:
-    name: Create self-hosted Actions runner
+    name: Create self-hosted runners
     runs-on: ubuntu-latest
     steps:
       - name: Create self-hosted runner (container)
         if: ${{ inputs.build-image != 'No' }}
-        uses: MattKobayashi/tailscale-runner-action@v1.1.4
+        uses: MattKobayashi/tailscale-runner-action@v1.1.5
         with:
           gh-app-id: ${{ secrets.GH_APP_ID }}
           gh-app-login: MattKobayashi
@@ -89,7 +89,7 @@ jobs:
           ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           ts-tag: ci
       - name: Create self-hosted runner (ISO)
-        uses: MattKobayashi/tailscale-runner-action@v1.1.4
+        uses: MattKobayashi/tailscale-runner-action@v1.1.5
         with:
           gh-app-id: ${{ secrets.GH_APP_ID }}
           gh-app-login: MattKobayashi
@@ -165,6 +165,24 @@ jobs:
         run: |
           set -ex
           sudo make test
+      - name: Install node.js
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          set -ex
+          NODE_VERSION=v20.18.0
+          NODE_DIST=node-${NODE_VERSION}-linux-x64.tar.xz
+          NODE_SHASUMS=SHASUMS256.txt
+
+          # Download Node.js tarball and checksum file
+          curl -O https://nodejs.org/dist/${NODE_VERSION}/${NODE_DIST}
+          curl -O https://nodejs.org/dist/${NODE_VERSION}/${NODE_SHASUMS}
+
+          # Verify the checksum
+          grep ${NODE_DIST} ${NODE_SHASUMS} | sha256sum -c -
+
+          # Extract Node.js tarball
+          mkdir -p /__e/node20/
+          tar -xJ -C /__e/node20/ --strip-components=1 -f ${NODE_DIST}
       - name: Create a new draft release
         id: draft-release
         if: ${{ github.event_name != 'pull_request' }}
