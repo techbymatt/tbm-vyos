@@ -157,6 +157,7 @@ jobs:
             generic
       - name: Run smoketests
         id: run-smoketests
+        if: ${{ inputs.run-smoketests == 'Yes' }}
         working-directory: vyos-build
         run: |
           set -ex
