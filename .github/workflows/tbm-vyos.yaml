@@ -7,25 +7,25 @@ on:
       build-image:
         description: Build the `vyos-build` container image?
         required: true
-        default: 'Yes'
+        default: "Yes"
         type: choice
         options:
-          - 'Yes'
-          - 'No'
+          - "Yes"
+          - "No"
       run-smoketests:
         description: Run smoketests on the ISO?
         required: true
-        default: 'Yes'
+        default: "Yes"
         type: choice
         options:
-          - 'Yes'
-          - 'No'
+          - "Yes"
+          - "No"
       patch-string:
         description: Patch version? (leave blank for none)
         required: false
         type: string
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: "0 0 1 * *"
 
 jobs:
   create-version-number:
@@ -47,7 +47,7 @@ jobs:
         run: |
           set -ex
           echo "VERSION=$VERSION-${{ inputs.patch-string }}" >> "$GITHUB_ENV"
-      - name: 'Fetch the `vyos-build` repository'
+      - name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@v4.2.2
         with:
           repository: vyos/vyos-build
@@ -58,7 +58,7 @@ jobs:
         run: |
           set -ex
           echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-      - name: 'Fetch the `vyos-1x` repository'
+      - name: "Fetch the `vyos-1x` repository"
         uses: actions/checkout@v4.2.2
         with:
           repository: vyos/vyos-1x
@@ -168,7 +168,7 @@ jobs:
         with:
           name: TBM VyOS ${{ needs.create-version-number.outputs.version }}
           tag: ${{ needs.create-version-number.outputs.version }}
-          artifacts: 'vyos-build/build/vyos-*.iso'
+          artifacts: "vyos-build/build/vyos-*.iso"
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
           body: |
