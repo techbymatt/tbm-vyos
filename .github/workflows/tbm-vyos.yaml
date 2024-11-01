@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create self-hosted runner (container)
-        if: ${{ inputs.build-image == 'Yes' }}
+        if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
         uses: MattKobayashi/tailscale-runner-action@v1.1.5
         with:
           gh-app-id: ${{ secrets.GH_APP_ID }}
@@ -101,7 +101,7 @@ jobs:
   build-push-container:
     name: Build and push `vyos-build` container image
     needs: [create-version-number, create-runners]
-    if: ${{ inputs.build-image == 'Yes' }}
+    if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
     permissions:
       contents: read
       packages: write
