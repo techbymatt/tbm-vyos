@@ -75,7 +75,7 @@ jobs:
     steps:
       - name: Create self-hosted runner (container)
         if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
-        uses: MattKobayashi/tailscale-runner-action@v1.2.2
+        uses: MattKobayashi/tailscale-runner-action@v1.2.5
         with:
           gh-app-id: ${{ secrets.GH_APP_ID }}
           gh-app-login: MattKobayashi
@@ -87,7 +87,7 @@ jobs:
           ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           ts-tag: ci
       - name: Create self-hosted runner (ISO)
-        uses: MattKobayashi/tailscale-runner-action@v1.2.2
+        uses: MattKobayashi/tailscale-runner-action@v1.2.5
         with:
           gh-app-id: ${{ secrets.GH_APP_ID }}
           gh-app-login: MattKobayashi
