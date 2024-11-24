@@ -92,6 +92,7 @@ jobs:
       contents: read
       packages: write
     uses: ./.github/workflows/vyos-build-docker.yaml
+    secrets: inherit
   build-iso:
     name: Build and smoketest ISO
     runs-on: self-hosted
