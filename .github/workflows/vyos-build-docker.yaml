@@ -6,6 +6,21 @@ on:
   workflow_dispatch:
 
 jobs:
+  create-runner:
+    name: Create runner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create self-hosted runner (container)
+        uses: MattKobayashi/tailscale-qemu-runner-action@v1.2.0
+        with:
+          gh-api-token: ${{ secrets.GH_API_TOKEN }}
+          gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu/
+          gha-runner-tz: Australia/Brisbane
+          ssh-host: 100.102.37.118
+          ssh-user: matthew
+          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          ts-tag: ci
   build-push-container:
     name: Build and push
     runs-on: self-hosted
@@ -17,14 +32,6 @@ jobs:
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.7.1
-        with:
-          buildkitd-config-inline: |
-            [registry."docker.io"]
-              mirrors = ["registry-mirror:5000"]
-            [registry."registry-mirror:5000"]
-              http = true
-          driver-opts: |
-            network=mattflix
       - name: Fetch the `vyos-build` repository
         id: fetch-vyos-build
         uses: actions/checkout@v4.2.2

@@ -69,30 +69,16 @@ jobs:
         run: |
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-  create-runners:
-    name: Create self-hosted runners
+  create-runner:
+    name: Create self-hosted runner
     runs-on: ubuntu-latest
     steps:
-      - name: Create self-hosted runner (container)
-        if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
-        uses: MattKobayashi/tailscale-runner-action@v1.2.5
-        with:
-          gh-app-id: ${{ secrets.GH_APP_ID }}
-          gh-app-login: MattKobayashi
-          gh-app-private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          runner-network: mattflix
-          ssh-host: 100.102.37.118
-          ssh-user: matthew
-          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          ts-tag: ci
       - name: Create self-hosted runner (ISO)
-        uses: MattKobayashi/tailscale-runner-action@v1.2.5
+        uses: MattKobayashi/tailscale-qemu-runner-action@v1.2.0
         with:
-          gh-app-id: ${{ secrets.GH_APP_ID }}
-          gh-app-login: MattKobayashi
-          gh-app-private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          runner-network: mattflix
+          gh-api-token: ${{ secrets.GH_API_TOKEN }}
+          gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu/
+          gha-runner-tz: Australia/Brisbane
           ssh-host: 100.102.37.118
           ssh-user: matthew
           ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
@@ -100,7 +86,7 @@ jobs:
           ts-tag: ci
   build-push-container:
     name: Build and push `vyos-build` container image
-    needs: [create-version-number, create-runners]
+    needs: [create-version-number]
     if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
     permissions:
       contents: read
@@ -110,7 +96,7 @@ jobs:
     name: Build and smoketest ISO
     runs-on: self-hosted
     if: ${{ !cancelled() }}
-    needs: [create-version-number, create-runners, build-push-container]
+    needs: [create-version-number, build-push-container]
     defaults:
       run:
         shell: bash
