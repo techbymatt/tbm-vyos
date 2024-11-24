@@ -3,6 +3,13 @@ name: vyos-build container image
 
 on:
   workflow_call:
+    secrets:
+      GH_API_TOKEN:
+        required: true
+      TS_OAUTH_CLIENT_ID:
+        required: true
+      TS_OAUTH_SECRET:
+        required: true
   workflow_dispatch:
 
 jobs:
