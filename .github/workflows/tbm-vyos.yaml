@@ -69,9 +69,19 @@ jobs:
         run: |
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
+  build-push-container:
+    name: Build and push `vyos-build` container image
+    needs: [create-version-number]
+    if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/vyos-build-docker.yaml
+    secrets: inherit
   create-runner:
     name: Create self-hosted runner
     runs-on: ubuntu-latest
+    needs: [build-push-container]
     steps:
       - name: Create runner (ISO)
         uses: MattKobayashi/tailscale-qemu-runner-action@v1.5.4
@@ -85,20 +95,11 @@ jobs:
           ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           ts-tag: ci
-  build-push-container:
-    name: Build and push `vyos-build` container image
-    needs: [create-version-number]
-    if: ${{ inputs.build-image == 'Yes' || github.event_name == 'schedule' }}
-    permissions:
-      contents: read
-      packages: write
-    uses: ./.github/workflows/vyos-build-docker.yaml
-    secrets: inherit
   build-iso:
     name: Build and smoketest ISO
     runs-on: iso
     if: ${{ !cancelled() }}
-    needs: [create-version-number, build-push-container]
+    needs: [create-runner]
     defaults:
       run:
         shell: bash
