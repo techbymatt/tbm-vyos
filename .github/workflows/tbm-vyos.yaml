@@ -99,7 +99,6 @@ jobs:
     name: Build and smoketest ISO
     runs-on: iso
     if: ${{ !cancelled() }}
-    needs: [create-runner]
     defaults:
       run:
         shell: bash
