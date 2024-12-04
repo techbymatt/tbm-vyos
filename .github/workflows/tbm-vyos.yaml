@@ -99,6 +99,7 @@ jobs:
     name: Build and smoketest ISO
     runs-on: iso
     if: ${{ !cancelled() }}
+    needs: [build-push-container, create-version-number]
     defaults:
       run:
         shell: bash
