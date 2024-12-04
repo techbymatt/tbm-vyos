@@ -158,6 +158,13 @@ jobs:
           set -ex
           sudo make test
         working-directory: vyos-build
+      - id: rename-iso
+        name: Rename the VyOS ISO
+        run: |
+          set -ex
+          ORIG_NAME=$(ls build/vyos-*.iso)
+          mv build/$ORIG_NAME build/tbm-$ORIG_NAME
+        working-directory: vyos-build
       - id: draft-release
         name: Create a new draft release
         uses: ncipollo/release-action@v1.14.0
