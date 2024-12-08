@@ -162,9 +162,9 @@ jobs:
         name: Rename the VyOS ISO
         run: |
           set -ex
-          ORIG_NAME=$(ls build/vyos-*.iso)
-          mv build/$ORIG_NAME build/tbm-$ORIG_NAME
-        working-directory: vyos-build
+          ORIG_NAME=$(ls vyos-*.iso)
+          mv $ORIG_NAME tbm-$ORIG_NAME
+        working-directory: vyos-build/build
       - id: draft-release
         name: Create a new draft release
         uses: ncipollo/release-action@v1.14.0
