@@ -109,7 +109,7 @@ jobs:
       run:
         shell: bash
     if: ${{ !cancelled() }}
-    name: Build and smoketest ISO
+    name: Build + smoketest ISO and create draft release
     needs: [build-push-container, create-version-number]
     permissions:
       contents: write
