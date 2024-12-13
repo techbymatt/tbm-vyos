@@ -149,7 +149,7 @@ jobs:
       image: vyos/vyos-build:current
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: Run CLI smoketests (no interfaces)
-    needs: [build-iso]
+    needs: [build-iso, create-version-number]
     runs-on: smoketests-no-interfaces
     steps:
       - id: download-iso
@@ -170,7 +170,7 @@ jobs:
       image: vyos/vyos-build:current
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: Run CLI smoketests (interfaces only)
-    needs: [build-iso]
+    needs: [build-iso, create-version-number]
     runs-on: smoketests-interfaces-only
     steps:
       - id: download-iso
@@ -191,7 +191,7 @@ jobs:
       image: vyos/vyos-build:current
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: Run configuration load smoketests
-    needs: [build-iso]
+    needs: [build-iso, create-version-number]
     runs-on: smoketests-config-load
     steps:
       - id: download-iso
@@ -212,7 +212,7 @@ jobs:
       image: vyos/vyos-build:current
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: Run RAID1 installation smoketests
-    needs: [build-iso]
+    needs: [build-iso, create-version-number]
     runs-on: smoketests-raid-install
     steps:
       - id: download-iso
@@ -233,7 +233,7 @@ jobs:
       image: vyos/vyos-build:current
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: Run TPM encryption smoketests
-    needs: [build-iso]
+    needs: [build-iso, create-version-number]
     runs-on: smoketests-tpm-encryption
     steps:
       - id: download-iso
@@ -252,6 +252,7 @@ jobs:
     name: Create a new draft release
     needs:
       [
+        create-version-number,
         smoketests-no-interfaces,
         smoketests-interfaces-only,
         smoketests-config-load,
