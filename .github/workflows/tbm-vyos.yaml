@@ -4,26 +4,10 @@ name: TBM VyOS Automated Builds
 on:
   workflow_dispatch:
     inputs:
-      build-image:
-        description: Build the `vyos-build` container image?
-        default: "Yes"
-        options:
-          - "Yes"
-          - "No"
-        required: true
-        type: choice
       patch-string:
         description: Patch version? (leave blank for none)
         required: false
         type: string
-      run-smoketests:
-        description: Run smoketests on the ISO?
-        default: "Yes"
-        options:
-          - "Yes"
-          - "No"
-        required: true
-        type: choice
   schedule:
     - cron: "0 0 1 * *"
 
@@ -69,27 +53,29 @@ jobs:
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
         working-directory: vyos-1x
-  build-push-container:
-    if: ${{ inputs.build-image == 'Yes' }}
-    name: Build and push `vyos-build` container image
-    needs: [create-version-number]
-    permissions:
-      contents: read
-      packages: write
-    secrets: inherit
-    uses: ./.github/workflows/vyos-build-docker.yaml
   create-runner:
-    if: ${{ !cancelled() }}
+    strategy:
+      matrix:
+        runner-tag:
+          [
+            build-iso,
+            smoketests-no-interfaces,
+            smoketests-interfaces-only,
+            smoketests-config-load,
+            smoketests-raid-install,
+            smoketests-tpm-encryption,
+            draft-release,
+          ]
     name: Create self-hosted runner
-    needs: [build-push-container, create-version-number]
-    runs-on: ubuntu-latest
+    needs: [create-version-number]
+    runs-on: ubuntu-24.04
     steps:
       - name: Create runner (ISO)
         uses: MattKobayashi/tailscale-qemu-runner-action@v1.7.0
         with:
           gh-api-token: ${{ secrets.GH_API_TOKEN }}
           gha-runner-apt-mirror: http://mirror.overthewire.com.au/ubuntu/
-          gha-runner-labels: iso
+          gha-runner-labels: ${{ matrix.runner-tag }}
           gha-runner-tz: Australia/Brisbane
           ssh-host: 100.102.37.118
           ssh-user: matthew
@@ -98,19 +84,13 @@ jobs:
           ts-tag: ci
   build-iso:
     container:
-      credentials:
-        password: ${{ secrets.github_token }}
-        username: ${{ github.actor }}
-      env:
-        TZ: Australia/Brisbane
-      image: ${{ vars.REGISTRY }}/${{ vars.REPO_OWNER }}/vyos-build:current
+      image: vyos/vyos-build:current
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     defaults:
       run:
         shell: bash
-    if: ${{ !cancelled() }}
-    name: Build + smoketest ISO and create draft release
-    needs: [build-push-container, create-version-number]
+    name: Build ISO
+    needs: [create-version-number]
     permissions:
       contents: write
       packages: read
@@ -151,13 +131,6 @@ jobs:
             --custom-package vyos-1x-smoketest \
             generic
         working-directory: vyos-build
-      - id: run-smoketests
-        if: ${{ inputs.run-smoketests == 'Yes' }}
-        name: Run smoketests
-        run: |
-          set -ex
-          sudo make test
-        working-directory: vyos-build
       - id: rename-iso
         name: Rename the VyOS ISO
         run: |
@@ -165,6 +138,134 @@ jobs:
           ORIG_NAME=$(ls vyos-*.iso)
           mv $ORIG_NAME tbm-$ORIG_NAME
         working-directory: vyos-build/build
+      - id: upload-iso
+        name: Upload the ISO as an artifact
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: vyos-build/build/tbm-vyos-*.iso
+  smoketests-no-interfaces:
+    container:
+      image: vyos/vyos-build:current
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    name: Run CLI smoketests (no interfaces)
+    needs: [build-iso]
+    runs-on: smoketests-no-interfaces
+    steps:
+      - id: download-iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: build
+      - id: smoketests-no-interfaces
+        name: Run CLI smoketests (no interfaces)
+        run: |
+          set -ex
+          sudo make test-no-interfaces
+        timeout-minutes: 180
+        working-directory: vyos-build
+  smoketests-interfaces-only:
+    container:
+      image: vyos/vyos-build:current
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    name: Run CLI smoketests (interfaces only)
+    needs: [build-iso]
+    runs-on: smoketests-interfaces-only
+    steps:
+      - id: download-iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: build
+      - id: smoketests-interfaces-only
+        name: Run CLI smoketests (interfaces only)
+        run: |
+          set -ex
+          sudo make test-interfaces
+        timeout-minutes: 180
+        working-directory: vyos-build
+  smoketests-config-load:
+    container:
+      image: vyos/vyos-build:current
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    name: Run configuration load smoketests
+    needs: [build-iso]
+    runs-on: smoketests-config-load
+    steps:
+      - id: download-iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: build
+      - id: smoketests-config-load
+        name: Run configuration load smoketests
+        run: |
+          set -ex
+          sudo make testc
+        timeout-minutes: 90
+        working-directory: vyos-build
+  smoketests-raid-install:
+    container:
+      image: vyos/vyos-build:current
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    name: Run RAID1 installation smoketests
+    needs: [build-iso]
+    runs-on: smoketests-raid-install
+    steps:
+      - id: download-iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: build
+      - id: smoketests-raid-install
+        name: Run RAID1 installation smoketests
+        run: |
+          set -ex
+          sudo make testraid
+        timeout-minutes: 20
+        working-directory: vyos-build
+  smoketests-tpm-encryption:
+    container:
+      image: vyos/vyos-build:current
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    name: Run TPM encryption smoketests
+    needs: [build-iso]
+    runs-on: smoketests-tpm-encryption
+    steps:
+      - id: download-iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: build
+      - id: smoketests-tpm-encryption
+        name: Run TPM encryption smoketests
+        run: |
+          set -ex
+          sudo make testtpm
+        timeout-minutes: 20
+  draft-release:
+    name: Create a new draft release
+    needs:
+      [
+        smoketests-no-interfaces,
+        smoketests-interfaces-only,
+        smoketests-config-load,
+        smoketests-raid-install,
+        smoketests-tpm-encryption,
+      ]
+    runs-on: draft-release
+    steps:
+      - id: download-iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: tbm-vyos-${{ needs.create-version-number.outputs.version }}
+          path: build
       - id: draft-release
         name: Create a new draft release
         uses: ncipollo/release-action@v1.14.0
@@ -172,7 +273,7 @@ jobs:
           allowUpdates: false
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
-          artifacts: "vyos-build/build/tbm-vyos-*.iso"
+          artifacts: "build/tbm-vyos-*.iso"
           body: |
             Build log: https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
 
