@@ -66,11 +66,11 @@ jobs:
             smoketests-tpm-encryption,
             draft-release,
           ]
-    name: Create self-hosted runner
+    name: Create self-hosted runners
     needs: [create-version-number]
     runs-on: ubuntu-24.04
     steps:
-      - name: Create runner (ISO)
+      - name: Create runner (${{ matrix.runner-tag }})
         uses: MattKobayashi/tailscale-qemu-runner-action@v1.7.0
         with:
           gh-api-token: ${{ secrets.GH_API_TOKEN }}
@@ -94,7 +94,7 @@ jobs:
     permissions:
       contents: write
       packages: read
-    runs-on: iso
+    runs-on: build-iso
     steps:
       - id: fetch-vyos-build
         name: Fetch the `vyos-build` repository
