@@ -23,8 +23,8 @@ jobs:
             smoketests-config-load,
             smoketests-raid-install,
             smoketests-tpm-encryption,
-            draft-release,
           ]
+      max-parallel: 1
     name: Create runner
     runs-on: ubuntu-24.04
     steps:
@@ -111,7 +111,8 @@ jobs:
       - name: Build vyos-1x package
         run: |
           set -ex
-          cd packages/vyos-1x; dpkg-buildpackage -uc -us -tc -b
+          dpkg-buildpackage -uc -us -tc -b
+        working-directory: packages/vyos-1x
       - id: change-os-release
         name: Change the value of `os-release`
         run: |
@@ -322,7 +323,7 @@ jobs:
         smoketests-raid-install,
         smoketests-tpm-encryption,
       ]
-    runs-on: draft-release
+    runs-on: ubuntu-24.04
     steps:
       - id: download-iso
         name: Download the ISO artifact
@@ -344,7 +345,7 @@ jobs:
           allowUpdates: false
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
-          artifacts: "build/tbm-vyos-*.iso"
+          artifacts: build/tbm-vyos-*.iso
           body: |
             Build log: https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
 
