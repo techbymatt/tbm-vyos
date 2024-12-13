@@ -175,7 +175,7 @@ jobs:
         run: |
           set -ex
           sudo make test-no-interfaces
-          if [[ $? == 0 ]]; then
+          if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
@@ -207,7 +207,7 @@ jobs:
         run: |
           set -ex
           sudo make test-interfaces
-          if [[ $? == 0 ]]; then
+          if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
@@ -239,7 +239,7 @@ jobs:
         run: |
           set -ex
           sudo make testc
-          if [[ $? == 0 ]]; then
+          if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
@@ -271,7 +271,7 @@ jobs:
         run: |
           set -ex
           sudo make testraid
-          if [[ $? == 0 ]]; then
+          if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
@@ -303,13 +303,14 @@ jobs:
         run: |
           set -ex
           sudo make testtpm
-          if [[ $? == 0 ]]; then
+          if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
           fi
     timeout-minutes: 20
   draft-release:
+    if: ${{ !cancelled() }}
     name: Create a new draft release
     needs:
       [
