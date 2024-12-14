@@ -347,14 +347,17 @@ jobs:
           artifactErrorsFailBuild: true
           artifacts: build/tbm-vyos-*.iso
           body: |
-            Build log: https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
+            ### Build Log
+            https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
 
-            * CLI Smoketests (no interfaces) ${{ needs.smoketests-no-interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI Smoketests (interfaces only) ${{ needs.smoketests-interfaces-only.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * Config tests ${{ needs.smoketests-config-load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * RAID1 tests ${{ needs.smoketests-raid-install.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * TPM tests ${{ needs.smoketests-tpm-encryption.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            ### Smoketest Results
+            * CLI (no interfaces): ${{ needs.smoketests-no-interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (interfaces only): ${{ needs.smoketests-interfaces-only.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load: ${{ needs.smoketests-config-load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * RAID1: ${{ needs.smoketests-raid-install.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * TPM: ${{ needs.smoketests-tpm-encryption.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
+            ### Upstream Comparison
             Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.build-iso.outputs.vyos-build-commit }}
             Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.build-iso.outputs.vyos-build-commit }}...current
 
