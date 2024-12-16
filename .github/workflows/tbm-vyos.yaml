@@ -12,35 +12,35 @@ on:
     - cron: "0 0 1 * *"
 
 jobs:
-  create-runners:
-    strategy:
-      matrix:
-        runner-tag:
-          [
-            build-iso,
-            smoketests-no-interfaces,
-            smoketests-interfaces-only,
-            smoketests-config-load,
-            smoketests-raid-install,
-            smoketests-tpm-encryption,
-          ]
-      max-parallel: 1
-    name: Create runner
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Create runner
-        uses: MattKobayashi/tailscale-qemu-runner-action@v1.7.0
-        with:
-          gh-api-token: ${{ secrets.GH_API_TOKEN }}
-          gha-runner-apt-mirror: http://mirror.overthewire.com.au/ubuntu/
-          gha-runner-labels: ${{ matrix.runner-tag }}
-          gha-runner-mem: 10G
-          gha-runner-tz: Australia/Brisbane
-          ssh-host: 100.102.37.118
-          ssh-user: matthew
-          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          ts-tag: ci
+  # create-runners:
+  #   strategy:
+  #     matrix:
+  #       runner-tag:
+  #         [
+  #           build-iso,
+  #           smoketests-no-interfaces,
+  #           smoketests-interfaces-only,
+  #           smoketests-config-load,
+  #           smoketests-raid-install,
+  #           smoketests-tpm-encryption,
+  #         ]
+  #     max-parallel: 1
+  #   name: Create runner
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #     - name: Create runner
+  #       uses: MattKobayashi/tailscale-qemu-runner-action@v1.7.0
+  #       with:
+  #         gh-api-token: ${{ secrets.GH_API_TOKEN }}
+  #         gha-runner-apt-mirror: http://mirror.overthewire.com.au/ubuntu/
+  #         gha-runner-labels: ${{ matrix.runner-tag }}
+  #         gha-runner-mem: 10G
+  #         gha-runner-tz: Australia/Brisbane
+  #         ssh-host: 100.102.37.118
+  #         ssh-user: matthew
+  #         ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+  #         ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+  #         ts-tag: ci
   build-iso:
     container:
       image: vyos/vyos-build:current
@@ -58,7 +58,8 @@ jobs:
     permissions:
       contents: write
       packages: read
-    runs-on: build-iso
+    # runs-on: build-iso
+    runs-on: ubuntu-24.04
     steps:
       - id: remount-workdir
         name: Remount the work directory
@@ -159,7 +160,8 @@ jobs:
     needs: [build-iso]
     outputs:
       exit_code: ${{ steps.smoketests-no-interfaces.outputs.exit_code }}
-    runs-on: smoketests-no-interfaces
+    # runs-on: smoketests-no-interfaces
+    runs-on: ubuntu-24.04
     steps:
       - name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@v4.2.2
@@ -191,7 +193,8 @@ jobs:
     needs: [build-iso]
     outputs:
       exit_code: ${{ steps.smoketests-interfaces-only.outputs.exit_code }}
-    runs-on: smoketests-interfaces-only
+    # runs-on: smoketests-interfaces-only
+    runs-on: ubuntu-24.04
     steps:
       - name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@v4.2.2
@@ -223,7 +226,8 @@ jobs:
     needs: [build-iso]
     outputs:
       exit_code: ${{ steps.smoketests-config-load.outputs.exit_code }}
-    runs-on: smoketests-config-load
+    # runs-on: smoketests-config-load
+    runs-on: ubuntu-24.04
     steps:
       - name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@v4.2.2
@@ -255,7 +259,8 @@ jobs:
     needs: [build-iso]
     outputs:
       exit_code: ${{ steps.smoketests-raid-install.outputs.exit_code }}
-    runs-on: smoketests-raid-install
+    # runs-on: smoketests-raid-install
+    runs-on: ubuntu-24.04
     steps:
       - name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@v4.2.2
@@ -287,7 +292,8 @@ jobs:
     needs: [build-iso]
     outputs:
       exit_code: ${{ steps.smoketests-tpm-encryption.outputs.exit_code }}
-    runs-on: smoketests-tpm-encryption
+    # runs-on: smoketests-tpm-encryption
+    runs-on: ubuntu-24.04
     steps:
       - name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@v4.2.2
