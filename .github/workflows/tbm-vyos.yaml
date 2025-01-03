@@ -1,25 +1,55 @@
 ---
-name: TBM VyOS Automated Builds
-
+name: "TBM VyOS Automated Builds"
 on:
   workflow_dispatch:
     inputs:
+      build-container:
+        default: "vyos/vyos-build:current"
+        description: "Which build container to use?"
+        options:
+          - "vyos/vyos-build:current"
+          - "ghcr.io/mattkobayashi/vyos-build:current"
+        required: false
+        type: choice
       patch-string:
-        description: Patch version? (leave blank for none)
+        description: "Patch version? (leave blank for none)"
         required: false
         type: string
   schedule:
     - cron: "0 0 1 * *"
-
 jobs:
+  build-container:
+    if: ${{ inputs.build-container == 'ghcr.io/mattkobayashi/vyos-build:current' }}
+    name: "Build `vyos-build` container"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Checkout `vyos/vyos-build` repository"
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: current
+          repository: vyos/vyos-build
+      - name: "Build container"
+        uses: docker/build-push-action@v6.10.0
+        with:
+          file: docker/Dockerfile
+          push: true
+          tags: ghcr.io/mattkobayashi/vyos-build:current
   build-iso:
     container:
-      image: vyos/vyos-build:current
+      image: ${{ inputs.build-container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     defaults:
       run:
         shell: bash
-    name: Build ISO
+    if: ${{ !cancelled() }}
+    name: "Build ISO"
+    needs: [build-container]
     outputs:
       version: ${{ env.VERSION }}
       vyos-build-commit: ${{ env.VYOS_BUILD_COMMIT }}
@@ -32,18 +62,18 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - id: remount-workdir
-        name: Remount the work directory
+        name: "Remount the working directory"
         run: |
           set -ex
           mount -i -o remount,exec,dev /__w/
       - id: date-format
-        name: Run `date` and format
+        name: "Run `date` and format"
         run: |
           set -ex
           echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
       - id: patch-string
         if: ${{ inputs.patch-string != '' }}
-        name: Add patch string
+        name: "Add patch string"
         run: |
           set -ex
           echo "VERSION=$VERSION-${{ inputs.patch-string }}" >> "$GITHUB_ENV"
@@ -53,12 +83,12 @@ jobs:
           path: vyos-build
           ref: current
           repository: vyos/vyos-build
-      - name: Get last `vyos-build` commit
+      - name: "Get last `vyos-build` commit"
         run: |
           set -ex
           echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
         working-directory: vyos-build
-      - name: Get last `vyos-build` commit (full SHA)
+      - name: "Get last `vyos-build` commit (full SHA)"
         run: |
           set -ex
           echo "VYOS_BUILD_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
@@ -69,29 +99,29 @@ jobs:
           path: packages/vyos-1x
           ref: current
           repository: vyos/vyos-1x
-      - name: Get last `vyos-1x` commit
+      - name: "Get last `vyos-1x` commit"
         run: |
           set -ex
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
         working-directory: packages/vyos-1x
-      - name: Get last `vyos-1x` commit (full SHA)
+      - name: "Get last `vyos-1x` commit (full SHA)"
         run: |
           set -ex
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
         working-directory: packages/vyos-1x
-      - name: Build vyos-1x package
+      - name: "Build vyos-1x package"
         run: |
           set -ex
           dpkg-buildpackage -uc -us -tc -b
         working-directory: packages/vyos-1x
       - id: change-os-release
-        name: Change the value of `os-release`
+        name: "Change the value of `os-release`"
         run: |
           set -ex
           sed -i 's/NAME="VyOS"/NAME="TBM VyOS"/' scripts/image-build/build-vyos-image
         working-directory: vyos-build
       - id: build-iso
-        name: Build the VyOS ISO
+        name: "Build the TBM VyOS ISO"
         run: |
           set -ex
           sudo make clean
@@ -110,13 +140,13 @@ jobs:
             generic
         working-directory: vyos-build
       - id: upload-live-image-iso
-        name: Upload live image artifact
+        name: "Upload live image artifact"
         uses: actions/upload-artifact@v4.5.0
         with:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-amd64.hybrid.iso
       - id: upload-release-iso
-        name: Upload release ISO artifact
+        name: "Upload release ISO artifact"
         uses: actions/upload-artifact@v4.5.0
         with:
           name: tbm-vyos-${{ env.VERSION }}-release
@@ -124,7 +154,7 @@ jobs:
     timeout-minutes: 45
   smoketests-no-interfaces:
     container:
-      image: vyos/vyos-build:current
+      image: ${{ inputs.build-container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: CLI (no interfaces)"
     needs: [build-iso]
@@ -138,13 +168,13 @@ jobs:
           ref: ${{ needs.build-iso.outputs.vyos-build-commit-sha }}
           repository: vyos/vyos-build
       - id: download-iso
-        name: Download the ISO artifact
+        name: "Download the ISO artifact"
         uses: actions/download-artifact@v4.1.8
         with:
           name: tbm-vyos-${{ needs.build-iso.outputs.version }}-liveimage
           path: build
       - id: smoketests-no-interfaces
-        name: Run smoketests
+        name: "Run smoketests"
         run: |
           set -ex
           sudo make test-no-interfaces
@@ -156,7 +186,7 @@ jobs:
     timeout-minutes: 180
   smoketests-interfaces-only:
     container:
-      image: vyos/vyos-build:current
+      image: ${{ inputs.build-container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: CLI (interfaces only)"
     needs: [build-iso]
@@ -170,13 +200,13 @@ jobs:
           ref: ${{ needs.build-iso.outputs.vyos-build-commit-sha }}
           repository: vyos/vyos-build
       - id: download-iso
-        name: Download the ISO artifact
+        name: "Download the ISO artifact"
         uses: actions/download-artifact@v4.1.8
         with:
           name: tbm-vyos-${{ needs.build-iso.outputs.version }}-liveimage
           path: build
       - id: smoketests-interfaces-only
-        name: Run smoketests
+        name: "Run smoketests"
         run: |
           set -ex
           sudo make test-interfaces
@@ -188,7 +218,7 @@ jobs:
     timeout-minutes: 180
   smoketests-config-load:
     container:
-      image: vyos/vyos-build:current
+      image: ${{ inputs.build-container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: Configuration load"
     needs: [build-iso]
@@ -202,13 +232,13 @@ jobs:
           ref: ${{ needs.build-iso.outputs.vyos-build-commit-sha }}
           repository: vyos/vyos-build
       - id: download-iso
-        name: Download the ISO artifact
+        name: "Download the ISO artifact"
         uses: actions/download-artifact@v4.1.8
         with:
           name: tbm-vyos-${{ needs.build-iso.outputs.version }}-liveimage
           path: build
       - id: smoketests-config-load
-        name: Run smoketests
+        name: "Run smoketests"
         run: |
           set -ex
           sudo make testc
@@ -220,7 +250,7 @@ jobs:
     timeout-minutes: 90
   smoketests-raid-install:
     container:
-      image: vyos/vyos-build:current
+      image: ${{ inputs.build-container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: RAID1 installation"
     needs: [build-iso]
@@ -234,13 +264,13 @@ jobs:
           ref: ${{ needs.build-iso.outputs.vyos-build-commit-sha }}
           repository: vyos/vyos-build
       - id: download-iso
-        name: Download the ISO artifact
+        name: "Download the ISO artifact"
         uses: actions/download-artifact@v4.1.8
         with:
           name: tbm-vyos-${{ needs.build-iso.outputs.version }}-liveimage
           path: build
       - id: smoketests-raid-install
-        name: Run smoketests
+        name: "Run smoketests"
         run: |
           set -ex
           sudo make testraid
@@ -252,7 +282,7 @@ jobs:
     timeout-minutes: 20
   smoketests-tpm-encryption:
     container:
-      image: vyos/vyos-build:current
+      image: ${{ inputs.build-container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: TPM encryption"
     needs: [build-iso]
@@ -266,13 +296,13 @@ jobs:
           ref: ${{ needs.build-iso.outputs.vyos-build-commit-sha }}
           repository: vyos/vyos-build
       - id: download-iso
-        name: Download the ISO artifact
+        name: "Download the ISO artifact"
         uses: actions/download-artifact@v4.1.8
         with:
           name: tbm-vyos-${{ needs.build-iso.outputs.version }}-liveimage
           path: build
       - id: smoketests-tpm-encryption
-        name: Run smoketests
+        name: "Run smoketests"
         run: |
           set -ex
           sudo make testtpm
@@ -284,7 +314,7 @@ jobs:
     timeout-minutes: 20
   draft-release:
     if: ${{ !cancelled() }}
-    name: Create a new draft release
+    name: "Draft release"
     needs:
       [
         build-iso,
@@ -297,20 +327,20 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - id: download-iso
-        name: Download the ISO artifact
+        name: "Download the ISO artifact"
         uses: actions/download-artifact@v4.1.8
         with:
           name: tbm-vyos-${{ needs.build-iso.outputs.version }}-release
           path: build
       - id: rename-iso
-        name: Rename the VyOS ISO
+        name: "Rename the VyOS ISO"
         run: |
           set -ex
           ORIG_NAME=$(ls vyos-*.iso)
           mv $ORIG_NAME tbm-$ORIG_NAME
         working-directory: build
       - id: draft-release
-        name: Create a new draft release
+        name: "Create draft release"
         uses: ncipollo/release-action@v1.14.0
         with:
           allowUpdates: false
