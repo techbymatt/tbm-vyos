@@ -41,7 +41,7 @@ jobs:
           images: ${{ vars.REGISTRY }}/${{ vars.REPO_OWNER }}/vyos-build
           tags: type=raw,value=current
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.11.0
         with:
           context: vyos-build/docker
           labels: ${{ steps.meta.outputs.labels }}
