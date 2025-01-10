@@ -149,7 +149,7 @@ jobs:
         working-directory: vyos-build/build
       - id: upload-artifact
         name: "Upload live image artifact"
-        uses: actions/upload-artifact@v4.5.0
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
