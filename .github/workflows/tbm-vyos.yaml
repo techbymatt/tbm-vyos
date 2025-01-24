@@ -158,6 +158,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
     name: "Smoketests: CLI (no interfaces)"
     needs: [build_iso]
     outputs:
@@ -191,6 +192,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
     name: "Smoketests: CLI (interfaces only)"
     needs: [build_iso]
     outputs:
@@ -224,6 +226,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
     name: "Smoketests: Configuration load"
     needs: [build_iso]
     outputs:
@@ -257,6 +260,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
     name: "Smoketests: RAID1 installation"
     needs: [build_iso]
     outputs:
@@ -290,6 +294,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
     name: "Smoketests: TPM encryption"
     needs: [build_iso]
     outputs:
