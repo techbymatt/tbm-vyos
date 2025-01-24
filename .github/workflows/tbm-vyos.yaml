@@ -115,12 +115,6 @@ jobs:
           set -ex
           dpkg-buildpackage -uc -us -tc -b
         working-directory: packages/vyos-1x
-      - id: change_os_release
-        name: "Change the value of `os-release`"
-        run: |
-          set -ex
-          sed -i 's/NAME="VyOS"/NAME="TBM VyOS"/' scripts/image-build/build-vyos-image
-        working-directory: vyos-build
       - id: build_iso
         name: "Build the TBM VyOS ISO"
         run: |
