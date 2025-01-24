@@ -47,7 +47,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    if: ${{ !cancelled() }}
     name: "Build ISO"
     needs: [build_container]
     outputs:
@@ -320,7 +319,6 @@ jobs:
           fi
     timeout-minutes: 20
   draft_release:
-    if: ${{ !cancelled() }}
     name: "Draft release"
     needs:
       [
