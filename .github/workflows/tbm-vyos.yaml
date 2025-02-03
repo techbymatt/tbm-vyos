@@ -62,11 +62,11 @@ jobs:
       packages: read
     runs-on: ubuntu-24.04
     steps:
-      - id: remount_workdir
-        name: "Remount the working directory"
-        run: |
-          set -ex
-          mount -i -o remount,exec,dev /__w/
+      # - id: remount_workdir
+      #   name: "Remount the working directory"
+      #   run: |
+      #     set -ex
+      #     mount -i -o remount,exec,dev /__w/
       - id: date_format
         name: "Run `date` and format"
         run: |
