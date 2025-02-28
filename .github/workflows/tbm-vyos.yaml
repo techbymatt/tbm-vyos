@@ -167,7 +167,7 @@ jobs:
           repository: vyos/vyos-build
       - id: download_iso
         name: "Download the ISO artifact"
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
@@ -201,7 +201,7 @@ jobs:
           repository: vyos/vyos-build
       - id: download_iso
         name: "Download the ISO artifact"
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
@@ -235,7 +235,7 @@ jobs:
           repository: vyos/vyos-build
       - id: download_iso
         name: "Download the ISO artifact"
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
@@ -269,7 +269,7 @@ jobs:
           repository: vyos/vyos-build
       - id: download_iso
         name: "Download the ISO artifact"
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
@@ -303,7 +303,7 @@ jobs:
           repository: vyos/vyos-build
       - id: download_iso
         name: "Download the ISO artifact"
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
@@ -334,7 +334,7 @@ jobs:
     steps:
       - id: download_artifact
         name: "Download live image artifact"
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
