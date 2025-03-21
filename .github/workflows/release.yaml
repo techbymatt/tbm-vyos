@@ -1,22 +1,4 @@
 ---
-name: "TBM VyOS Automated Builds"
-on:
-  workflow_dispatch:
-    inputs:
-      build_container:
-        default: "vyos/vyos-build:current"
-        description: "Which build container to use?"
-        options:
-          - "vyos/vyos-build:current"
-          - "ghcr.io/mattkobayashi/vyos-build:current"
-        required: false
-        type: choice
-      patch_string:
-        description: "Patch version? (leave blank for none)"
-        required: false
-        type: string
-  schedule:
-    - cron: "0 0 1 * *"
 jobs:
   build_container:
     if: ${{ inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current' }}
@@ -392,3 +374,21 @@ jobs:
           name: TBM VyOS ${{ needs.build_iso.outputs.version }}
           omitDraftDuringUpdate: true
           tag: ${{ needs.build_iso.outputs.version }}
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      build_container:
+        default: "vyos/vyos-build:current"
+        description: "Which build container to use?"
+        options:
+          - "vyos/vyos-build:current"
+          - "ghcr.io/mattkobayashi/vyos-build:current"
+        required: false
+        type: choice
+      patch_string:
+        description: "Patch version? (leave blank for none)"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 0 1 * *"

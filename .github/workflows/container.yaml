@@ -1,25 +1,12 @@
 ---
-name: Build `vyos-build` container image
-
-on:
-  workflow_call:
-    secrets:
-      GH_API_TOKEN:
-        required: true
-      TS_OAUTH_CLIENT_ID:
-        required: true
-      TS_OAUTH_SECRET:
-        required: true
-  workflow_dispatch:
-
 jobs:
-  build-push-container:
+  container:
     name: Build and push
     runs-on: ubuntu-24.04
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
-      - name: Set up Docker Buildx
+      - name: Set up buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
       - id: fetch-vyos-build
         name: Fetch the `vyos-build` repository
@@ -35,15 +22,26 @@ jobs:
           registry: ${{ vars.REGISTRY }}
           username: ${{ github.actor }}
       - id: meta
-        name: Extract Docker metadata
+        name: Extract metadata
         uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
         with:
           images: ${{ vars.REGISTRY }}/${{ vars.REPO_OWNER }}/vyos-build
           tags: type=raw,value=current
-      - name: Build and push Docker image
+      - name: Build and push container image
         uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
         with:
           context: vyos-build/docker
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+name: Container image
+on:
+  workflow_call:
+    secrets:
+      GH_API_TOKEN:
+        required: true
+      TS_OAUTH_CLIENT_ID:
+        required: true
+      TS_OAUTH_SECRET:
+        required: true
+  workflow_dispatch:
