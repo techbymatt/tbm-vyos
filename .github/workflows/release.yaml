@@ -331,6 +331,8 @@ jobs:
         smoketests_raid_install,
         smoketests_tpm_encryption,
       ]
+    outputs:
+      release_url: ${{ steps.draft_release.outputs.html_url }}
     runs-on: ubuntu-24.04
     steps:
       - id: download_artifact
@@ -374,6 +376,20 @@ jobs:
           name: TBM VyOS ${{ needs.build_iso.outputs.version }}
           omitDraftDuringUpdate: true
           tag: ${{ needs.build_iso.outputs.version }}
+  notify_release:
+    name: "Release notifications"
+    needs: [draft_release]
+    runs-on: ubuntu-24.04
+    steps:
+      - id: pushover
+        name: "Pushover"
+        run: |
+          curl -s \
+            --form-string "token=${{ secrets.PO_APP_TOKEN }}" \
+            --form-string "user=${{ secrets.PO_USER_KEY }}" \
+            --form-string "message=A new draft release has been created!" \
+            --form-string "url=${{ needs.draft_release.outputs.release_url }}" \
+            https://api.pushover.net/1/messages.json
 name: Release
 on:
   workflow_dispatch:
