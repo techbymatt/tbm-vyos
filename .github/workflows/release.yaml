@@ -92,30 +92,30 @@ jobs:
           set -ex
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
         working-directory: packages/vyos-1x
-      - name: "Build vyos-1x package"
-        run: |
-          set -ex
-          sudo apt-get --no-install-recommends --yes install \
-            build-essential:native \
-            debhelper \
-            dh-python \
-            libvyosconfig0 \
-            libzmq3-dev \
-            pylint \
-            python3-lxml \
-            python3-xmltodict \
-            python3-coverage \
-            python3-hurry.filesize \
-            python3-nose \
-            python3-paramiko \
-            python3-passlib \
-            python3-psutil \
-            python3-tabulate \
-            python3-zmq \
-            quilt \
-            whois
-          dpkg-buildpackage -uc -us -tc -b
-        working-directory: packages/vyos-1x
+      # - name: "Build vyos-1x package"
+      #   run: |
+      #     set -ex
+      #     sudo apt-get --no-install-recommends --yes install \
+      #       build-essential:native \
+      #       debhelper \
+      #       dh-python \
+      #       libvyosconfig0 \
+      #       libzmq3-dev \
+      #       pylint \
+      #       python3-lxml \
+      #       python3-xmltodict \
+      #       python3-coverage \
+      #       python3-hurry.filesize \
+      #       python3-nose \
+      #       python3-paramiko \
+      #       python3-passlib \
+      #       python3-psutil \
+      #       python3-tabulate \
+      #       python3-zmq \
+      #       quilt \
+      #       whois
+      #     dpkg-buildpackage -uc -us -tc -b
+      #   working-directory: packages/vyos-1x
       - id: build_iso
         name: "Build the TBM VyOS ISO"
         run: |
