@@ -120,6 +120,8 @@ jobs:
         name: "Build the TBM VyOS ISO"
         run: |
           set -ex
+          sudo apt-get --no-install-recommends --yes install \
+            live-build
           sudo make clean
           sudo --preserve-env ./build-vyos-image \
             --architecture amd64 \
