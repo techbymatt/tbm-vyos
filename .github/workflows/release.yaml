@@ -276,7 +276,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           sudo usermod -aG kvm $(whoami)
       - id: install_deps
-        name: "Install QEMU"
+        name: "Install dependencies"
         run: |
           set -eux
           sudo apt-get update
