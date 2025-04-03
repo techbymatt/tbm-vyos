@@ -283,6 +283,7 @@ jobs:
           sudo apt-get --no-install-recommends --yes install \
             build-essential \
             ovmf \
+            python3-pexpect \
             qemu-system-x86 \
             qemu-utils
       - id: download_iso
