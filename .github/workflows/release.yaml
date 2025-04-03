@@ -254,9 +254,6 @@ jobs:
           fi
     timeout-minutes: 90
   smoketests_sb:
-    container:
-      image: ${{ inputs.build_container }}
-      options: "--device /dev/kvm --device /dev/net/tun --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
     needs: [build_iso]
@@ -274,20 +271,20 @@ jobs:
         name: "Enable KVM"
         run: |
           set -eux
-          /lib/systemd/systemd-udevd --daemon
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           sudo usermod -aG kvm $(whoami)
       - id: install_deps
-        name: "Install QEMU Secure Boot dependencies"
+        name: "Install QEMU"
         run: |
           set -eux
           sudo apt-get update
           sudo apt-get --no-install-recommends --yes install \
+            build-essential \
             ovmf \
             qemu-system-x86 \
-            gpg debian-keyring
+            qemu-utils
       - id: download_iso
         name: "Download the ISO artifact"
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
