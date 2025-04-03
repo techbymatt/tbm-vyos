@@ -284,6 +284,7 @@ jobs:
             build-essential \
             ovmf \
             python3-pexpect \
+            python3-tomli \
             qemu-system-x86 \
             qemu-utils
       - id: download_iso
