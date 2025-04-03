@@ -256,7 +256,7 @@ jobs:
   smoketests_sb:
     container:
       image: ${{ inputs.build_container }}
-      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+      options: "--device /dev/kvm --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
     needs: [build_iso]
@@ -281,6 +281,7 @@ jobs:
         name: "Install QEMU Secure Boot dependencies"
         run: |
           set -eux
+          sudo apt-get update
           sudo apt-get --no-install-recommends --yes install \
             ovmf \
             qemu-system-x86 \
