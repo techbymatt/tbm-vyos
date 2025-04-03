@@ -271,6 +271,10 @@ jobs:
         name: "Enable KVM"
         run: |
           set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          kvm-ok
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
@@ -279,7 +283,6 @@ jobs:
         name: "Install dependencies"
         run: |
           set -eux
-          sudo apt-get update
           sudo apt-get --no-install-recommends --yes install \
             build-essential \
             ovmf \
