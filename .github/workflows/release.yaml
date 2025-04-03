@@ -256,7 +256,7 @@ jobs:
   smoketests_sb:
     container:
       image: ${{ inputs.build_container }}
-      options: "--device /dev/kvm --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+      options: "--device /dev/kvm --device /dev/net/tun --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
     needs: [build_iso]
