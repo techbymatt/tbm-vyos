@@ -402,6 +402,7 @@ jobs:
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
           fi
+    timeout-minutes: 20
   draft_release:
     if: ${{ !cancelled() }}
     name: "Draft release"
