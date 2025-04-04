@@ -319,13 +319,15 @@ jobs:
           cat > scripts/check-qemu-install.patch << 'EOF'
           --- scripts/check-qemu-install
           +++ scripts/check-qemu-install
-          @@ -157,7 +157,9 @@
-             name = f'{name}-SECURE-BOOT'
-             machine = 'q35,smm=on'
+          @@ -155,9 +155,10 @@
           
+                   if secure_boot:
+                       name = f'{name}-SECURE-BOOT'
+          -            machine = 'q35,smm=on'
+          +            machine = 'q35'
+                  
           -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
-          +            uefi = '-global ICH9-LPC.disable_s3=1 ' \
-          +                   '-global driver=cfi.pflash01,property=secure,value=on ' \
+          +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
           +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
                               f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
                        # Changing UEFI settings require a display
