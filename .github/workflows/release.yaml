@@ -406,7 +406,7 @@ jobs:
         smoketests_interfaces_only,
         smoketests_config_load,
         smoketests_raid,
-        smoketests_sb,
+        smoketests_secure_boot,
         smoketests_tpm,
         smoketests_vpp
       ]
@@ -443,7 +443,7 @@ jobs:
             * CLI (interfaces only): ${{ needs.smoketests_interfaces_only.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * Configuration Load: ${{ needs.smoketests_config_load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * RAID1: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * Secure Boot: ${{ needs.smoketests_sb.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * Secure Boot: ${{ needs.smoketests_secure_boot.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * TPM: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * VPP: ${{ needs.smoketests_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
