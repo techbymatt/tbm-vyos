@@ -313,6 +313,7 @@ jobs:
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           # TEMP name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          github-token: ${{ github.token }}
           name: tbm-vyos-202503-patch1-liveimage
           path: build
           run-id: 14152325166
