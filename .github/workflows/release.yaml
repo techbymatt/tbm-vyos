@@ -284,6 +284,8 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+      volumes:
+        - /lib/modules:/lib/modules
     if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
     needs: [build_iso]
