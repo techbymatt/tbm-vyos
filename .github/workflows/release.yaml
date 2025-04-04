@@ -284,8 +284,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      volumes:
-        - /lib/modules:/lib/modules
     if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
     needs: [build_iso]
@@ -318,16 +316,7 @@ jobs:
         run: |
           set -eux
           /usr/local/bin/entrypoint.sh bash
-          sudo apt-get --no-install-recommends --yes install \
-            cpuid
-          if cpuid | grep -q AMD; then
-            sudo modprobe kvm-amd
-          elif cpuid | grep -q Intel; then
-            sudo modprobe kvm-intel
-          else
-              echo "Unsupported CPU vendor: $(cpuid)" >&2
-              exit 1
-          fi
+          sudo usermod -aG kvm vyos_bld
           # cat > scripts/check-qemu-install.patch << 'EOF'
           # --- scripts/check-qemu-install
           # +++ scripts/check-qemu-install
