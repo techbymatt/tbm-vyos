@@ -316,14 +316,22 @@ jobs:
         run: |
           set -eux
           /usr/local/bin/entrypoint.sh bash
-          scripts/check-qemu-install \
-            --cpu $(lscpu -b -p=Core,Socket | grep -v '^#' | sort -u | wc -l) \
-            --memory 8 \
-            --debug \
-            --uefi \
-            --sbtest \
-            build/live-image-amd64.hybrid.iso \
-            $(filter-out $@,$(MAKECMDGOALS))
+          cat > scripts/check-qemu-install.patch << 'EOF'
+          --- scripts/check-qemu-install.orig
+          +++ scripts/check-qemu-install
+          @@ -157,7 +157,8 @@
+                       name = f'{name}-SECURE-BOOT'
+                       machine = 'q35,smm=on'
+          
+          -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
+          +            uefi = '-global driver=cfi.pflash01,property=secure,value=on' \
+          +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
+                              f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
+                       # Changing UEFI settings require a display
+                       vga = '-vga virtio'
+          EOF
+          patch scripts/check-qemu-install scripts/check-qemu-install.patch
+          sudo make testsb
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
