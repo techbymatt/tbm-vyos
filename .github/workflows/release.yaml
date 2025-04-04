@@ -162,6 +162,14 @@ jobs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: "Check KVM support"
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -178,6 +186,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
+          /usr/local/bin/entrypoint.sh bash
           sudo make test-no-interfaces
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -196,6 +205,14 @@ jobs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: "Check KVM support"
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -212,6 +229,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
+          /usr/local/bin/entrypoint.sh bash
           sudo make test-interfaces
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -230,6 +248,14 @@ jobs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: "Check KVM support"
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -246,6 +272,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
+          /usr/local/bin/entrypoint.sh bash
           sudo make testc
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -264,20 +291,20 @@ jobs:
       exit_code: ${{ steps.smoketests_secure_boot.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: checkout_vyos_build
-        name: "Fetch the `vyos-build` repository"
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-          repository: vyos/vyos-build
       - id: check_kvm
-        name: "Check host KVM support"
+        name: "Check KVM support"
         run: |
           set -eux
           sudo apt-get update
           sudo apt-get --no-install-recommends --yes install \
             cpu-checker
           sudo kvm-ok
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
       - id: download_iso
         name: "Download the ISO artifact"
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
@@ -288,7 +315,8 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          scripts/check-qemu-install --cpu 1 --debug --uefi --sbtest build/live-image-amd64.hybrid.iso
+          /usr/local/bin/entrypoint.sh bash
+          sudo make testsb
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
@@ -305,6 +333,14 @@ jobs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: "Check KVM support"
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -321,6 +357,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
+          /usr/local/bin/entrypoint.sh bash
           sudo make testraid
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -339,6 +376,14 @@ jobs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: "Check KVM support"
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -355,6 +400,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
+          /usr/local/bin/entrypoint.sh bash
           sudo make testtpm
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -373,6 +419,14 @@ jobs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: "Check KVM support"
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -389,6 +443,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
+          /usr/local/bin/entrypoint.sh bash
           sudo make test-vpp
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
