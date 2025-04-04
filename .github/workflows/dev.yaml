@@ -132,7 +132,7 @@ jobs:
           rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
           # Kernel
           echo "${{ secrets.VYOS_DEV_2025_LINUX }}" > ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key
-          openssl req -sha256 -key ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr \
+          openssl req -new -sha256 -key ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr \
             -outform PEM -days 3650 -subj "/CN=Tech By Matt Secure Boot Signer 2025 - linux/"
           openssl x509 -req -in ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr -CA ${CA_DIR}/${SHIM_CERT_NAME}.pem \
             -CAkey ${CA_DIR}/${SHIM_CERT_NAME}.key -CAcreateserial -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.pem -days 3650 -sha256
