@@ -316,7 +316,7 @@ jobs:
         run: |
           set -eux
           /usr/local/bin/entrypoint.sh bash
-          sudo make testsb
+          scripts/check-qemu-install --cpu 4 --memory 8 --debug --uefi --sbtest build/live-image-amd64.hybrid.iso $(filter-out $@,$(MAKECMDGOALS))
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
