@@ -290,10 +290,10 @@ jobs:
           sudo apt-get --no-install-recommends --yes install \
             cpuid
           if cpuid | grep -q AMD; then
-            echo "kvm-amd nested=1" > /etc/modprobe.d/kvm.conf
+            sudo echo "kvm-amd nested=1" > /etc/modprobe.d/kvm.conf
             sudo modprobe --remove --verbose kvm-amd
           elif cpuid | grep -q Intel; then
-            echo "kvm-intel nested=1" > /etc/modprobe.d/kvm.conf
+            sudo echo "kvm-intel nested=1" > /etc/modprobe.d/kvm.conf
             sudo modprobe --remove --verbose kvm-intel
           else
               echo "Unsupported CPU vendor: $(cpuid)" >&2
