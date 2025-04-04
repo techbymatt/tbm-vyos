@@ -336,8 +336,20 @@ jobs:
           +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
           +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
                               f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
-             # Changing UEFI settings require a display
-             vga = '-vga virtio'
+                       # Changing UEFI settings require a display
+                       vga = '-vga virtio'
+          @@ -384,10 +385,6 @@
+               default_user = 'vyos'
+               default_password = 'vyos'
+          
+          -    if args.sbtest:
+          -        log.info('Disable UEFI Secure Boot for initial installation')
+          -        toggleUEFISecureBoot(c)
+          -
+               try:
+                   c.expect('Welcome to GRUB', timeout=10)
+                   c.send(KEY_DOWN)
+          EOF
           patch scripts/check-qemu-install scripts/check-qemu-install.patch
           sudo make testsb
           if [ $? = 0 ]; then
