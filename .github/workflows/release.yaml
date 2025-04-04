@@ -317,24 +317,30 @@ jobs:
           set -eux
           /usr/local/bin/entrypoint.sh bash
           sudo apt-get --no-install-recommends --yes install \
-            qemu-system-gui
-          cat > scripts/check-qemu-install.patch << 'EOF'
-          --- scripts/check-qemu-install
-          +++ scripts/check-qemu-install
-          @@ -155,9 +155,9 @@
-          
-                   if secure_boot:
-                       name = f'{name}-SECURE-BOOT'
-          -            machine = 'q35,smm=on'
-          
-          -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
-          +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
-          +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
-                              f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
-                       # Changing UEFI settings require a display
-                       vga = '-vga virtio'
-          EOF
-          patch -i scripts/check-qemu-install.patch scripts/check-qemu-install
+            cpuid
+          if cpuid | grep -q AMD; then
+            sudo modprobe kvm-amd
+          elif cpuid | grep -q Intel; then
+            sudo modprobe kvm-intel
+          else
+              echo "Unsupported CPU vendor: $(cpuid)" >&2
+              exit 1
+          fi
+          # cat > scripts/check-qemu-install.patch << 'EOF'
+          # --- scripts/check-qemu-install
+          # +++ scripts/check-qemu-install
+          # @@ -157,7 +157,8 @@
+          #              name = f'{name}-SECURE-BOOT'
+          #              machine = 'q35,smm=on'
+          # 
+          # -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
+          # +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
+          # +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
+          #                     f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
+          #              # Changing UEFI settings require a display
+          #              vga = '-vga virtio'
+          # EOF
+          # patch -i scripts/check-qemu-install.patch scripts/check-qemu-install
           sudo make testsb
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
