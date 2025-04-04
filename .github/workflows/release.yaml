@@ -319,36 +319,17 @@ jobs:
           cat > scripts/check-qemu-install.patch << 'EOF'
           --- scripts/check-qemu-install
           +++ scripts/check-qemu-install
-          @@ -137,7 +137,7 @@
-           OVMF_CODE = '/usr/share/OVMF/OVMF_CODE_4M.secboot.fd'
-           OVMF_VARS_TMP = args.disk.replace('.img', '.efivars')
-           if args.sbtest:
-          -    shutil.copy('/usr/share/OVMF/OVMF_VARS_4M.ms.fd', OVMF_VARS_TMP)
-          +    shutil.copy('/usr/share/OVMF/OVMF_VARS_4M.fd', OVMF_VARS_TMP)
-          
-           def get_qemu_cmd(name, enable_uefi, disk_img, raid=None, iso_img=None, tpm=False, vnc_enabled=False, secure_boot=False):
-               uefi = ""
-          @@ -157,7 +157,8 @@
-                       name = f'{name}-SECURE-BOOT'
-                       machine = 'q35,smm=on'
+          @@ -157,7 +157,9 @@
+             name = f'{name}-SECURE-BOOT'
+             machine = 'q35,smm=on'
           
           -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
-          +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
+          +            uefi = '-global ICH9-LPC.disable_s3=1 ' \
+          +                   '-global driver=cfi.pflash01,property=secure,value=on ' \
           +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
                               f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
                        # Changing UEFI settings require a display
                        vga = '-vga virtio'
-          @@ -384,10 +385,6 @@
-               default_user = 'vyos'
-               default_password = 'vyos'
-          
-          -    if args.sbtest:
-          -        log.info('Disable UEFI Secure Boot for initial installation')
-          -        toggleUEFISecureBoot(c)
-          -
-               try:
-                   c.expect('Welcome to GRUB', timeout=10)
-                   c.send(KEY_DOWN)
           EOF
           patch scripts/check-qemu-install scripts/check-qemu-install.patch
           sudo make testsb
