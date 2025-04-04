@@ -324,7 +324,7 @@ jobs:
                        machine = 'q35,smm=on'
           
           -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
-          +            uefi = '-global driver=cfi.pflash01,property=secure,value=on' \
+          +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
           +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
                               f'-drive "if=pflash,unit=1,format=raw,file={OVMF_VARS_TMP}"'
                        # Changing UEFI settings require a display
