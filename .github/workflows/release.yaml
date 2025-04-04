@@ -325,7 +325,7 @@ jobs:
                        name = f'{name}-SECURE-BOOT'
           -            machine = 'q35,smm=on'
           +            machine = 'q35'
-                  
+          
           -            uefi = f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
           +            uefi = '-global driver=cfi.pflash01,property=secure,value=on ' \
           +                   f'-drive "if=pflash,unit=0,format=raw,readonly=on,file={OVMF_CODE}" ' \
@@ -333,7 +333,7 @@ jobs:
                        # Changing UEFI settings require a display
                        vga = '-vga virtio'
           EOF
-          patch scripts/check-qemu-install scripts/check-qemu-install.patch
+          patch -i scripts/check-qemu-install.patch scripts/check-qemu-install
           sudo make testsb
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
