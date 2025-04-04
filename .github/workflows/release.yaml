@@ -151,63 +151,17 @@ jobs:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
     timeout-minutes: 45
-  kvm:
-    env:
-      GROUP: kvm
-      USER: runner
-    if: ${{ !cancelled() }}
-    name: "Set up KVM"
-    needs: [build_iso]
-    outputs:
-      gid: ${{ steps.gid.outputs.id }}
-    runs-on: ubuntu-24.04
-    steps:
-      - id: ok
-        name: "Check KVM support"
-        run: |
-          set -eux
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-      - id: group
-        name: "Check KVM group membership"
-        run: |
-          set -eux
-          if id -nG "$USER" | grep -qw "$GROUP"; then
-              echo $USER belongs to $GROUP
-              exit 0
-          else
-              echo $USER does not belong to $GROUP
-              exit 1
-          fi
-      - id: gid
-        name: "Get KVM group ID"
-        run: |
-          set -eux
-          echo "id=$(getent group "$GROUP" | cut -d: -f3)" >> $GITHUB_OUTPUT
   smoketests_no_interfaces:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: CLI (no interfaces)"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: kvm
-        name: "Check and enable KVM support"
-        run: |
-          set -eux
-          exec /uar/local/bin/entrypoint.sh bash
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -224,7 +178,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
+          exec /usr/local/bin/entrypoint.sh bash
           sudo make test-no-interfaces
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -238,22 +192,11 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: CLI (interfaces only)"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: kvm
-        name: "Check and enable KVM support"
-        run: |
-          set -eux
-          exec /uar/local/bin/entrypoint.sh bash
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -270,7 +213,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
+          exec /usr/local/bin/entrypoint.sh bash
           sudo make test-interfaces
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -284,22 +227,11 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: Configuration load"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: kvm
-        name: "Check and enable KVM support"
-        run: |
-          set -eux
-          exec /uar/local/bin/entrypoint.sh bash
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -316,7 +248,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
+          exec /usr/local/bin/entrypoint.sh bash
           sudo make testc
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -325,27 +257,40 @@ jobs:
           fi
     timeout-minutes: 90
   smoketests_secure_boot:
-    container:
-      image: ${{ inputs.build_container }}
-      options: "--group-add ${{ needs.kvm.outputs.gid }} --privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_secure_boot.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
       - id: kvm
-        name: "Check and enable KVM support"
+        name: "Check KVM support"
         run: |
           set -eux
-          exec /uar/local/bin/entrypoint.sh bash
           sudo apt-get update
           sudo apt-get --no-install-recommends --yes install \
             cpu-checker
           sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
+      - id: install_deps
+        name: "Install smoketest dependencies"
+        run: |
+          set -eux
+          sudo apt-get --no-install-recommends --yes install \
+            build-essential \
+            ovmf \
+            python3-pexpect \
+            python3-tomli \
+            qemu-system-x86 \
+            qemu-utils
+      - id: enable_kvm
+        name: "Enable KVM"
+        run: |
+          set -eux
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          sudo usermod -aG kvm runner
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -362,7 +307,6 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
           # cat > scripts/check-qemu-install.patch << 'EOF'
           # --- scripts/check-qemu-install
           # +++ scripts/check-qemu-install
@@ -390,22 +334,11 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: RAID1 installation"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: kvm
-        name: "Check and enable KVM support"
-        run: |
-          set -eux
-          exec /uar/local/bin/entrypoint.sh bash
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -422,7 +355,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
+          exec /usr/local/bin/entrypoint.sh bash
           sudo make testraid
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -436,22 +369,11 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: TPM encryption"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: kvm
-        name: "Check and enable KVM support"
-        run: |
-          set -eux
-          exec /uar/local/bin/entrypoint.sh bash
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -468,7 +390,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
+          exec /usr/local/bin/entrypoint.sh bash
           sudo make testtpm
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -482,22 +404,11 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: VPP"
-    needs: [build_iso, kvm]
+    needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
     runs-on: ubuntu-24.04
     steps:
-      - id: kvm
-        name: "Check and enable KVM support"
-        run: |
-          set -eux
-          exec /uar/local/bin/entrypoint.sh bash
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo groupmod --gid ${{ needs.kvm.outputs.gid }} kvm
-          sudo usermod -aG kvm vyos_bld
       - id: checkout_vyos_build
         name: "Fetch the `vyos-build` repository"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -514,7 +425,7 @@ jobs:
         name: "Run smoketests"
         run: |
           set -eux
-          exec gosu vyos_bld bash
+          exec /usr/local/bin/entrypoint.sh bash
           sudo make test-vpp
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
@@ -528,7 +439,6 @@ jobs:
     needs:
       [
         build_iso,
-        kvm,
         smoketests_no_interfaces,
         smoketests_interfaces_only,
         smoketests_config_load,
