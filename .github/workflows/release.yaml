@@ -315,8 +315,6 @@ jobs:
           # TEMP name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           name: tbm-vyos-202503-patch1-liveimage
           path: build
-          github-token: ${{ secrets.GH_PAT }} # token with actions:read permissions on target repo
-          repository: MattKobayashi/tbm-vyos
           run-id: 14152325166
       - id: smoketests_secure_boot
         name: "Run smoketests"
