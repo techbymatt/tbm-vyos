@@ -287,18 +287,19 @@ jobs:
         name: "Enable KVM support"
         run: |
           set -eux
-          sudo apt-get --no-install-recommends --yes install \
-            cpuid
-          if cpuid | grep -q AMD; then
-            sudo echo "kvm-amd nested=1" > /etc/modprobe.d/kvm.conf
-            sudo modprobe --remove --verbose kvm-amd
-          elif cpuid | grep -q Intel; then
-            sudo echo "kvm-intel nested=1" > /etc/modprobe.d/kvm.conf
-            sudo modprobe --remove --verbose kvm-intel
-          else
-              echo "Unsupported CPU vendor: $(cpuid)" >&2
-              exit 1
-          fi
+          # sudo apt-get --no-install-recommends --yes install \
+          #   cpuid
+          # if cpuid | grep -q AMD; then
+          #   sudo echo "kvm-amd nested=1" > /etc/modprobe.d/kvm.conf
+          #   sudo modprobe --remove --verbose kvm-amd
+          # elif cpuid | grep -q Intel; then
+          #   sudo echo "kvm-intel nested=1" > /etc/modprobe.d/kvm.conf
+          #   sudo modprobe --remove --verbose kvm-intel
+          # else
+          #     echo 'Unsupported CPU vendor: $(cpuid)' >&2
+          #     exit 1
+          # fi
+          echo 'Nested virtualisation enabled: $(cat /sys/module/kvm_amd/parameters/nested)'
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
