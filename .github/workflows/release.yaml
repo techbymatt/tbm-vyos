@@ -316,7 +316,14 @@ jobs:
         run: |
           set -eux
           /usr/local/bin/entrypoint.sh bash
-          scripts/check-qemu-install --cpu 4 --memory 8 --debug --uefi --sbtest build/live-image-amd64.hybrid.iso $(filter-out $@,$(MAKECMDGOALS))
+          scripts/check-qemu-install \
+            --cpu $(lscpu -b -p=Core,Socket | grep -v '^#' | sort -u | wc -l) \
+            --memory 8 \
+            --debug \
+            --uefi \
+            --sbtest \
+            build/live-image-amd64.hybrid.iso \
+            $(filter-out $@,$(MAKECMDGOALS))
           if [ $? = 0 ]; then
             echo "exit_code=success" >> $GITHUB_OUTPUT
           else
