@@ -1,417 +1,416 @@
 ---
-  jobs:
-    build_container:
-      if: ${{ inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current' }}
-      name: "Build `vyos-build` container"
-      runs-on: ubuntu-24.04
-      steps:
-        - name: "Login to GitHub Container Registry"
-          uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-          with:
-            registry: ghcr.io
-            username: ${{ github.repository_owner }}
-            password: ${{ secrets.GITHUB_TOKEN }}
-        - name: "Checkout `vyos/vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: current
-            repository: vyos/vyos-build
-        - name: "Build container"
-          uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
-          with:
-            file: docker/Dockerfile
-            push: true
-            tags: ghcr.io/mattkobayashi/vyos-build:current
-    build_iso:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Build ISO"
-      needs: [build_container]
-      outputs:
-        release_filename: ${{ env.RELEASE_FILENAME }}
-        version: ${{ env.VERSION }}
-        vyos_build_commit: ${{ env.VYOS_BUILD_COMMIT }}
-        vyos_build_commit_sha: ${{ env.VYOS_BUILD_COMMIT_SHA }}
-        vyos_1x_commit: ${{ env.VYOS_1X_COMMIT }}
-        vyos_1x_commit_sha: ${{ env.VYOS_1X_COMMIT_SHA }}
-      permissions:
-        contents: write
-        packages: read
-      runs-on: ubuntu-24.04
-      steps:
-        - id: date_format
-          name: "Run `date` and format"
-          run: |
-            set -eux
-            echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
-        - id: patch_string
-          if: ${{ inputs.patch_string != '' }}
-          name: "Add patch string"
-          run: |
-            set -eux
-            echo "VERSION=$VERSION-${{ inputs.patch_string }}" >> "$GITHUB_ENV"
-        - name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            path: vyos-build
-            ref: current
-            repository: vyos/vyos-build
-        - name: "Get last `vyos-build` commit"
-          run: |
-            set -eux
-            echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-          working-directory: vyos-build
-        - name: "Get last `vyos-build` commit (full SHA)"
-          run: |
-            set -eux
-            echo "VYOS_BUILD_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
-          working-directory: vyos-build
-        - name: "Fetch the `vyos-1x` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            path: packages/vyos-1x
-            ref: current
-            repository: vyos/vyos-1x
-        - name: "Get last `vyos-1x` commit"
-          run: |
-            set -eux
-            echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-          working-directory: packages/vyos-1x
-        - name: "Get last `vyos-1x` commit (full SHA)"
-          run: |
-            set -eux
-            echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
-          working-directory: packages/vyos-1x
-        - id: build_iso
-          name: "Build the TBM VyOS ISO"
-          run: |
-            set -eux
-            sudo apt-get --no-install-recommends --quiet=2 install \
-              live-build
-            sudo make clean
-            sudo --preserve-env ./build-vyos-image \
-              --architecture amd64 \
-              --build-by 'tbm-vyos@tech.bymatt.au' \
-              --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
-              --build-type release \
-              --version ${{ env.VERSION }} \
-              --custom-apt-entry 'deb http://deb.debian.org/debian bookworm non-free-firmware' \
-              --custom-apt-entry 'deb http://deb.debian.org/debian-security bookworm-security non-free-firmware' \
-              --custom-apt-entry 'deb http://deb.debian.org/debian bookworm-updates non-free-firmware' \
-              --custom-package intel-microcode \
-              --custom-package amd64-microcode \
-              --custom-package vyos-1x-smoketest \
-              generic
-          working-directory: vyos-build
-        - id: get_release_filename
-          name: "Get release ISO name"
-          run: |
-            set -eux
-            RELEASE_FILENAME=$(ls vyos-*.iso)
-            echo "RELEASE_FILENAME=tbm-$RELEASE_FILENAME" >> "$GITHUB_ENV"
-          working-directory: vyos-build/build
-        - id: upload-artifact
-          name: "Upload live image artifact"
-          uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-          with:
-            name: tbm-vyos-${{ env.VERSION }}-liveimage
-            path: vyos-build/build/live-image-*.hybrid.iso
-      timeout-minutes: 45
-    smoketests_no_interfaces:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Smoketests: CLI (no interfaces)"
-      needs: [build_iso]
-      outputs:
-        exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: checkout_vyos_build
-          name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-            repository: vyos/vyos-build
-        - id: download_iso
-          name: "Download the ISO artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: smoketests_no_interfaces
-          name: "Run smoketests"
-          run: |
-            set -eux
-            sudo make test-no-interfaces
-            if [ $? = 0 ]; then
-              echo "exit_code=success" >> $GITHUB_OUTPUT
-            else
-              echo "exit_code=fail" >> $GITHUB_OUTPUT
-            fi
-      timeout-minutes: 180
-    smoketests_interfaces_only:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Smoketests: CLI (interfaces only)"
-      needs: [build_iso]
-      outputs:
-        exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: checkout_vyos_build
-          name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-            repository: vyos/vyos-build
-        - id: download_iso
-          name: "Download the ISO artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: smoketests_interfaces_only
-          name: "Run smoketests"
-          run: |
-            set -eux
-            sudo make test-interfaces
-            if [ $? = 0 ]; then
-              echo "exit_code=success" >> $GITHUB_OUTPUT
-            else
-              echo "exit_code=fail" >> $GITHUB_OUTPUT
-            fi
-      timeout-minutes: 180
-    smoketests_config_load:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Smoketests: Configuration load"
-      needs: [build_iso]
-      outputs:
-        exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: checkout_vyos_build
-          name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-            repository: vyos/vyos-build
-        - id: download_iso
-          name: "Download the ISO artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: smoketests_config_load
-          name: "Run smoketests"
-          run: |
-            set -eux
-            sudo make testc
-            if [ $? = 0 ]; then
-              echo "exit_code=success" >> $GITHUB_OUTPUT
-            else
-              echo "exit_code=fail" >> $GITHUB_OUTPUT
-            fi
-      timeout-minutes: 90
-    smoketests_raid:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Smoketests: RAID1 installation"
-      needs: [build_iso]
-      outputs:
-        exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: checkout_vyos_build
-          name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-            repository: vyos/vyos-build
-        - id: download_iso
-          name: "Download the ISO artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: smoketests_raid
-          name: "Run smoketests"
-          run: |
-            set -eux
-            sudo make testraid
-            if [ $? = 0 ]; then
-              echo "exit_code=success" >> $GITHUB_OUTPUT
-            else
-              echo "exit_code=fail" >> $GITHUB_OUTPUT
-            fi
-      timeout-minutes: 20
-    smoketests_tpm:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Smoketests: TPM encryption"
-      needs: [build_iso]
-      outputs:
-        exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: checkout_vyos_build
-          name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-            repository: vyos/vyos-build
-        - id: download_iso
-          name: "Download the ISO artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: smoketests_tpm
-          name: "Run smoketests"
-          run: |
-            set -eux
-            sudo make testtpm
-            if [ $? = 0 ]; then
-              echo "exit_code=success" >> $GITHUB_OUTPUT
-            else
-              echo "exit_code=fail" >> $GITHUB_OUTPUT
-            fi
-      timeout-minutes: 20
-    smoketests_vpp:
-      container:
-        image: ${{ inputs.build_container }}
-        options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-      if: ${{ !cancelled() }}
-      name: "Smoketests: VPP"
-      needs: [build_iso]
-      outputs:
-        exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: checkout_vyos_build
-          name: "Fetch the `vyos-build` repository"
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-          with:
-            ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
-            repository: vyos/vyos-build
-        - id: download_iso
-          name: "Download the ISO artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: smoketests_vpp
-          name: "Run smoketests"
-          run: |
-            set -eux
-            sudo make test-vpp
-            if [ $? = 0 ]; then
-              echo "exit_code=success" >> $GITHUB_OUTPUT
-            else
-              echo "exit_code=fail" >> $GITHUB_OUTPUT
-            fi
-      timeout-minutes: 20
-    draft_release:
-      if: ${{ !cancelled() }}
-      name: "Draft release"
-      needs:
-        [
-          build_iso,
-          smoketests_no_interfaces,
-          smoketests_interfaces_only,
-          smoketests_config_load,
-          smoketests_raid,
-          smoketests_tpm,
-          smoketests_vpp
-        ]
-      outputs:
-        release_url: ${{ steps.draft_release.outputs.html_url }}
-      runs-on: ubuntu-24.04
-      steps:
-        - id: download_artifact
-          name: "Download live image artifact"
-          uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-          with:
-            name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
-            path: build
-        - id: rename_artifact
-          name: "Rename live image artifact"
-          run: |
-            set -eux
-            mv live-image-*.hybrid.iso ${{ needs.build_iso.outputs.release_filename }}
-          working-directory: build
-        - id: draft_release
-          name: "Create draft release"
-          uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
-          with:
-            allowUpdates: false
-            artifactContentType: application/x-iso9660-image
-            artifactErrorsFailBuild: true
-            artifacts: build/tbm-vyos-*.iso
-            body: |
-              ### Build Log
-              https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
-  
-              ### Smoketest Results
-              * CLI (no interfaces): ${{ needs.smoketests_no_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-              * CLI (interfaces only): ${{ needs.smoketests_interfaces_only.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-              * Configuration Load: ${{ needs.smoketests_config_load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-              * RAID1: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-              * TPM: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-              * VPP: ${{ needs.smoketests_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-  
-              ### Upstream Comparison
-              Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.build_iso.outputs.vyos_build_commit }}
-              Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.build_iso.outputs.vyos_build_commit }}...current
-  
-              Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.build_iso.outputs.vyos_1x_commit }}
-              Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.build_iso.outputs.vyos_1x_commit }}...current
-            draft: true
-            name: TBM VyOS ${{ needs.build_iso.outputs.version }}
-            omitDraftDuringUpdate: true
-            tag: ${{ needs.build_iso.outputs.version }}
-    notify_release:
-      name: "Release notifications"
-      needs: [draft_release]
-      runs-on: ubuntu-24.04
-      steps:
-        - id: pushover
-          name: "Pushover"
-          run: |
-            curl -s \
-              --form-string "token=${{ secrets.PO_APP_TOKEN }}" \
-              --form-string "user=${{ secrets.PO_USER_KEY }}" \
-              --form-string "message=A new draft release has been created!" \
-              --form-string "url=${{ needs.draft_release.outputs.release_url }}" \
-              https://api.pushover.net/1/messages.json
-  name: Release
-  on:
-    workflow_dispatch:
-      inputs:
-        build_container:
-          default: "vyos/vyos-build:current"
-          description: "Which build container to use?"
-          options:
-            - "vyos/vyos-build:current"
-            - "ghcr.io/mattkobayashi/vyos-build:current"
-          required: false
-          type: choice
-        patch_string:
-          description: "Patch version? (leave blank for none)"
-          required: false
-          type: string
-    schedule:
-      - cron: "0 0 1 * *"
-  
+jobs:
+  build_container:
+    if: ${{ inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current' }}
+    name: "Build `vyos-build` container"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Checkout `vyos/vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: current
+          repository: vyos/vyos-build
+      - name: "Build container"
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        with:
+          file: docker/Dockerfile
+          push: true
+          tags: ghcr.io/mattkobayashi/vyos-build:current
+  build_iso:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Build ISO"
+    needs: [build_container]
+    outputs:
+      release_filename: ${{ env.RELEASE_FILENAME }}
+      version: ${{ env.VERSION }}
+      vyos_build_commit: ${{ env.VYOS_BUILD_COMMIT }}
+      vyos_build_commit_sha: ${{ env.VYOS_BUILD_COMMIT_SHA }}
+      vyos_1x_commit: ${{ env.VYOS_1X_COMMIT }}
+      vyos_1x_commit_sha: ${{ env.VYOS_1X_COMMIT_SHA }}
+    permissions:
+      contents: write
+      packages: read
+    runs-on: ubuntu-24.04
+    steps:
+      - id: date_format
+        name: "Run `date` and format"
+        run: |
+          set -eux
+          echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
+      - id: patch_string
+        if: ${{ inputs.patch_string != '' }}
+        name: "Add patch string"
+        run: |
+          set -eux
+          echo "VERSION=$VERSION-${{ inputs.patch_string }}" >> "$GITHUB_ENV"
+      - name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: vyos-build
+          ref: current
+          repository: vyos/vyos-build
+      - name: "Get last `vyos-build` commit"
+        run: |
+          set -eux
+          echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
+        working-directory: vyos-build
+      - name: "Get last `vyos-build` commit (full SHA)"
+        run: |
+          set -eux
+          echo "VYOS_BUILD_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
+        working-directory: vyos-build
+      - name: "Fetch the `vyos-1x` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: packages/vyos-1x
+          ref: current
+          repository: vyos/vyos-1x
+      - name: "Get last `vyos-1x` commit"
+        run: |
+          set -eux
+          echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
+        working-directory: packages/vyos-1x
+      - name: "Get last `vyos-1x` commit (full SHA)"
+        run: |
+          set -eux
+          echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
+        working-directory: packages/vyos-1x
+      - id: build_iso
+        name: "Build the TBM VyOS ISO"
+        run: |
+          set -eux
+          sudo apt-get --no-install-recommends --quiet=2 install \
+            live-build
+          sudo make clean
+          sudo --preserve-env ./build-vyos-image \
+            --architecture amd64 \
+            --build-by 'tbm-vyos@tech.bymatt.au' \
+            --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
+            --build-type release \
+            --version ${{ env.VERSION }} \
+            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm non-free-firmware' \
+            --custom-apt-entry 'deb http://deb.debian.org/debian-security bookworm-security non-free-firmware' \
+            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm-updates non-free-firmware' \
+            --custom-package intel-microcode \
+            --custom-package amd64-microcode \
+            --custom-package vyos-1x-smoketest \
+            generic
+        working-directory: vyos-build
+      - id: get_release_filename
+        name: "Get release ISO name"
+        run: |
+          set -eux
+          RELEASE_FILENAME=$(ls vyos-*.iso)
+          echo "RELEASE_FILENAME=tbm-$RELEASE_FILENAME" >> "$GITHUB_ENV"
+        working-directory: vyos-build/build
+      - id: upload-artifact
+        name: "Upload live image artifact"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tbm-vyos-${{ env.VERSION }}-liveimage
+          path: vyos-build/build/live-image-*.hybrid.iso
+    timeout-minutes: 45
+  smoketests_no_interfaces:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Smoketests: CLI (no interfaces)"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: download_iso
+        name: "Download the ISO artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_no_interfaces
+        name: "Run smoketests"
+        run: |
+          set -eux
+          sudo make test-no-interfaces
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+    timeout-minutes: 180
+  smoketests_interfaces_only:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Smoketests: CLI (interfaces only)"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: download_iso
+        name: "Download the ISO artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_interfaces_only
+        name: "Run smoketests"
+        run: |
+          set -eux
+          sudo make test-interfaces
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+    timeout-minutes: 180
+  smoketests_config_load:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Smoketests: Configuration load"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: download_iso
+        name: "Download the ISO artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_config_load
+        name: "Run smoketests"
+        run: |
+          set -eux
+          sudo make testc
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+    timeout-minutes: 90
+  smoketests_raid:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Smoketests: RAID1 installation"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: download_iso
+        name: "Download the ISO artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_raid
+        name: "Run smoketests"
+        run: |
+          set -eux
+          sudo make testraid
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+    timeout-minutes: 20
+  smoketests_tpm:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Smoketests: TPM encryption"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: download_iso
+        name: "Download the ISO artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_tpm
+        name: "Run smoketests"
+        run: |
+          set -eux
+          sudo make testtpm
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+    timeout-minutes: 20
+  smoketests_vpp:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: ${{ !cancelled() }}
+    name: "Smoketests: VPP"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: "Fetch the `vyos-build` repository"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: download_iso
+        name: "Download the ISO artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_vpp
+        name: "Run smoketests"
+        run: |
+          set -eux
+          sudo make test-vpp
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+    timeout-minutes: 20
+  draft_release:
+    if: ${{ !cancelled() }}
+    name: "Draft release"
+    needs:
+      [
+        build_iso,
+        smoketests_no_interfaces,
+        smoketests_interfaces_only,
+        smoketests_config_load,
+        smoketests_raid,
+        smoketests_tpm,
+        smoketests_vpp
+      ]
+    outputs:
+      release_url: ${{ steps.draft_release.outputs.html_url }}
+    runs-on: ubuntu-24.04
+    steps:
+      - id: download_artifact
+        name: "Download live image artifact"
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: rename_artifact
+        name: "Rename live image artifact"
+        run: |
+          set -eux
+          mv live-image-*.hybrid.iso ${{ needs.build_iso.outputs.release_filename }}
+        working-directory: build
+      - id: draft_release
+        name: "Create draft release"
+        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
+        with:
+          allowUpdates: false
+          artifactContentType: application/x-iso9660-image
+          artifactErrorsFailBuild: true
+          artifacts: build/tbm-vyos-*.iso
+          body: |
+            ### Build Log
+            https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
+
+            ### Smoketest Results
+            * CLI (no interfaces): ${{ needs.smoketests_no_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (interfaces only): ${{ needs.smoketests_interfaces_only.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load: ${{ needs.smoketests_config_load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * RAID1: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * TPM: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * VPP: ${{ needs.smoketests_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+
+            ### Upstream Comparison
+            Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.build_iso.outputs.vyos_build_commit }}
+            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.build_iso.outputs.vyos_build_commit }}...current
+
+            Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.build_iso.outputs.vyos_1x_commit }}
+            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.build_iso.outputs.vyos_1x_commit }}...current
+          draft: true
+          name: TBM VyOS ${{ needs.build_iso.outputs.version }}
+          omitDraftDuringUpdate: true
+          tag: ${{ needs.build_iso.outputs.version }}
+  notify_release:
+    name: "Release notifications"
+    needs: [draft_release]
+    runs-on: ubuntu-24.04
+    steps:
+      - id: pushover
+        name: "Pushover"
+        run: |
+          curl -s \
+            --form-string "token=${{ secrets.PO_APP_TOKEN }}" \
+            --form-string "user=${{ secrets.PO_USER_KEY }}" \
+            --form-string "message=A new draft release has been created!" \
+            --form-string "url=${{ needs.draft_release.outputs.release_url }}" \
+            https://api.pushover.net/1/messages.json
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      build_container:
+        default: "vyos/vyos-build:current"
+        description: "Which build container to use?"
+        options:
+          - "vyos/vyos-build:current"
+          - "ghcr.io/mattkobayashi/vyos-build:current"
+        required: false
+        type: choice
+      patch_string:
+        description: "Patch version? (leave blank for none)"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 0 1 * *"
