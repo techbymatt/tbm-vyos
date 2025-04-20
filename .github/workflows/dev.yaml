@@ -105,6 +105,7 @@ jobs:
             -CAkey ${CA_DIR}/${SHIM_CERT_NAME}.key -CAcreateserial -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.pem -days 3650 -sha256
           # Cleanup
           rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
+        working-directory: vyos-build
       - id: build_iso
         name: "Build the TBM VyOS ISO"
         run: |
