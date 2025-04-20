@@ -97,11 +97,6 @@ jobs:
             --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
             --build-type release \
             --version ${{ env.VERSION }} \
-            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm non-free-firmware' \
-            --custom-apt-entry 'deb http://deb.debian.org/debian-security bookworm-security non-free-firmware' \
-            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm-updates non-free-firmware' \
-            --custom-package intel-microcode \
-            --custom-package amd64-microcode \
             --custom-package vyos-1x-smoketest \
             generic
         working-directory: vyos-build
