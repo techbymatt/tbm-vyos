@@ -84,6 +84,27 @@ jobs:
           set -eux
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
         working-directory: packages/vyos-1x
+      - env:
+          CA_DIR: data/certificates
+          SHIM_CERT_NAME: vyos-dev-2025-shim
+          VYOS_KERNEL_CERT_NAME: vyos-dev-2025-linux
+        id: secure_boot_certs
+        name: "Generate Secure Boot certificates"
+        run: |
+          set -eux
+          # Shim
+          echo "${{ secrets.VYOS_DEV_2025_SHIM }}" > ${CA_DIR}/${SHIM_CERT_NAME}.key
+          openssl req -new -x509 -key ${CA_DIR}/${SHIM_CERT_NAME}.key -out ${CA_DIR}/${SHIM_CERT_NAME}.der \
+            -outform DER -days 36500 -subj "/CN=Tech By Matt Secure Boot CA/" -nodes
+          openssl x509 -inform der -in ${CA_DIR}/${SHIM_CERT_NAME}.der -out ${CA_DIR}/${SHIM_CERT_NAME}.pem
+          # Kernel
+          echo "${{ secrets.VYOS_DEV_2025_LINUX }}" > ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key
+          openssl req -new -sha256 -key ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr \
+            -outform PEM -days 3650 -subj "/CN=Tech By Matt Secure Boot Signer 2025 - linux/"
+          openssl x509 -req -in ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr -CA ${CA_DIR}/${SHIM_CERT_NAME}.pem \
+            -CAkey ${CA_DIR}/${SHIM_CERT_NAME}.key -CAcreateserial -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.pem -days 3650 -sha256
+          # Cleanup
+          rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
       - id: build_iso
         name: "Build the TBM VyOS ISO"
         run: |
@@ -97,11 +118,6 @@ jobs:
             --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
             --build-type release \
             --version ${{ env.VERSION }} \
-            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm non-free-firmware' \
-            --custom-apt-entry 'deb http://deb.debian.org/debian-security bookworm-security non-free-firmware' \
-            --custom-apt-entry 'deb http://deb.debian.org/debian bookworm-updates non-free-firmware' \
-            --custom-package intel-microcode \
-            --custom-package amd64-microcode \
             --custom-package vyos-1x-smoketest \
             generic
         working-directory: vyos-build
