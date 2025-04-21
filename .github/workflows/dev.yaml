@@ -33,6 +33,7 @@ jobs:
     name: "Build ISO"
     needs: [build_container]
     outputs:
+      exit_code: ${{ steps.build_iso.outputs.exit_code }}
       release_filename: ${{ env.RELEASE_FILENAME }}
       version: ${{ env.VERSION }}
       vyos_build_commit: ${{ env.VYOS_BUILD_COMMIT }}
@@ -120,18 +121,23 @@ jobs:
           CA_DIR: data/certificates
           SHIM_CERT_NAME: vyos-dev-2025-shim
           VYOS_KERNEL_CERT_NAME: vyos-dev-2025-linux
-        id: secure_boot_keys
-        name: "Generate keys for Secure Boot"
+        id: secure_boot_certs
+        name: "Generate Secure Boot certificates"
         run: |
           set -eux
-          openssl req -new -x509 -newkey rsa:4096 -keyout ${CA_DIR}/${SHIM_CERT_NAME}.key -out ${CA_DIR}/${SHIM_CERT_NAME}.der \
-            -outform DER -days 36500 -subj "/CN=VyOS Networks Secure Boot CA/" -nodes
+          # Shim
+          echo "${{ secrets.VYOS_DEV_2025_SHIM }}" > ${CA_DIR}/${SHIM_CERT_NAME}.key
+          openssl req -new -x509 -key ${CA_DIR}/${SHIM_CERT_NAME}.key -out ${CA_DIR}/${SHIM_CERT_NAME}.der \
+            -outform DER -days 36500 -subj "/CN=Tech By Matt Secure Boot CA/" -nodes
           openssl x509 -inform der -in ${CA_DIR}/${SHIM_CERT_NAME}.der -out ${CA_DIR}/${SHIM_CERT_NAME}.pem
-          openssl req -newkey rsa:4096 -sha256 -nodes -keyout ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key \
-            -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr -outform PEM -days 3650 \
-            -subj "/CN=VyOS Networks Secure Boot Signer 2025 - linux/"
+          # Kernel
+          echo "${{ secrets.VYOS_DEV_2025_LINUX }}" > ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key
+          openssl req -new -sha256 -key ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr \
+            -outform PEM -days 3650 -subj "/CN=Tech By Matt Secure Boot Signer 2025 - linux/"
           openssl x509 -req -in ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr -CA ${CA_DIR}/${SHIM_CERT_NAME}.pem \
             -CAkey ${CA_DIR}/${SHIM_CERT_NAME}.key -CAcreateserial -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.pem -days 3650 -sha256
+          # Cleanup
+          rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
         working-directory: vyos-build
       - id: build_iso
         name: "Build the TBM VyOS ISO"
@@ -148,6 +154,11 @@ jobs:
             --version ${{ env.VERSION }} \
             --custom-package vyos-1x-smoketest \
             generic
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
         working-directory: vyos-build
       - id: get_release_filename
         name: "Get release ISO name"
@@ -167,7 +178,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: CLI (no interfaces)"
     needs: [build_iso]
     outputs:
@@ -202,7 +212,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: CLI (interfaces only)"
     needs: [build_iso]
     outputs:
@@ -237,7 +246,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: Configuration load"
     needs: [build_iso]
     outputs:
@@ -269,7 +277,6 @@ jobs:
           fi
     timeout-minutes: 90
   smoketests_secure_boot:
-    if: ${{ !cancelled() }}
     name: "Smoketests: Secure Boot"
     needs: [build_iso]
     outputs:
@@ -339,7 +346,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: RAID1 installation"
     needs: [build_iso]
     outputs:
@@ -374,7 +380,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: TPM encryption"
     needs: [build_iso]
     outputs:
@@ -409,7 +414,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: VPP"
     needs: [build_iso]
     outputs:

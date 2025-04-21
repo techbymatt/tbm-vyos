@@ -30,6 +30,7 @@ jobs:
     name: "Build ISO"
     needs: [build_container]
     outputs:
+      exit_code: ${{ steps.build_iso.outputs.exit_code }}
       release_filename: ${{ env.RELEASE_FILENAME }}
       version: ${{ env.VERSION }}
       vyos_build_commit: ${{ env.VYOS_BUILD_COMMIT }}
@@ -99,6 +100,11 @@ jobs:
             --version ${{ env.VERSION }} \
             --custom-package vyos-1x-smoketest \
             generic
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
         working-directory: vyos-build
       - id: get_release_filename
         name: "Get release ISO name"
@@ -118,7 +124,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: CLI (no interfaces)"
     needs: [build_iso]
     outputs:
@@ -152,7 +157,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: CLI (interfaces only)"
     needs: [build_iso]
     outputs:
@@ -186,7 +190,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: Configuration load"
     needs: [build_iso]
     outputs:
@@ -220,7 +223,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: RAID1 installation"
     needs: [build_iso]
     outputs:
@@ -254,7 +256,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: TPM encryption"
     needs: [build_iso]
     outputs:
@@ -288,7 +289,6 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
     name: "Smoketests: VPP"
     needs: [build_iso]
     outputs:
@@ -319,7 +319,7 @@ jobs:
           fi
     timeout-minutes: 20
   draft_release:
-    if: ${{ !cancelled() }}
+    if: ${{ contains(needs.*.outputs.exit_code, 'success') }}
     name: "Draft release"
     needs:
       [
