@@ -419,8 +419,8 @@ on:
   workflow_dispatch:
     inputs:
       build_container:
-        default: "vyos/vyos-build:current"
-        description: "Which build container to use?"
+        default: "ghcr.io/mattkobayashi/vyos-build:current"
+        description: "Build container to use?"
         options:
           - "vyos/vyos-build:current"
           - "ghcr.io/mattkobayashi/vyos-build:current"
