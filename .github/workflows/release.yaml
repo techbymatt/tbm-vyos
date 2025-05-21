@@ -2,7 +2,10 @@
 jobs:
   build_container:
     if: ${{ inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current' }}
-    name: Build container 
+    name: Build container
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-24.04
     steps:
       - name: Set up QEMU
@@ -135,6 +138,8 @@ jobs:
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -171,6 +176,8 @@ jobs:
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -207,6 +214,8 @@ jobs:
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -243,6 +252,8 @@ jobs:
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -279,6 +290,8 @@ jobs:
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -315,6 +328,8 @@ jobs:
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -356,6 +371,8 @@ jobs:
       ]
     outputs:
       release_url: ${{ steps.draft_release.outputs.html_url }}
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
       - id: download_artifact
@@ -403,6 +420,8 @@ jobs:
   notify_release:
     name: Release notifications
     needs: [draft_release]
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: pushover
