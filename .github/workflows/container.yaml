@@ -2,6 +2,9 @@
 jobs:
   container:
     name: Build and push
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-24.04
     steps:
       - name: Set up QEMU
