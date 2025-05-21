@@ -140,6 +140,7 @@ jobs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -178,6 +179,7 @@ jobs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -216,6 +218,7 @@ jobs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -254,6 +257,7 @@ jobs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -292,6 +296,7 @@ jobs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -330,6 +335,7 @@ jobs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
