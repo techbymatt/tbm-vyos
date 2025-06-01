@@ -414,7 +414,7 @@ jobs:
           allowUpdates: false
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
-          artifacts: "build/tbm-vyos-*.iso, build/tbm-vyos-*.iso.minisig, build/minisign.pub"
+          artifacts: "build/tbm-vyos-*.iso, build/tbm-vyos-*.iso.minisig"
           body: |
             ### Build Log
             https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
