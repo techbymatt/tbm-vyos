@@ -393,6 +393,15 @@ jobs:
           set -eux
           mv live-image-*.hybrid.iso ${{ needs.build_iso.outputs.release_filename }}
         working-directory: build
+      - id: sign_release
+        name: Sign release image
+        run: |
+          set -eux
+          apt-get update
+          apt-get install minisign
+          minisign -G
+          minisign -Sm ${{ needs.build_iso.outputs.release_filename }}
+        working-directory: build
       - id: draft_release
         name: Create draft release
         uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
@@ -400,7 +409,7 @@ jobs:
           allowUpdates: false
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
-          artifacts: build/tbm-vyos-*.iso
+          artifacts: "build/tbm-vyos-*.iso, build/tbm-vyos-*.iso.minisig, build/minisign.pub"
           body: |
             ### Build Log
             https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
@@ -449,7 +458,7 @@ on:
         options:
           - "vyos/vyos-build:current"
           - "ghcr.io/mattkobayashi/vyos-build:current"
-        required: false
+        required: true
         type: choice
       patch_string:
         description: "Patch version? (leave blank for none)"
