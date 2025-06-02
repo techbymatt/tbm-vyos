@@ -95,7 +95,7 @@ jobs:
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
-          cat ${{ secrets.MINISIGN_PUB }} > vyos-build/data/live-build-config/includes.chroot/usr/share/vyos/keys/tbm.minisign.pub
+          cat "${{ secrets.MINISIGN_PUB }}" > vyos-build/data/live-build-config/includes.chroot/usr/share/vyos/keys/tbm.minisign.pub
       - id: build_iso
         name: Build TBM VyOS ISO
         run: |
@@ -403,8 +403,8 @@ jobs:
           set -eux
           apt-get update
           apt-get install minisign
-          cat ${{ secrets.MINISIGN_SECRET }} > ~/.minisign/minisign.key
-          cat ${{ secrets.MINISIGN_PUB }} > minisign.pub
+          cat "${{ secrets.MINISIGN_SECRET }}" > ~/.minisign/minisign.key
+          cat "${{ secrets.MINISIGN_PUB }}" > minisign.pub
           minisign -Sm ${{ needs.build_iso.outputs.release_filename }}
         working-directory: build
       - id: draft_release
