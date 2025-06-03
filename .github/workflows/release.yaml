@@ -130,24 +130,6 @@ jobs:
            project_news_url = "https://blog.vyos.io"
           EOF
         working-directory: vyos-build/data
-      - id: patch_check_qemu_install
-        name: Patch the check-qemu-install script
-        run: |
-          set -eux
-          patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
-          EOF
-        working-directory: vyos-build/scripts
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
@@ -210,6 +192,24 @@ jobs:
         with:
           ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -249,6 +249,24 @@ jobs:
         with:
           ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -288,6 +306,24 @@ jobs:
         with:
           ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -327,6 +363,24 @@ jobs:
         with:
           ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -366,6 +420,24 @@ jobs:
         with:
           ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -405,6 +477,24 @@ jobs:
         with:
           ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
