@@ -99,7 +99,7 @@ jobs:
           patch <<'EOF'
           --- build-vyos-image	2025-06-03 20:51:13
           +++ build-vyos-image-new	2025-06-03 20:52:03
-          @@ -465,8 +465,8 @@
+          @@ -465,12 +465,12 @@
  
                    # Multi line strings needs to be un-indented to not have leading
                    # whitespaces in the resulting file
@@ -110,6 +110,11 @@ jobs:
            VERSION_ID="{version}"
            VERSION="{version} ({build_config['release_train']})"
            VERSION_CODENAME={build_defaults['release_train']}
+          -ID=vyos
+          +ID=tbm-vyos
+           BUILD_ID="{build_git}"
+           HOME_URL="{build_defaults['website_url']}"
+           SUPPORT_URL="{build_defaults['support_url']}"
           EOF
         working-directory: vyos-build/scripts/image-build
       - id: patch_support_url
@@ -204,7 +209,7 @@ jobs:
                #################################################
                c.sendline('lsb_release --short --id 2>/dev/null')
           -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
+          +    c.expect('tbm-vyos')
                if os.path.isfile(manifest_file):
                    c.sendline('lsb_release --short --release 2>/dev/null')
                    c.expect(vyos_version)
@@ -261,7 +266,7 @@ jobs:
                #################################################
                c.sendline('lsb_release --short --id 2>/dev/null')
           -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
+          +    c.expect('tbm-vyos')
                if os.path.isfile(manifest_file):
                    c.sendline('lsb_release --short --release 2>/dev/null')
                    c.expect(vyos_version)
@@ -318,7 +323,7 @@ jobs:
                #################################################
                c.sendline('lsb_release --short --id 2>/dev/null')
           -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
+          +    c.expect('tbm-vyos')
                if os.path.isfile(manifest_file):
                    c.sendline('lsb_release --short --release 2>/dev/null')
                    c.expect(vyos_version)
@@ -375,7 +380,7 @@ jobs:
                #################################################
                c.sendline('lsb_release --short --id 2>/dev/null')
           -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
+          +    c.expect('tbm-vyos')
                if os.path.isfile(manifest_file):
                    c.sendline('lsb_release --short --release 2>/dev/null')
                    c.expect(vyos_version)
@@ -432,7 +437,7 @@ jobs:
                #################################################
                c.sendline('lsb_release --short --id 2>/dev/null')
           -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
+          +    c.expect('tbm-vyos')
                if os.path.isfile(manifest_file):
                    c.sendline('lsb_release --short --release 2>/dev/null')
                    c.expect(vyos_version)
@@ -489,7 +494,7 @@ jobs:
                #################################################
                c.sendline('lsb_release --short --id 2>/dev/null')
           -    c.expect('VyOS')
-          +    c.expect('TBM VyOS')
+          +    c.expect('tbm-vyos')
                if os.path.isfile(manifest_file):
                    c.sendline('lsb_release --short --release 2>/dev/null')
                    c.expect(vyos_version)
