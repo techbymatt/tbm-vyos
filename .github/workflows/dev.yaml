@@ -467,7 +467,7 @@ jobs:
           else
             echo "exit_code=fail" >> $GITHUB_OUTPUT
           fi
-    timeout-minutes: 20
+    timeout-minutes: 30
 name: Development
 on:
   workflow_dispatch:

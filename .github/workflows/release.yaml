@@ -367,7 +367,7 @@ jobs:
             echo "exit_code=fail" >> $GITHUB_OUTPUT
             return 1
           fi
-    timeout-minutes: 20
+    timeout-minutes: 30
   draft_release:
     name: Draft release
     needs:
