@@ -177,7 +177,7 @@ jobs:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
     timeout-minutes: 45
-  create-runners:
+  create_runners:
     name: Create self-hosted runners
     needs: [build_iso]
     permissions:
@@ -202,7 +202,7 @@ jobs:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: CLI (no interfaces)"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
     permissions:
@@ -239,7 +239,7 @@ jobs:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: CLI (interfaces only)"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
     permissions:
@@ -276,7 +276,7 @@ jobs:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: Configuration load"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
     permissions:
@@ -310,7 +310,7 @@ jobs:
     timeout-minutes: 90
   smoketests_secure_boot:
     name: "Smoketests: Secure Boot"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_secure_boot.outputs.exit_code }}
     permissions:
@@ -382,7 +382,7 @@ jobs:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: RAID1 installation"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     permissions:
@@ -419,7 +419,7 @@ jobs:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: TPM encryption"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
     permissions:
@@ -456,7 +456,7 @@ jobs:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketests: VPP"
-    needs: [create-runners]
+    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
     permissions:
