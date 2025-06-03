@@ -96,7 +96,7 @@ jobs:
         name: Change name to TBM VyOS
         run: |
           set -eux
-          patch -p1 <<'EOF'
+          patch <<'EOF'
           --- build-vyos-image	2025-06-03 20:51:13
           +++ build-vyos-image-new	2025-06-03 20:52:03
           @@ -465,8 +465,8 @@
@@ -116,7 +116,7 @@ jobs:
         name: Change support URL
         run: |
           set -eux
-          patch -p1 <<'EOF'
+          patch <<'EOF'
           --- defaults.toml	2025-06-03 20:51:13
           +++ defaults.toml-new	2025-06-03 21:14:15
           @@ -21,7 +21,7 @@
