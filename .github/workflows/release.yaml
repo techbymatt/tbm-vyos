@@ -33,7 +33,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && contains(fromJSON('["success", "skipped"]'), needs.build_container.result) }}
     name: Build ISO
     needs: [build_container]
     outputs:
@@ -176,7 +176,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ needs.build_iso.result == 'success' }}
+    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
     name: "Smoketests: CLI (no interfaces)"
     needs: [build_iso]
     outputs:
@@ -215,7 +215,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ needs.build_iso.result == 'success' }}
+    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
     name: "Smoketests: CLI (interfaces only)"
     needs: [build_iso]
     outputs:
@@ -254,7 +254,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ needs.build_iso.result == 'success' }}
+    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
     name: "Smoketests: Configuration load"
     needs: [build_iso]
     outputs:
@@ -293,7 +293,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ needs.build_iso.result == 'success' }}
+    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
     name: "Smoketests: RAID1 installation"
     needs: [build_iso]
     outputs:
@@ -332,7 +332,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ needs.build_iso.result == 'success' }}
+    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
     name: "Smoketests: TPM encryption"
     needs: [build_iso]
     outputs:
@@ -371,7 +371,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ needs.build_iso.result == 'success' }}
+    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
     name: "Smoketests: VPP"
     needs: [build_iso]
     outputs:
