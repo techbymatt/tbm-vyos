@@ -184,7 +184,7 @@ jobs:
       contents: read
     runs-on: ubuntu-24.04
     steps:
-      - name: Create self-hosted runners
+      - name: Create self-hosted runner
         uses: MattKobayashi/tailscale-qemu-runner-action@f2a4c616b3108aa356636841264a631a73ac0be9 # v1.7.2
         with:
           gh-api-token: ${{ secrets.GH_API_TOKEN }}
