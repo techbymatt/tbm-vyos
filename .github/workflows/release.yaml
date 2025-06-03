@@ -134,40 +134,42 @@ jobs:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
     timeout-minutes: 45
-  create_runners:
-    name: Create self-hosted runners
-    needs: [build_iso]
-    permissions:
-      contents: read
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Create self-hosted runner
-        uses: MattKobayashi/tailscale-qemu-runner-action@f2a4c616b3108aa356636841264a631a73ac0be9 # v1.7.2
-        with:
-          gh-api-token: ${{ secrets.GH_API_TOKEN }}
-          gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu
-          gha-runner-labels: tbm-vyos
-          ssh-host: 100.102.37.118
-          ssh-user: matthew
-          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          ts-tag: ci
-    strategy:
-      matrix:
-        runner: [1, 2, 3, 4, 5, 6]
+#  create_runners:
+#    name: Create self-hosted runners
+#    needs: [build_iso]
+#    permissions:
+#      contents: read
+#    runs-on: ubuntu-24.04
+#    steps:
+#      - name: Create self-hosted runner
+#        uses: MattKobayashi/tailscale-qemu-runner-action@f2a4c616b3108aa356636841264a631a73ac0be9 # v1.7.2
+#        with:
+#          gh-api-token: ${{ secrets.GH_API_TOKEN }}
+#          gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu
+#          gha-runner-labels: tbm-vyos
+#          ssh-host: 100.102.37.118
+#          ssh-user: matthew
+#          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+#          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+#          ts-tag: ci
+#    strategy:
+#      matrix:
+#        runner: [1, 2, 3, 4, 5, 6]
   smoketests_no_interfaces:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: CLI (no interfaces)"
-    needs: [create_runners]
+    needs: [build_iso]
+#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: tbm-vyos
+#    runs-on: tbm-vyos
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -200,13 +202,15 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: CLI (interfaces only)"
-    needs: [create_runners]
+    needs: [build_iso]
+#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: tbm-vyos
+#    runs-on: tbm-vyos
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -239,13 +243,15 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: Configuration load"
-    needs: [create_runners]
+    needs: [build_iso]
+#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: tbm-vyos
+#    runs-on: tbm-vyos
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -278,13 +284,15 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: RAID1 installation"
-    needs: [create_runners]
+    needs: [build_iso]
+#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: tbm-vyos
+#    runs-on: tbm-vyos
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -317,13 +325,15 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: TPM encryption"
-    needs: [create_runners]
+    needs: [build_iso]
+#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: tbm-vyos
+#    runs-on: tbm-vyos
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -356,13 +366,15 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: ${{ !cancelled() }}
     name: "Smoketests: VPP"
-    needs: [create_runners]
+    needs: [build_iso]
+#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: tbm-vyos
+#    runs-on: tbm-vyos
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -394,7 +406,7 @@ jobs:
     needs:
       [
         build_iso,
-        create_runners,
+#        create_runners,
         smoketests_no_interfaces,
         smoketests_interfaces_only,
         smoketests_config_load,
