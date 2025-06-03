@@ -37,6 +37,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+    timeout-minutes: 30
 name: Container image
 on:
   workflow_call:
