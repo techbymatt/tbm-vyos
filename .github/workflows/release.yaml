@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Create self-hosted runners
-        uses: MattKobayashi/tailscale-qemu-runner-action@v1.7.1
+        uses: MattKobayashi/tailscale-qemu-runner-action@42db3e0ddd5424fe0bc9a6a3c6c97c157c69319d # v1.7.1
         with:
           gh-api-token: ${{ secrets.GH_API_TOKEN }}
           gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu
