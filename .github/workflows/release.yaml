@@ -92,8 +92,8 @@ jobs:
           set -eux
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
         working-directory: packages/vyos-1x
-      - id: change_name
-        name: Change name to TBM VyOS
+      - id: patch_os_release
+        name: Patch the os_release file
         run: |
           set -eux
           patch <<'EOF'
@@ -112,8 +112,8 @@ jobs:
            VERSION_CODENAME={build_defaults['release_train']}
           EOF
         working-directory: vyos-build/scripts/image-build
-      - id: change_support_url
-        name: Change support URL
+      - id: patch_support_url
+        name: Patch the OS support URL
         run: |
           set -eux
           patch <<'EOF'
@@ -130,6 +130,24 @@ jobs:
            project_news_url = "https://blog.vyos.io"
           EOF
         working-directory: vyos-build/data
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          --- check-qemu-install	2025-06-03 20:51:13
+          +++ check-qemu-install-new	2025-06-03 23:13:10
+          @@ -573,7 +573,7 @@
+               # Verify /etc/os-release via lsb_release
+               #################################################
+               c.sendline('lsb_release --short --id 2>/dev/null')
+          -    c.expect('VyOS')
+          +    c.expect('TBM VyOS')
+               if os.path.isfile(manifest_file):
+                   c.sendline('lsb_release --short --release 2>/dev/null')
+                   c.expect(vyos_version)
+          EOF
+        working-directory: vyos-build/scripts
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
