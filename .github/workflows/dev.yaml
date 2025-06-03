@@ -195,7 +195,7 @@ jobs:
           ts-tag: ci
     strategy:
       matrix:
-        runner: [1, 2, 3, 4]
+        runner: [1, 2, 3, 4, 5, 6, 7]
   smoketests_no_interfaces:
     container:
       image: ${{ inputs.build_container }}
