@@ -493,12 +493,12 @@ on:
   workflow_dispatch:
     inputs:
       build_container:
-        default: "vyos/vyos-build:current"
+        default: "ghcr.io/mattkobayashi/vyos-build:current"
         description: "Which build container to use?"
         options:
           - "vyos/vyos-build:current"
           - "ghcr.io/mattkobayashi/vyos-build:current"
-        required: false
+        required: true
         type: choice
       patch_string:
         description: "Patch version? (leave blank for none)"
