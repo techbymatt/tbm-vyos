@@ -33,7 +33,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ contains(fromJSON('["success", "cancelled"]'), needs.build_container.result) }}
+    if: ${{ !cancelled() }}
     name: Build ISO
     needs: [build_container]
     outputs:
