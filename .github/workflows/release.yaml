@@ -134,6 +134,24 @@ jobs:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
     timeout-minutes: 45
+  create-runner:
+    name: Create self-hosted runners
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Create self-hosted runners
+        uses: MattKobayashi/tailscale-qemu-runner-action@v1.7.1
+        with:
+          gh-api-token: ${{ secrets.GH_API_TOKEN }}
+          gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu
+          gha-runner-labels: tbm-vyos
+          ssh-host: 100.102.37.118
+          ssh-user: matthew
+          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          ts-tag: ci
+    strategy:
+      matrix:
+        runner: [1, 2, 3, 4]
   smoketests_no_interfaces:
     container:
       image: ${{ inputs.build_container }}
@@ -146,7 +164,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: tbm-vyos
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -185,7 +203,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: tbm-vyos
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -224,7 +242,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: tbm-vyos
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -263,7 +281,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: tbm-vyos
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -302,7 +320,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: tbm-vyos
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -341,7 +359,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: tbm-vyos
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
