@@ -33,7 +33,7 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ contains(fromJson('["success", "skipped"]'), needs.build_container.result) }}
     name: Build ISO
     needs: [build_container]
     outputs:
@@ -92,6 +92,44 @@ jobs:
           set -eux
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
         working-directory: packages/vyos-1x
+      - id: change_name
+        name: Change name to TBM VyOS
+        run: |
+          set -eux
+          patch -p1 <<'EOF'
+          --- build-vyos-image	2025-06-03 20:51:13
+          +++ build-vyos-image-new	2025-06-03 20:52:03
+          @@ -465,8 +465,8 @@
+ 
+                   # Multi line strings needs to be un-indented to not have leading
+                   # whitespaces in the resulting file
+          -        os_release = f"""PRETTY_NAME="VyOS {version} ({build_config['release_train']})"
+          -NAME="VyOS"
+          +        os_release = f"""PRETTY_NAME="TBM VyOS {version} ({build_config['release_train']})"
+          +NAME="TBM VyOS"
+           VERSION_ID="{version}"
+           VERSION="{version} ({build_config['release_train']})"
+           VERSION_CODENAME={build_defaults['release_train']}
+          EOF
+        working-directory: vyos-build/scripts/image-build
+      - id: change_support_url
+        name: Change support URL
+        run: |
+          set -eux
+          patch -p1 <<'EOF'
+          --- defaults.toml	2025-06-03 20:51:13
+          +++ defaults.toml-new	2025-06-03 21:14:15
+          @@ -21,7 +21,7 @@
+           squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
+
+           website_url = "https://vyos.io"
+          -support_url = "https://support.vyos.io"
+          +support_url = "https://tech.bymatt.au"
+           bugtracker_url = "https://vyos.dev"
+           documentation_url = "https://docs.vyos.io/en/latest"
+           project_news_url = "https://blog.vyos.io"
+          EOF
+        working-directory: vyos-build/data
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
@@ -134,41 +172,18 @@ jobs:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
     timeout-minutes: 45
-#  create_runners:
-#    name: Create self-hosted runners
-#    needs: [build_iso]
-#    permissions:
-#      contents: read
-#    runs-on: ubuntu-24.04
-#    steps:
-#      - name: Create self-hosted runner
-#        uses: MattKobayashi/tailscale-qemu-runner-action@f2a4c616b3108aa356636841264a631a73ac0be9 # v1.7.2
-#        with:
-#          gh-api-token: ${{ secrets.GH_API_TOKEN }}
-#          gha-runner-apt-mirror: http://au.archive.ubuntu.com/ubuntu
-#          gha-runner-labels: tbm-vyos
-#          ssh-host: 100.102.37.118
-#          ssh-user: matthew
-#          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-#          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-#          ts-tag: ci
-#    strategy:
-#      matrix:
-#        runner: [1, 2, 3, 4, 5, 6]
   smoketests_no_interfaces:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ needs.build_iso.result == 'success' }}
     name: "Smoketests: CLI (no interfaces)"
     needs: [build_iso]
-#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-#    runs-on: tbm-vyos
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -200,16 +215,14 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ needs.build_iso.result == 'success' }}
     name: "Smoketests: CLI (interfaces only)"
     needs: [build_iso]
-#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-#    runs-on: tbm-vyos
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -241,16 +254,14 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ needs.build_iso.result == 'success' }}
     name: "Smoketests: Configuration load"
     needs: [build_iso]
-#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-#    runs-on: tbm-vyos
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -282,16 +293,14 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ needs.build_iso.result == 'success' }}
     name: "Smoketests: RAID1 installation"
     needs: [build_iso]
-#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-#    runs-on: tbm-vyos
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -323,16 +332,14 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ needs.build_iso.result == 'success' }}
     name: "Smoketests: TPM encryption"
     needs: [build_iso]
-#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-#    runs-on: tbm-vyos
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -364,16 +371,14 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() }}
+    if: ${{ needs.build_iso.result == 'success' }}
     name: "Smoketests: VPP"
     needs: [build_iso]
-#    needs: [create_runners]
     outputs:
       exit_code: ${{ steps.smoketests_vpp.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-#    runs-on: tbm-vyos
     runs-on: ubuntu-24.04
     steps:
       - id: checkout_vyos_build
@@ -406,7 +411,6 @@ jobs:
     needs:
       [
         build_iso,
-#        create_runners,
         smoketests_no_interfaces,
         smoketests_interfaces_only,
         smoketests_config_load,
