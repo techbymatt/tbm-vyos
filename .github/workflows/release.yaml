@@ -576,8 +576,8 @@ jobs:
         name: Sign release image
         run: |
           set -eux
-          apt-get update
-          apt-get install minisign
+          sudo apt-get update
+          sudo apt-get install minisign
           echo "${{ secrets.MINISIGN_SECRET }}" > ~/.minisign/minisign.key
           echo "${{ secrets.MINISIGN_PUB }}" > minisign.pub
           minisign -Sm ${{ needs.build_iso.outputs.release_filename }}
