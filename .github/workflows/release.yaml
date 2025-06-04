@@ -1,7 +1,7 @@
 ---
 jobs:
   build_container:
-    if: ${{ inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current' }}
+    if: inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current'
     name: Build container
     permissions:
       contents: read
@@ -33,7 +33,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && contains(fromJSON('["success", "skipped"]'), needs.build_container.result) }}
+    if: |
+      !cancelled() && 
+      contains(fromJSON('["success", "skipped"]'), needs.build_container.result)
     name: Build ISO
     needs: [build_container]
     outputs:
@@ -55,7 +57,7 @@ jobs:
           set -eux
           echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
       - id: patch_string
-        if: ${{ inputs.patch_string != '' }}
+        if: inputs.patch_string != ''
         name: Add patch string
         run: |
           set -eux
@@ -181,7 +183,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
     name: "Smoketests: CLI (no interfaces)"
     needs: [build_iso]
     outputs:
@@ -238,7 +242,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
     name: "Smoketests: CLI (interfaces only)"
     needs: [build_iso]
     outputs:
@@ -295,7 +301,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
     name: "Smoketests: Configuration load"
     needs: [build_iso]
     outputs:
@@ -352,7 +360,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
     name: "Smoketests: RAID1 installation"
     needs: [build_iso]
     outputs:
@@ -409,7 +419,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
     name: "Smoketests: TPM encryption"
     needs: [build_iso]
     outputs:
@@ -466,7 +478,9 @@ jobs:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
-    if: ${{ !cancelled() && needs.build_iso.result == 'success' }}
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
     name: "Smoketests: VPP"
     needs: [build_iso]
     outputs:
@@ -520,6 +534,15 @@ jobs:
           fi
     timeout-minutes: 30
   draft_release:
+    if: |
+      !cancelled() &&
+      needs.build_iso.result == 'success' &&
+      needs.smoketests_config_load.result == 'success' &&
+      needs.smoketests_interfaces_only.result == 'success' &&
+      needs.smoketests_no_interfaces.result == 'success' &&
+      needs.smoketests_raid.result == 'success' &&
+      needs.smoketests_tpm.result == 'success' &&
+      needs.smoketests_vpp.result == 'success'
     name: Draft release
     needs:
       [
