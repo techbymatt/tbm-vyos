@@ -614,6 +614,9 @@ jobs:
           omitDraftDuringUpdate: true
           tag: ${{ needs.build_iso.outputs.version }}
   notify_release:
+    if: |
+      !cancelled() &&
+      needs.draft_release.result == 'success'
     name: Release notifications
     needs: [draft_release]
     permissions:
