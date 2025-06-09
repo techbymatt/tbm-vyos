@@ -55,7 +55,7 @@ jobs:
         name: Get date as YYYYMM
         run: |
           set -eux
-          echo "VERSION=$(date +'%Y%m')" >> "$GITHUB_ENV"
+          echo "VERSION=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - id: patch_string
         if: inputs.patch_string != ''
         name: Add patch string
