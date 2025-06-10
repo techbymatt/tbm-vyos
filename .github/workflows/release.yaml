@@ -98,7 +98,7 @@ jobs:
         name: Patch os_release
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.BUILD_VYOS_IMAGE_PATCH }}
           EOF
         working-directory: vyos-build/scripts/image-build
@@ -106,7 +106,7 @@ jobs:
         name: Patch support URL
         run: |
           set -eux
-          patch <<'EOF'
+          patc --binary <<'EOF'
           ${{ vars.DEFAULTS_TOML_PATCH }}
           EOF
         working-directory: vyos-build/data
@@ -178,7 +178,7 @@ jobs:
         name: Patch the check-qemu-install script
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
@@ -227,7 +227,7 @@ jobs:
         name: Patch the check-qemu-install script
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
@@ -276,7 +276,7 @@ jobs:
         name: Patch the check-qemu-install script
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
@@ -325,7 +325,7 @@ jobs:
         name: Patch the check-qemu-install script
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
@@ -374,7 +374,7 @@ jobs:
         name: Patch the check-qemu-install script
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
@@ -423,7 +423,7 @@ jobs:
         name: Patch the check-qemu-install script
         run: |
           set -eux
-          patch <<'EOF'
+          patch --binary <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
