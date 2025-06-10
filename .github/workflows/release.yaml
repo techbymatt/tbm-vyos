@@ -463,7 +463,6 @@ jobs:
             * Configuration Load: ${{ needs.smoketests_config_load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * RAID1: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * TPM: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * VPP: ${{ needs.smoketests_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
             ### Upstream Comparison
             Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.build_iso.outputs.vyos_build_commit }}
