@@ -53,8 +53,8 @@ jobs:
       #   run: |
       #     set -ex
       #     mount -i -o remount,exec,dev /__w/
-      - id: date_format
-        name: "Run `date` and format"
+      - id: version_string
+        name: Generate version string
         run: |
           set -eux
           echo "VERSION=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"

@@ -51,8 +51,8 @@ jobs:
       packages: read
     runs-on: ubuntu-24.04
     steps:
-      - id: date_format
-        name: Get date as YYYYMM
+      - id: version_string
+        name: Generate version string
         run: |
           set -eux
           echo "VERSION=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
