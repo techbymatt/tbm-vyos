@@ -99,24 +99,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- build-vyos-image	2025-06-03 20:51:13
-          +++ build-vyos-image-new	2025-06-03 20:52:03
-          @@ -465,12 +465,12 @@
- 
-                   # Multi line strings needs to be un-indented to not have leading
-                   # whitespaces in the resulting file
-          -        os_release = f"""PRETTY_NAME="VyOS {version} ({build_config['release_train']})"
-          -NAME="VyOS"
-          +        os_release = f"""PRETTY_NAME="TBM VyOS {version} ({build_config['release_train']})"
-          +NAME="TBM VyOS"
-           VERSION_ID="{version}"
-           VERSION="{version} ({build_config['release_train']})"
-           VERSION_CODENAME={build_defaults['release_train']}
-          -ID=vyos
-          +ID=tbm-vyos
-           BUILD_ID="{build_git}"
-           HOME_URL="{build_defaults['website_url']}"
-           SUPPORT_URL="{build_defaults['support_url']}"
+          ${{ vars.BUILD_VYOS_IMAGE_PATCH }}
           EOF
         working-directory: vyos-build/scripts/image-build
       - id: patch_support_url
@@ -124,17 +107,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- defaults.toml	2025-06-03 20:51:13
-          +++ defaults.toml-new	2025-06-03 21:14:15
-          @@ -21,7 +21,7 @@
-           squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
-
-           website_url = "https://vyos.io"
-          -support_url = "https://support.vyos.io"
-          +support_url = "https://tech.bymatt.au"
-           bugtracker_url = "https://vyos.dev"
-           documentation_url = "https://docs.vyos.io/en/latest"
-           project_news_url = "https://blog.vyos.io"
+          ${{ vars.DEFAULTS_TOML_PATCH }}
           EOF
         working-directory: vyos-build/data
       - id: add_minisign_pub
@@ -206,17 +179,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('Tbm-vyos')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
       - id: download_iso
@@ -265,17 +228,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('Tbm-vyos')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
       - id: download_iso
@@ -324,17 +277,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('Tbm-vyos')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
       - id: download_iso
@@ -383,17 +326,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('Tbm-vyos')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
       - id: download_iso
@@ -442,17 +375,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('Tbm-vyos')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
       - id: download_iso
@@ -501,17 +424,7 @@ jobs:
         run: |
           set -eux
           patch <<'EOF'
-          --- check-qemu-install	2025-06-03 20:51:13
-          +++ check-qemu-install-new	2025-06-03 23:13:10
-          @@ -573,7 +573,7 @@
-               # Verify /etc/os-release via lsb_release
-               #################################################
-               c.sendline('lsb_release --short --id 2>/dev/null')
-          -    c.expect('VyOS')
-          +    c.expect('Tbm-vyos')
-               if os.path.isfile(manifest_file):
-                   c.sendline('lsb_release --short --release 2>/dev/null')
-                   c.expect(vyos_version)
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
       - id: download_iso
