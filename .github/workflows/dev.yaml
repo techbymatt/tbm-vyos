@@ -169,8 +169,8 @@ jobs:
         name: Get file name of release ISO
         run: |
           set -eux
-          RELEASE_FILENAME=$(ls vyos-*.iso)
-          echo "RELEASE_FILENAME=tbm-$RELEASE_FILENAME" >> "$GITHUB_ENV"
+          RELEASE_FILENAME=$(ls tbm-vyos-*.iso)
+          echo "RELEASE_FILENAME=$RELEASE_FILENAME" >> "$GITHUB_ENV"
         working-directory: vyos-build/build
       - id: upload-artifact
         name: Upload live image artifact
