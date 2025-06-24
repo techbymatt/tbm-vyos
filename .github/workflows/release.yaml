@@ -110,6 +110,14 @@ jobs:
           ${{ vars.DEFAULTS_TOML_PATCH }}
           EOF
         working-directory: vyos-build/data
+      - id: patch_version_py
+        name: Patch version.py
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.VERSION_PY_PATCH }}
+          EOF
+        working-directory: packages/vyos-1x/src/op_mode
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
