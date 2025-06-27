@@ -1,7 +1,7 @@
 ---
 jobs:
   build_container:
-    if: inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current'
+    if: inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current'
     name: Build container
     permissions:
       contents: read
@@ -28,7 +28,7 @@ jobs:
         with:
           context: docker
           push: true
-          tags: ghcr.io/mattkobayashi/vyos-build:current
+          tags: ghcr.io/techbymatt/vyos-build:current
   build_iso:
     container:
       image: ${{ inputs.build_container }}
@@ -272,7 +272,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-8core
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -463,7 +463,7 @@ jobs:
           artifacts: "build/tbm-vyos-*.iso, build/tbm-vyos-*.iso.minisig"
           body: |
             ### Build Log
-            https://github.com/MattKobayashi/tbm-vyos/actions/runs/${{ github.run_id }}
+            https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
             ### Smoketest Results
             * CLI (no interfaces): ${{ needs.smoketests_no_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
@@ -506,11 +506,11 @@ on:
   workflow_dispatch:
     inputs:
       build_container:
-        default: "ghcr.io/mattkobayashi/vyos-build:current"
+        default: "ghcr.io/techbymatt/vyos-build:current"
         description: "Build container to use?"
         options:
           - "vyos/vyos-build:current"
-          - "ghcr.io/mattkobayashi/vyos-build:current"
+          - "ghcr.io/techbymatt/vyos-build:current"
         required: true
         type: choice
       patch_string:

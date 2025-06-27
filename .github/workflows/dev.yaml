@@ -1,7 +1,7 @@
 ---
 jobs:
   build_container:
-    if: inputs.build_container == 'ghcr.io/mattkobayashi/vyos-build:current'
+    if: inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current'
     name: Build container
     permissions:
       contents: read
@@ -28,7 +28,7 @@ jobs:
         with:
           context: docker
           push: true
-          tags: ghcr.io/mattkobayashi/vyos-build:current
+          tags: ghcr.io/techbymatt/vyos-build:current
   build_iso:
     container:
       image: ${{ inputs.build_container }}
@@ -277,11 +277,11 @@ on:
   workflow_dispatch:
     inputs:
       build_container:
-        default: "ghcr.io/mattkobayashi/vyos-build:current"
+        default: "ghcr.io/techbymatt/vyos-build:current"
         description: "Build container to use?"
         options:
           - "vyos/vyos-build:current"
-          - "ghcr.io/mattkobayashi/vyos-build:current"
+          - "ghcr.io/techbymatt/vyos-build:current"
         required: true
         type: choice
       patch_string:
