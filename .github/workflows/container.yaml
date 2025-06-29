@@ -47,11 +47,4 @@ on:
         description: 'The git ref to use for vyos/vyos-build'
         required: false
         type: string
-    secrets:
-      GH_API_TOKEN:
-        required: true
-      TS_OAUTH_CLIENT_ID:
-        required: true
-      TS_OAUTH_SECRET:
-        required: true
   workflow_dispatch:
