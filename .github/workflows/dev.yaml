@@ -86,19 +86,19 @@ jobs:
       - name: Checkout repository vyos/vyos-1x
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: packages/vyos-1x
+          path: vyos-build/build/vyos-1x
           ref: current
           repository: vyos/vyos-1x
       - name: Get latest commit to vyos/vyos-1x
         run: |
           set -eux
           echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-        working-directory: packages/vyos-1x
+        working-directory: vyos-build/build/vyos-1x
       - name: Get latest commit to vyos/vyos-1x (full SHA)
         run: |
           set -eux
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
-        working-directory: packages/vyos-1x
+        working-directory: vyos-build/build/vyos-1x
       - id: patch_os_release
         name: Patch os_release
         run: |
@@ -122,7 +122,7 @@ jobs:
           patch <<'EOF'
           ${{ vars.VERSION_PY_PATCH }}
           EOF
-        working-directory: packages/vyos-1x/src/op_mode
+        working-directory: vyos-build/build/vyos-1x/src/op_mode
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
