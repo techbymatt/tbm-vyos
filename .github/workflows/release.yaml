@@ -190,13 +190,6 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
-      - id: patch_makefile
-        name: Patch the Makefile script
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.MAKEFILE_PATCH }}
-          EOF
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -246,13 +239,6 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
-      - id: patch_makefile
-        name: Patch the Makefile script
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.MAKEFILE_PATCH }}
-          EOF
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -302,13 +288,6 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
-      - id: patch_makefile
-        name: Patch the Makefile script
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.MAKEFILE_PATCH }}
-          EOF
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -358,13 +337,6 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
-      - id: patch_makefile
-        name: Patch the Makefile script
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.MAKEFILE_PATCH }}
-          EOF
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -414,13 +386,6 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
-      - id: patch_makefile
-        name: Patch the Makefile script
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.MAKEFILE_PATCH }}
-          EOF
       - id: download_iso
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
