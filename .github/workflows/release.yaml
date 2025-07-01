@@ -1,7 +1,9 @@
 ---
 jobs:
   build_container:
-    if: inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current'
+    if: |
+      inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current' ||
+      github.event.schedule
     name: Build container
     permissions:
       contents: read
