@@ -99,16 +99,16 @@ jobs:
           set -eux
           echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
         working-directory: vyos-build/build/vyos-1x
-      - id: patch_os_release
-        name: Patch os_release
+      - id: patch_build_vyos_image
+        name: Patch build-vyos-image
         run: |
           set -eux
           patch <<'EOF'
           ${{ vars.BUILD_VYOS_IMAGE_PATCH }}
           EOF
         working-directory: vyos-build/scripts/image-build
-      - id: patch_support_url
-        name: Patch support URL
+      - id: patch_defaults_toml
+        name: Patch defaults.toml
         run: |
           set -eux
           patch <<'EOF'
