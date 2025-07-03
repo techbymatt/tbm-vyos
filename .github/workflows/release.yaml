@@ -120,6 +120,14 @@ jobs:
           ${{ vars.VERSION_PY_PATCH }}
           EOF
         working-directory: vyos-build/build/vyos-1x/src/op_mode
+      - id: patch_test_opmode_show_py
+        name: Patch test_op-mode_show.py
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.TEST_OPMODE_SHOW_PY_PATCH }}
+          EOF
+        working-directory: vyos-build/build/vyos-1x/smoketest/scripts/cli
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
@@ -129,7 +137,8 @@ jobs:
         name: Build vyos-1x package
         run: |
           set -eux
-          dpkg-buildpackage -uc -us -tc -b
+          make test
+          make deb
           cp ../*.deb ../../packages
         timeout-minutes: 10
         working-directory: vyos-build/build/vyos-1x
