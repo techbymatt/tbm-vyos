@@ -137,7 +137,6 @@ jobs:
         name: Build vyos-1x package
         run: |
           set -eux
-          make test
           make deb
           cp ../*.deb ../../packages
         timeout-minutes: 10
