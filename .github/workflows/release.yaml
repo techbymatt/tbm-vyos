@@ -131,6 +131,7 @@ jobs:
           set -eux
           dpkg-buildpackage -uc -us -tc -b
           cp ../*.deb ../../packages
+        timeout-minutes: 10
         working-directory: vyos-build/build/vyos-1x
       - id: build_iso
         name: Build ISO
@@ -169,7 +170,7 @@ jobs:
         with:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
-    timeout-minutes: 60
+    timeout-minutes: 45
   smoketests_no_interfaces:
     container:
       image: ${{ inputs.build_container }}
