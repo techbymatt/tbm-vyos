@@ -104,6 +104,14 @@ jobs:
           ${{ vars.BUILD_VYOS_IMAGE_PATCH }}
           EOF
         working-directory: vyos-build/scripts/image-build
+      - id: patch_default_motd_j2
+        name: Patch default_motd.j2
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.DEFAULT_MOTD_J2_PATCH }}
+          EOF
+        working-directory: vyos-build/build/vyos-1x/data/templates/login
       - id: patch_defaults_toml
         name: Patch defaults.toml
         run: |
@@ -112,14 +120,22 @@ jobs:
           ${{ vars.DEFAULTS_TOML_PATCH }}
           EOF
         working-directory: vyos-build/data
-      - id: patch_version_py
-        name: Patch version.py
+      - id: patch_image_installer_py
+        name: Patch image_installer.py
         run: |
           set -eux
           patch <<'EOF'
-          ${{ vars.VERSION_PY_PATCH }}
+          ${{ vars.IMAGE_INSTALLER_PY_PATCH }}
           EOF
         working-directory: vyos-build/build/vyos-1x/src/op_mode
+      - id: patch_system_login_banner_py
+        name: Patch system_login_banner.py
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.SYSTEM_LOGIN_BANNER_PY_PATCH }}
+          EOF
+        working-directory: vyos-build/build/vyos-1x/src/conf_mode
       - id: patch_test_opmode_show_py
         name: Patch test_op-mode_show.py
         run: |
@@ -128,6 +144,14 @@ jobs:
           ${{ vars.TEST_OPMODE_SHOW_PY_PATCH }}
           EOF
         working-directory: vyos-build/build/vyos-1x/smoketest/scripts/cli
+      - id: patch_version_py
+        name: Patch version.py
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.VERSION_PY_PATCH }}
+          EOF
+        working-directory: vyos-build/build/vyos-1x/src/op_mode
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
