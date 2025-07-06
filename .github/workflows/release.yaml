@@ -179,17 +179,17 @@ jobs:
           name: tbm-vyos-${{ env.VERSION }}-liveimage
           path: vyos-build/build/live-image-*.hybrid.iso
     timeout-minutes: 45
-  smoketests_no_interfaces:
+  smoketests_cli:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: CLI (no interfaces)"
+    name: "Smoketests: CLI"
     needs: [build_iso]
     outputs:
-      exit_code: ${{ steps.smoketests_no_interfaces.outputs.exit_code }}
+      exit_code: ${{ steps.smoketests_cli.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
@@ -215,7 +215,7 @@ jobs:
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
-      - id: smoketests_no_interfaces
+      - id: smoketests_cli
         name: Run smoketests
         run: |
           set -eux
@@ -228,17 +228,17 @@ jobs:
             return 1
           fi
     timeout-minutes: 180
-  smoketests_interfaces_only:
+  smoketests_cli_interfaces:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: CLI (interfaces only)"
+    name: "Smoketests: CLI (interfaces)"
     needs: [build_iso]
     outputs:
-      exit_code: ${{ steps.smoketests_interfaces_only.outputs.exit_code }}
+      exit_code: ${{ steps.smoketests_cli_interfaces.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
@@ -264,7 +264,7 @@ jobs:
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
-      - id: smoketests_interfaces_only
+      - id: smoketests_cli_interfaces
         name: Run smoketests
         run: |
           set -eux
@@ -277,7 +277,7 @@ jobs:
             return 1
           fi
     timeout-minutes: 180
-  smoketests_config_load:
+  smoketests_config:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
@@ -287,7 +287,7 @@ jobs:
     name: "Smoketests: Configuration load"
     needs: [build_iso]
     outputs:
-      exit_code: ${{ steps.smoketests_config_load.outputs.exit_code }}
+      exit_code: ${{ steps.smoketests_config.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
@@ -313,7 +313,7 @@ jobs:
         with:
           name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
           path: build
-      - id: smoketests_config_load
+      - id: smoketests_config
         name: Run smoketests
         run: |
           set -eux
@@ -326,6 +326,55 @@ jobs:
             return 1
           fi
     timeout-minutes: 90
+  smoketests_config_vpp:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketests: Configuration load (VPP)"
+    needs: [build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_config_vpp.outputs.exit_code }}
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
+          EOF
+        working-directory: scripts
+      - id: download_iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_config_vpp
+        name: Run smoketests
+        run: |
+          set -eux
+          sudo make testcvpp
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+            return 0
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+            return 1
+          fi
+    timeout-minutes: 60
   smoketests_raid:
     container:
       image: ${{ inputs.build_container }}
@@ -428,18 +477,20 @@ jobs:
     if: |
       !cancelled() &&
       needs.build_iso.result == 'success' &&
-      needs.smoketests_config_load.result == 'success' &&
-      needs.smoketests_interfaces_only.result == 'success' &&
-      needs.smoketests_no_interfaces.result == 'success' &&
+      needs.smoketests_cli.result == 'success' &&
+      needs.smoketests_cli_interfaces.result == 'success' &&
+      needs.smoketests_config.result == 'success' &&
+      needs.smoketests_config_vpp.result == 'success' &&
       needs.smoketests_raid.result == 'success' &&
       needs.smoketests_tpm.result == 'success'
     name: Draft release
     needs:
       [
         build_iso,
-        smoketests_no_interfaces,
-        smoketests_interfaces_only,
-        smoketests_config_load,
+        smoketests_cli,
+        smoketests_cli_interfaces,
+        smoketests_config,
+        smoketests_config_vpp,
         smoketests_raid,
         smoketests_tpm
       ]
@@ -485,9 +536,10 @@ jobs:
             https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
             ### Smoketest Results
-            * CLI (no interfaces): ${{ needs.smoketests_no_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (interfaces only): ${{ needs.smoketests_interfaces_only.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load: ${{ needs.smoketests_config_load.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI: ${{ needs.smoketests_cli.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (interfaces): ${{ needs.smoketests_cli_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load: ${{ needs.smoketests_config.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load (VPP): ${{ needs.smoketests_config_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * RAID1: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * TPM: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
