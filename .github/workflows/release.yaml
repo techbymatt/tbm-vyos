@@ -284,7 +284,7 @@ jobs:
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: Configuration load"
+    name: "Smoketests: Configuration Load"
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_config.outputs.exit_code }}
@@ -333,7 +333,7 @@ jobs:
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: Configuration load (VPP)"
+    name: "Smoketests: Configuration Load (VPP)"
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_config_vpp.outputs.exit_code }}
@@ -382,7 +382,7 @@ jobs:
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: RAID1 installation"
+    name: "Smoketests: RAID1 Installation"
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
@@ -431,7 +431,7 @@ jobs:
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: TPM encryption"
+    name: "Smoketests: TPM Encryption"
     needs: [build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
@@ -540,8 +540,8 @@ jobs:
             * CLI (interfaces): ${{ needs.smoketests_cli_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * Configuration Load: ${{ needs.smoketests_config.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * Configuration Load (VPP): ${{ needs.smoketests_config_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * RAID1: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * TPM: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * RAID1 Installation: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * TPM Encryption: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
             ### Upstream Comparison
             Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.build_iso.outputs.vyos_build_commit }}
