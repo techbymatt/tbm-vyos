@@ -1,265 +1,42 @@
 ---
 jobs:
+  gather_data:
+    name: Gather data
+    permissions:
+      contents: read
+    secrets: inherit
+    uses: techbymatt/tbm-vyos/.github/workflows/data.yaml@main
+    with:
+      patch_string: ${{ inputs.patch_string }}
   build_container:
     if: |
       inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current' ||
       github.event.schedule
     name: Build container
+    needs: [gather_data]
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
-      - name: Set up buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
-      - name: Login to ghcr.io
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout repository vyos/vyos-build
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-          ref: current
-          repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
-        name: Merge requested PRs from vyos/vyos-build
-        run: |
-          set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
-              jq -r .title)
-            git config user.email "matthew@kobayashi.au"
-            git config user.name "MattKobayashi"
-            git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
-            git merge --no-commit "pr-${pr}"
-          done
-        working-directory: vyos-build
-      - name: Build container image
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
-        with:
-          context: docker
-          push: true
-          tags: ghcr.io/techbymatt/vyos-build:current
+    secrets: inherit
+    uses: techbymatt/tbm-vyos/.github/workflows/container.yaml@main
+    with:
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+      vyos_build_ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
   build_iso:
-    container:
-      image: ${{ inputs.build_container }}
-      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: |
       !cancelled() && 
       contains(fromJSON('["success", "skipped"]'), needs.build_container.result)
     name: Build ISO
-    needs: [build_container]
-    outputs:
-      exit_code: ${{ steps.build_iso.outputs.exit_code }}
-      release_filename: ${{ env.RELEASE_FILENAME }}
-      version: ${{ env.VERSION }}
-      vyos_build_commit: ${{ env.VYOS_BUILD_COMMIT }}
-      vyos_build_commit_sha: ${{ env.VYOS_BUILD_COMMIT_SHA }}
-      vyos_1x_commit: ${{ env.VYOS_1X_COMMIT }}
-      vyos_1x_commit_sha: ${{ env.VYOS_1X_COMMIT_SHA }}
-    permissions:
-      contents: write
-      packages: read
-    runs-on: ubuntu-24.04
-    steps:
-      - id: version_string
-        name: Generate version string
-        run: |
-          set -eux
-          echo "VERSION=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
-      - id: patch_string
-        if: inputs.patch_string != ''
-        name: Add patch string
-        run: |
-          set -eux
-          echo "VERSION=$VERSION-${{ inputs.patch_string }}" >> "$GITHUB_ENV"
-      - name: Checkout repository vyos/vyos-build
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-          path: vyos-build
-          ref: current
-          repository: vyos/vyos-build
-      - name: Get latest commit to vyos/vyos-build
-        run: |
-          set -eux
-          echo "VYOS_BUILD_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-        working-directory: vyos-build
-      - name: Get latest commit to vyos/vyos-build (full SHA)
-        run: |
-          set -eux
-          echo "VYOS_BUILD_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
-        working-directory: vyos-build
-      - if: inputs.prs_vyos_build != ''
-        name: Merge requested PRs from vyos/vyos-build
-        run: |
-          set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
-              jq -r .title)
-            git config user.email "matthew@kobayashi.au"
-            git config user.name "MattKobayashi"
-            git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
-            git merge --no-commit "pr-${pr}"
-          done
-        working-directory: vyos-build
-      - name: Checkout repository vyos/vyos-1x
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-          path: vyos-build/build/vyos-1x
-          ref: current
-          repository: vyos/vyos-1x
-      - name: Get latest commit to vyos/vyos-1x
-        run: |
-          set -eux
-          echo "VYOS_1X_COMMIT=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_ENV"
-        working-directory: vyos-build/build/vyos-1x
-      - name: Get latest commit to vyos/vyos-1x (full SHA)
-        run: |
-          set -eux
-          echo "VYOS_1X_COMMIT_SHA=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_ENV"
-        working-directory: vyos-build/build/vyos-1x
-      - if: inputs.prs_vyos_1x != ''
-        name: Merge requested PRs from vyos/vyos-1x
-        run: |
-          set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_1x }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-1x/pulls/${pr}" | \
-              jq -r .title)
-            git config user.email "matthew@kobayashi.au"
-            git config user.name "MattKobayashi"
-            git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
-            git merge --no-commit "pr-${pr}"
-          done
-        working-directory: vyos-build/build/vyos-1x
-      - id: patch_build_vyos_image
-        name: Patch build-vyos-image
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.BUILD_VYOS_IMAGE_PATCH }}
-          EOF
-        working-directory: vyos-build/scripts/image-build
-      - id: patch_default_motd_j2
-        name: Patch default_motd.j2
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.DEFAULT_MOTD_J2_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/data/templates/login
-      - id: patch_defaults_toml
-        name: Patch defaults.toml
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.DEFAULTS_TOML_PATCH }}
-          EOF
-        working-directory: vyos-build/data
-      - id: patch_image_installer_py
-        name: Patch image_installer.py
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.IMAGE_INSTALLER_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/src/op_mode
-      - id: patch_system_login_banner_py
-        name: Patch system_login_banner.py
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.SYSTEM_LOGIN_BANNER_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/src/conf_mode
-      - id: patch_test_opmode_show_py
-        name: Patch test_op-mode_show.py
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.TEST_OPMODE_SHOW_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/smoketest/scripts/cli
-      - id: patch_version_py
-        name: Patch version.py
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.VERSION_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/src/op_mode
-      - id: add_minisign_pub
-        name: Add TBM Minisign public key
-        run: |
-          set -eux
-          echo "${{ secrets.MINISIGN_PUB }}" > vyos-build/data/live-build-config/includes.chroot/usr/share/vyos/keys/tbm.minisign.pub
-      - id: build_vyos_1x
-        name: Build vyos-1x package
-        run: |
-          set -eux
-          make deb
-          cp ../*.deb ../../packages
-        timeout-minutes: 10
-        working-directory: vyos-build/build/vyos-1x
-      - id: build_iso
-        name: Build ISO
-        run: |
-          set -eux
-          sudo apt-get --no-install-recommends --quiet=2 install \
-            live-build
-          sudo make clean
-          sudo --preserve-env ./build-vyos-image \
-            --architecture amd64 \
-            --build-by 'tbm-vyos@tech.bymatt.au' \
-            --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
-            --build-type release \
-            --version ${{ env.VERSION }} \
-            --custom-package vyos-1x-smoketest \
-            generic
-          if [ $? = 0 ]; then
-            echo "exit_code=success" >> $GITHUB_OUTPUT
-            return 0
-          else
-            echo "exit_code=fail" >> $GITHUB_OUTPUT
-            return 1
-          fi
-        timeout-minutes: 30
-        working-directory: vyos-build
-      - id: get_release_filename
-        name: Get file name of release ISO
-        run: |
-          set -eux
-          RELEASE_FILENAME=$(ls tbm-vyos-*.iso)
-          echo "RELEASE_FILENAME=$RELEASE_FILENAME" >> "$GITHUB_ENV"
-        working-directory: vyos-build/build
-      - id: upload-artifact
-        name: Upload live image artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: tbm-vyos-${{ env.VERSION }}-liveimage
-          path: vyos-build/build/live-image-*.hybrid.iso
-    timeout-minutes: 45
+    needs: [gather_data, build_container]
+    secrets: inherit
+    uses: techbymatt/tbm-vyos/.github/workflows/iso.yaml@main
+    with:
+      build_container: ${{ inputs.build_container }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
+      vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
   smoketests_cli:
     container:
       image: ${{ inputs.build_container }}
@@ -268,7 +45,7 @@ jobs:
       !cancelled() && 
       needs.build_iso.result == 'success'
     name: "Smoketests: CLI"
-    needs: [build_iso]
+    needs: [gather_data, build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_cli.outputs.exit_code }}
     permissions:
@@ -281,13 +58,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -296,8 +73,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -313,7 +90,7 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_cli
         name: Run smoketests
@@ -336,7 +113,7 @@ jobs:
       !cancelled() && 
       needs.build_iso.result == 'success'
     name: "Smoketests: CLI (interfaces)"
-    needs: [build_iso]
+    needs: [gather_data, build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_cli_interfaces.outputs.exit_code }}
     permissions:
@@ -349,13 +126,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -364,8 +141,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -381,7 +158,7 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_cli_interfaces
         name: Run smoketests
@@ -404,7 +181,7 @@ jobs:
       !cancelled() && 
       needs.build_iso.result == 'success'
     name: "Smoketests: CLI (VPP)"
-    needs: [build_iso]
+    needs: [gather_data, build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_cli_vpp.outputs.exit_code }}
     permissions:
@@ -417,13 +194,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -432,8 +209,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -449,7 +226,7 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_cli_vpp
         name: Run smoketests
@@ -472,7 +249,7 @@ jobs:
       !cancelled() && 
       needs.build_iso.result == 'success'
     name: "Smoketests: Configuration Load"
-    needs: [build_iso]
+    needs: [gather_data, build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_config.outputs.exit_code }}
     permissions:
@@ -485,13 +262,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -500,8 +277,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -517,7 +294,7 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_config
         name: Run smoketests
@@ -540,7 +317,7 @@ jobs:
       !cancelled() && 
       needs.build_iso.result == 'success'
     name: "Smoketests: Configuration Load (VPP)"
-    needs: [build_iso]
+    needs: [gather_data, build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_config_vpp.outputs.exit_code }}
     permissions:
@@ -553,13 +330,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -568,8 +345,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -585,7 +362,7 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_config_vpp
         name: Run smoketests
@@ -608,7 +385,7 @@ jobs:
       !cancelled() && 
       needs.build_iso.result == 'success'
     name: "Smoketests: RAID1 Installation"
-    needs: [build_iso]
+    needs: [gather_data, build_iso]
     outputs:
       exit_code: ${{ steps.smoketests_raid.outputs.exit_code }}
     permissions:
@@ -621,13 +398,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -636,8 +413,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -653,7 +430,7 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_raid
         name: Run smoketests
@@ -668,34 +445,52 @@ jobs:
             return 1
           fi
     timeout-minutes: 20
-  smoketests_tpm:
+  smoketests_secure_boot:
     container:
       image: ${{ inputs.build_container }}
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: TPM Encryption"
-    needs: [build_iso]
+    name: "Smoketests: Secure Boot"
+    needs: [gather_data, build_iso]
     outputs:
-      exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
+      exit_code: ${{ steps.smoketests_secure_boot.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
     runs-on: ubuntu-24.04
     steps:
+      - id: check_kvm
+        name: Check KVM support
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get --no-install-recommends --yes install \
+            cpu-checker
+          sudo kvm-ok
+          sudo apt-get --no-install-recommends --yes install \
+            cpuid
+          if cpuid | grep -q AMD; then
+            echo "Nested virtualisation enabled: $(cat /sys/module/kvm_amd/parameters/nested)"
+          elif cpuid | grep -q Intel; then
+            echo "Nested virtualisation enabled: $(cat /sys/module/kvm_intel/parameters/nested)"
+          else
+              echo "Unsupported CPU vendor: $(cpuid)" >&2
+              exit 1
+          fi
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ needs.build_iso.outputs.vyos_build_commit_sha }}
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - if: inputs.prs_vyos_build != ''
+      - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           set -eux
-          for pr in $(echo "${{ inputs.prs_vyos_build }}"); do
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -704,8 +499,8 @@ jobs:
             git config user.email "matthew@kobayashi.au"
             git config user.name "MattKobayashi"
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase current "pr-${pr}"
-            git switch current
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
@@ -721,7 +516,74 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
+          path: build
+      - id: smoketests_secure_boot
+        if: |
+          steps.check_kvm.outcome == 'success'
+        name: Run smoketests
+        run: |
+          set -eux
+          sudo make testsb
+          if [ $? = 0 ]; then
+            echo "exit_code=success" >> $GITHUB_OUTPUT
+          else
+            echo "exit_code=fail" >> $GITHUB_OUTPUT
+          fi
+  smoketests_tpm:
+    container:
+      image: ${{ inputs.build_container }}
+      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketests: TPM Encryption"
+    needs: [gather_data, build_iso]
+    outputs:
+      exit_code: ${{ steps.smoketests_tpm.outputs.exit_code }}
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ubuntu-24.04
+    steps:
+      - id: checkout_vyos_build
+        name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - if: inputs.vyos_build_pr != ''
+        name: Merge requested PRs from vyos/vyos-build
+        run: |
+          set -eux
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
+            title=$(curl -s \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
+              jq -r .title)
+            git config user.email "matthew@kobayashi.au"
+            git config user.name "MattKobayashi"
+            git fetch origin "pull/${pr}/head:pr-${pr}"
+            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+            git merge --no-commit "pr-${pr}"
+          done
+        working-directory: vyos-build
+      - id: patch_check_qemu_install
+        name: Patch the check-qemu-install script
+        run: |
+          set -eux
+          patch <<'EOF'
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
+          EOF
+        working-directory: scripts
+      - id: download_iso
+        name: Download the ISO artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: smoketests_tpm
         name: Run smoketests
@@ -746,10 +608,12 @@ jobs:
       needs.smoketests_config.result == 'success' &&
       needs.smoketests_config_vpp.result == 'success' &&
       needs.smoketests_raid.result == 'success' &&
+      needs.smoketests_secure_boot.result == 'success' &&
       needs.smoketests_tpm.result == 'success'
     name: Draft release
     needs:
       [
+        gather_data,
         build_iso,
         smoketests_cli,
         smoketests_cli_interfaces,
@@ -757,6 +621,7 @@ jobs:
         smoketests_config,
         smoketests_config_vpp,
         smoketests_raid,
+        smoketests_secure_boot,
         smoketests_tpm
       ]
     outputs:
@@ -769,7 +634,7 @@ jobs:
         name: Download live image artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.build_iso.outputs.version }}-liveimage
+          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
       - id: rename_artifact
         name: Rename live image artifact
@@ -807,18 +672,19 @@ jobs:
             * Configuration Load: ${{ needs.smoketests_config.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * Configuration Load (VPP): ${{ needs.smoketests_config_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * RAID1 Installation: ${{ needs.smoketests_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * RAID1 Installation: ${{ needs.smoketests_secure_boot.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * TPM Encryption: ${{ needs.smoketests_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
             ### Upstream Comparison
-            Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.build_iso.outputs.vyos_build_commit }}
-            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.build_iso.outputs.vyos_build_commit }}...current
+            Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}
+            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...current
 
-            Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.build_iso.outputs.vyos_1x_commit }}
-            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.build_iso.outputs.vyos_1x_commit }}...current
+            Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.gather_data.outputs.vyos_1x_commit }}
+            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...current
           draft: true
-          name: TBM VyOS ${{ needs.build_iso.outputs.version }}
+          name: TBM VyOS ${{ needs.gather_data.outputs.version }}
           omitDraftDuringUpdate: true
-          tag: ${{ needs.build_iso.outputs.version }}
+          tag: ${{ needs.gather_data.outputs.version }}
   notify_release:
     if: |
       !cancelled() &&
@@ -854,11 +720,11 @@ on:
         description: "Patch version? (leave blank for none)"
         required: false
         type: string
-      prs_vyos_1x:
+      vyos_1x_pr:
         description: "List of upstream vyos-1x PR IDs to merge (optional)"
         required: false
         type: string
-      prs_vyos_build:
+      vyos_build_pr:
         description: "List of upstream vyos-build PR IDs to merge (optional)"
         required: false
         type: string
