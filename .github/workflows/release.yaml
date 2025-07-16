@@ -234,7 +234,7 @@ jobs:
             * Configuration Load: ${{ needs.smoketest_config.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * Configuration Load (VPP): ${{ needs.smoketest_config_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * RAID1 Installation: ${{ needs.smoketest_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * RAID1 Installation: ${{ needs.smoketest_secureboot.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            * Secure Boot: ${{ needs.smoketest_secureboot.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
             * TPM Encryption: ${{ needs.smoketest_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
 
             ### Upstream Comparison
