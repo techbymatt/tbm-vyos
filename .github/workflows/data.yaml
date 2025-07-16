@@ -1,0 +1,89 @@
+---
+jobs:
+  gather_data:
+    name: Gather data
+    outputs:
+      version: ${{ steps.patch_string.outputs.version || steps.version_string.outputs.version }}
+      vyos_1x_commit: ${{ steps.get_vyos_1x_commit.outputs.vyos_1x_commit }}
+      vyos_1x_commit_sha: ${{ steps.get_vyos_1x_commit_sha.outputs.vyos_1x_commit_sha }}
+      vyos_build_commit: ${{ steps.get_vyos_build_commit.outputs.vyos_build_commit }}
+      vyos_build_commit_sha: ${{ steps.get_vyos_build_commit_sha.outputs.vyos_build_commit_sha }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    steps:
+      - id: version_string
+        name: Generate version string
+        run: |
+          set -eux
+          echo "version=$(date +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
+      - id: patch_string
+        if: inputs.patch_string != ''
+        name: Add patch string
+        run: |
+          set -eux
+          echo "version=${{ steps.version_string.outputs.version }}-${{ inputs.patch_string }}" >> "$GITHUB_OUTPUT"
+      - id: checkout_vyos_build
+        name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          path: vyos-build
+          ref: current
+          repository: vyos/vyos-build
+      - id: get_vyos_build_commit
+        name: Get latest commit to vyos/vyos-build
+        run: |
+          set -eux
+          echo "vyos_build_commit=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_OUTPUT"
+        working-directory: vyos-build
+      - id: get_vyos_build_commit_sha
+        name: Get latest commit to vyos/vyos-build (full SHA)
+        run: |
+          set -eux
+          echo "vyos_build_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
+        working-directory: vyos-build
+      - id: checkout_vyos_1x
+        name: Checkout repository vyos/vyos-1x
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          path: vyos-build/build/vyos-1x
+          ref: current
+          repository: vyos/vyos-1x
+      - id: get_vyos_1x_commit
+        name: Get latest commit to vyos/vyos-1x
+        run: |
+          set -eux
+          echo "vyos_1x_commit=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_OUTPUT"
+        working-directory: vyos-build/build/vyos-1x
+      - id: get_vyos_1x_commit_sha
+        name: Get latest commit to vyos/vyos-1x (full SHA)
+        run: |
+          set -eux
+          echo "vyos_1x_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
+        working-directory: vyos-build/build/vyos-1x
+name: Data
+on:
+  workflow_call:
+    inputs:
+      patch_string:
+        description: "Patch version (optional)"
+        required: false
+        type: string
+    outputs:
+      version:
+        description: "The version string to use when building the ISO"
+        value: ${{ jobs.gather_data.outputs.version }}
+      vyos_1x_commit:
+        description: "Ref of the latest commit to vyos/vyos-1x"
+        value: ${{ jobs.gather_data.outputs.vyos_1x_commit }}
+      vyos_1x_commit_sha:
+        description: "Full SHA of the latest commit to vyos/vyos-1x"
+        value: ${{ jobs.gather_data.outputs.vyos_1x_commit_sha }}
+      vyos_build_commit:
+        description: "Ref of the latest commit to vyos/vyos-build"
+        value: ${{ jobs.gather_data.outputs.vyos_build_commit }}
+      vyos_build_commit_sha:
+        description: "Full SHA of the latest commit to vyos/vyos-build"
+        value: ${{ jobs.gather_data.outputs.vyos_build_commit_sha }}
