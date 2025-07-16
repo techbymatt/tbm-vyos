@@ -63,6 +63,7 @@ jobs:
           set -eux
           echo "vyos_1x_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build/build/vyos-1x
+    timeout-minutes: 5
 name: Data
 on:
   workflow_call:

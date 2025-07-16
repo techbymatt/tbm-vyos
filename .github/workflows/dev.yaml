@@ -26,6 +26,9 @@ jobs:
       contains(fromJSON('["success", "skipped"]'), needs.build_container.result)
     name: Build ISO
     needs: [gather_data, build_container]
+    permissions:
+      contents: write
+      packages: read
     secrets: inherit
     uses: techbymatt/tbm-vyos/.github/workflows/iso.yaml@main
     with:
@@ -35,91 +38,21 @@ jobs:
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketests_secure_boot:
-    container:
-      image: ${{ inputs.build_container }}
-      options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+  smoketest_secureboot:
     if: |
       !cancelled() && 
       needs.build_iso.result == 'success'
-    name: "Smoketests: Secure Boot"
+    name: "Smoketest: Secure Boot"
     needs: [gather_data, build_iso]
-    outputs:
-      exit_code: ${{ steps.smoketests_secure_boot.outputs.exit_code }}
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
-    steps:
-      - id: check_kvm
-        name: Check KVM support
-        run: |
-          set -eux
-          sudo apt-get update
-          sudo apt-get --no-install-recommends --yes install \
-            cpu-checker
-          sudo kvm-ok
-          sudo apt-get --no-install-recommends --yes install \
-            cpuid
-          if cpuid | grep -q AMD; then
-            echo "Nested virtualisation enabled: $(cat /sys/module/kvm_amd/parameters/nested)"
-          elif cpuid | grep -q Intel; then
-            echo "Nested virtualisation enabled: $(cat /sys/module/kvm_intel/parameters/nested)"
-          else
-              echo "Unsupported CPU vendor: $(cpuid)" >&2
-              exit 1
-          fi
-      - id: checkout_vyos_build
-        name: Checkout repository vyos/vyos-build
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-          ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-          repository: vyos/vyos-build
-      - if: inputs.vyos_build_pr != ''
-        name: Merge requested PRs from vyos/vyos-build
-        run: |
-          set -eux
-          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
-              jq -r .title)
-            git config user.email "matthew@kobayashi.au"
-            git config user.name "MattKobayashi"
-            git fetch origin "pull/${pr}/head:pr-${pr}"
-            git rebase ${{ needs.gather_data.outputs.vyos_build_commit_sha }} "pr-${pr}"
-            git switch --detach ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-            git merge --no-commit "pr-${pr}"
-          done
-        working-directory: vyos-build
-      - id: patch_check_qemu_install
-        name: Patch the check-qemu-install script
-        run: |
-          set -eux
-          patch <<'EOF'
-          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
-          EOF
-        working-directory: scripts
-      - id: download_iso
-        name: Download the ISO artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
-          path: build
-      - id: smoketests_secure_boot
-        if: |
-          steps.check_kvm.outcome == 'success'
-        name: Run smoketests
-        run: |
-          set -eux
-          sudo make testsb
-          if [ $? = 0 ]; then
-            echo "exit_code=success" >> $GITHUB_OUTPUT
-          else
-            echo "exit_code=fail" >> $GITHUB_OUTPUT
-          fi
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_secureboot.yaml@main
+    with:
+      build_container: ${{ inputs.build_container }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
 name: Development
 on:
   workflow_dispatch:
