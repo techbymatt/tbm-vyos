@@ -45,6 +45,7 @@ jobs:
           path: vyos-build/build/vyos-1x
           ref: ${{ inputs.vyos_1x_commit_sha }}
           repository: vyos/vyos-1x
+          submodules: recursive
       - if: inputs.vyos_1x_pr != ''
         name: Merge requested PRs from vyos/vyos-1x
         run: |

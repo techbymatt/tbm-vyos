@@ -27,7 +27,6 @@ jobs:
         name: Checkout repository vyos/vyos-build
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0
           path: vyos-build
           ref: current
           repository: vyos/vyos-build
@@ -47,7 +46,6 @@ jobs:
         name: Checkout repository vyos/vyos-1x
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0
           path: vyos-build/build/vyos-1x
           ref: current
           repository: vyos/vyos-1x
