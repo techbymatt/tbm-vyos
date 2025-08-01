@@ -130,7 +130,7 @@ jobs:
           SHIM_CERT_NAME: vyos-dev-2025-shim
           VYOS_KERNEL_CERT_NAME: vyos-dev-2025-linux
         id: secure_boot_certs
-        name: "Generate Secure Boot certificates"
+        name: Generate Secure Boot certificates
         run: |
           set -eux
           # Shim
@@ -203,29 +203,29 @@ on:
         required: true
         type: string
       version:
-        description: "The version string to use when building the ISO"
+        description: The version string to use when building the ISO
         required: true
         type: string
       vyos_1x_commit_sha:
-        description: "Full SHA of the latest commit to vyos/vyos-1x"
+        description: Full SHA of the latest commit to vyos/vyos-1x
         required: true
         type: string
       vyos_1x_pr:
-        description: "List of vyos/vyos-1x PR IDs to merge (optional)"
+        description: List of vyos/vyos-1x PR IDs to merge (optional)
         required: false
         type: string
       vyos_build_commit_sha:
-        description: "Full SHA of the latest commit to vyos/vyos-build"
+        description: Full SHA of the latest commit to vyos/vyos-build
         required: true
         type: string
       vyos_build_pr:
-        description: "List of vyos/vyos-build PR IDs to merge (optional)"
+        description: List of vyos/vyos-build PR IDs to merge (optional)
         required: false
         type: string
     outputs:
       exit_code:
-        description: "Exit code of the ISO build process"
+        description: Exit code of the ISO build process
         value: ${{ jobs.build_iso.outputs.exit_code }}
       release_filename:
-        description: "File name of the release ISO"
+        description: File name of the release ISO
         value: ${{ jobs.build_iso.outputs.release_filename }}

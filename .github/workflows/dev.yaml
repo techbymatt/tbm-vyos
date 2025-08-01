@@ -58,22 +58,22 @@ on:
   workflow_dispatch:
     inputs:
       build_container:
-        default: "ghcr.io/techbymatt/vyos-build:current"
-        description: "Build container to use"
+        default: ghcr.io/techbymatt/vyos-build:current
+        description: Build container to use
         options:
-          - "vyos/vyos-build:current"
-          - "ghcr.io/techbymatt/vyos-build:current"
+          - vyos/vyos-build:current
+          - ghcr.io/techbymatt/vyos-build:current
         required: true
         type: choice
       patch_string:
-        description: "Patch version (optional)"
+        description: Patch version (optional)
         required: false
         type: string
       vyos_1x_pr:
-        description: "List of upstream vyos-1x PR IDs to merge (optional)"
+        description: List of upstream vyos-1x PR IDs to merge (optional)
         required: false
         type: string
       vyos_build_pr:
-        description: "List of upstream vyos-build PR IDs to merge (optional)"
+        description: List of upstream vyos-build PR IDs to merge (optional)
         required: false
         type: string

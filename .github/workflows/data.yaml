@@ -67,22 +67,22 @@ on:
   workflow_call:
     inputs:
       patch_string:
-        description: "Patch version (optional)"
+        description: Patch version (optional)
         required: false
         type: string
     outputs:
       version:
-        description: "The version string to use when building the ISO"
+        description: The version string to use when building the ISO
         value: ${{ jobs.gather_data.outputs.version }}
       vyos_1x_commit:
-        description: "Ref of the latest commit to vyos/vyos-1x"
+        description: Ref of the latest commit to vyos/vyos-1x
         value: ${{ jobs.gather_data.outputs.vyos_1x_commit }}
       vyos_1x_commit_sha:
-        description: "Full SHA of the latest commit to vyos/vyos-1x"
+        description: Full SHA of the latest commit to vyos/vyos-1x
         value: ${{ jobs.gather_data.outputs.vyos_1x_commit_sha }}
       vyos_build_commit:
-        description: "Ref of the latest commit to vyos/vyos-build"
+        description: Ref of the latest commit to vyos/vyos-build
         value: ${{ jobs.gather_data.outputs.vyos_build_commit }}
       vyos_build_commit_sha:
-        description: "Full SHA of the latest commit to vyos/vyos-build"
+        description: Full SHA of the latest commit to vyos/vyos-build
         value: ${{ jobs.gather_data.outputs.vyos_build_commit_sha }}
