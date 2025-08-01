@@ -69,7 +69,6 @@ on:
   workflow_call:
     inputs:
       build_container:
-        default: ghcr.io/techbymatt/vyos-build:current
         description: Build container to use
         required: true
         type: string

@@ -34,7 +34,7 @@ jobs:
     secrets: inherit
     uses: techbymatt/tbm-vyos/.github/workflows/iso.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
@@ -51,7 +51,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -66,7 +66,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_interfaces.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -81,7 +81,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_vpp.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -96,7 +96,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -111,7 +111,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config_vpp.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -126,7 +126,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_raid.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -141,7 +141,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_secureboot.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
