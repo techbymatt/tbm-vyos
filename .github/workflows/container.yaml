@@ -39,8 +39,8 @@ jobs:
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
               jq -r .title)
-            git config user.email "matthew@kobayashi.au"
-            git config user.name "MattKobayashi"
+            git config user.email "tbm-vyos@tech.bymatt.au"
+            git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git merge --no-commit "pr-${pr}"
           done
