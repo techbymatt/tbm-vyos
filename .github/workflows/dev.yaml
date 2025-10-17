@@ -158,6 +158,92 @@ jobs:
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  debug_data:
+    if: ${{ !cancelled() }}
+    name: "Print Debug Data"
+    needs:
+      [
+        gather_data,
+        build_iso,
+        smoketest_cli,
+        smoketest_cli_interfaces,
+        smoketest_cli_vpp,
+        smoketest_config,
+        smoketest_config_vpp,
+        smoketest_raid,
+        smoketest_secureboot,
+        smoketest_tpm
+      ]
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    steps:
+      - id: debug_data
+        name: Print Debug Data
+        run: |
+          echo "----------------"
+          echo "Workflow Inputs"
+          echo "----------------"
+          echo "build_container: ${{ inputs.build_container }}"
+          echo "patch_string: ${{ inputs.patch_string }}"
+          echo "vyos_1x_pr: ${{ inputs.vyos_1x_pr }}"
+          echo "vyos_build_pr: ${{ inputs.vyos_build_pr }}"
+          echo ""
+          echo "----------------"
+          echo "gather_data"
+          echo "----------------"
+          echo "version: ${{ needs.gather_data.outputs.version }}"
+          echo "vyos_1x_commit: ${{ needs.gather_data.outputs.vyos_1x_commit }}"
+          echo "vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}"
+          echo "vyos_build_commit: ${{ needs.gather_data.outputs.vyos_build_commit }}"
+          echo "vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}"
+          echo ""
+          echo "----------------"
+          echo "build_iso"
+          echo "----------------"
+          echo "exit_code: ${{ needs.build_iso.outputs.exit_code }}"
+          echo "release_filename: ${{ needs.build_iso.outputs.release_filename }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_cli"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_cli.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_cli_interfaces"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_cli_interfaces.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_cli_vpp"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_cli_vpp.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_config"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_config.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_config_vpp"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_config_vpp.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_raid"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_raid.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_secureboot"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_secureboot.outputs.exit_code }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_tpm"
+          echo "----------------"
+          echo "exit_code: ${{ needs.smoketest_tpm.outputs.exit_code }}"
+          echo ""
 name: Development
 on:
   workflow_dispatch:
