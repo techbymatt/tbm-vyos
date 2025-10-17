@@ -38,6 +38,96 @@ jobs:
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_cli:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: CLI"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli.yaml@main
+    with:
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_cli_interfaces:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: CLI (interfaces)"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_interfaces.yaml@main
+    with:
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_cli_vpp:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: CLI (VPP)"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_vpp.yaml@main
+    with:
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_config:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: Configuration Load"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config.yaml@main
+    with:
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_config_vpp:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: Configuration Load (VPP)"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config_vpp.yaml@main
+    with:
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_raid:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: RAID1 Installation"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_raid.yaml@main
+    with:
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
   smoketest_secureboot:
     if: |
       !cancelled() && 
@@ -50,6 +140,21 @@ jobs:
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_secureboot.yaml@main
     with:
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      version: ${{ needs.gather_data.outputs.version }}
+      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+      vyos_build_pr: ${{ inputs.vyos_build_pr }}
+  smoketest_tpm:
+    if: |
+      !cancelled() && 
+      needs.build_iso.result == 'success'
+    name: "Smoketest: TPM Encryption"
+    needs: [gather_data, build_iso]
+    permissions:
+      contents: read
+      packages: read
+    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_tpm.yaml@main
+    with:
+      build_container: ${{ inputs.build_container }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
