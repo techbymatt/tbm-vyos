@@ -19,6 +19,12 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - name: Install extra dependencies
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            python3-tomli
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
