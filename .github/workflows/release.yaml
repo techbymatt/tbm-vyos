@@ -1,7 +1,4 @@
 ---
-permissions:
-  contents: read
-
 jobs:
   gather_data:
     name: Gather data
@@ -199,7 +196,6 @@ jobs:
         uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
-
       - id: download_artifact
         name: Download live image artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -269,7 +265,6 @@ jobs:
         uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
-
       - id: pushover
         name: Pushover
         run: |
@@ -305,3 +300,5 @@ on:
         type: string
   schedule:
     - cron: "0 3 1 * *"
+permissions:
+  contents: read

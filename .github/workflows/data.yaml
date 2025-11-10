@@ -1,7 +1,4 @@
 ---
-permissions:
-  contents: read
-
 jobs:
   gather_data:
     name: Gather data
@@ -19,7 +16,6 @@ jobs:
         uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
-
       - id: version_string
         name: Generate version string
         run: |
@@ -94,3 +90,5 @@ on:
       vyos_build_commit_sha:
         description: Full SHA of the latest commit to vyos/vyos-build
         value: ${{ jobs.gather_data.outputs.vyos_build_commit_sha }}
+permissions:
+  contents: read
