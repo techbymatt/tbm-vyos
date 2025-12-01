@@ -156,7 +156,7 @@ jobs:
       packages: read
     uses: techbymatt/tbm-vyos/.github/workflows/smoketest_tpm.yaml@main
     with:
-      build_container: ${{ inputs.build_container }}
+      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
