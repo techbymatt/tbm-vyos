@@ -6,11 +6,12 @@ jobs:
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
     name: "Smoketest: Configuration Load (VPP)"
     outputs:
-      exit_code: ${{ steps.run_smoketest.outputs.exit_code }}
+      exit_code_amd64: ${{ steps.run_smoketest.outputs.exit_code_amd64 }}
+      exit_code_arm64: ${{ steps.run_smoketest.outputs.exit_code_arm64 }}
     permissions:
       contents: read
       packages: read
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.runner_os }}
     steps:
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -22,15 +23,14 @@ jobs:
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
-          set -eux
           for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
             title=$(curl -s \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
               jq -r .title)
-            git config user.email "matthew@kobayashi.au"
-            git config user.name "MattKobayashi"
+            git config user.email "tbm-vyos@tech.bymatt.au"
+            git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git rebase ${{ inputs.vyos_build_commit_sha }} "pr-${pr}"
             git switch --detach ${{ inputs.vyos_build_commit_sha }}
@@ -40,7 +40,6 @@ jobs:
       - id: patch_check_qemu_install
         name: Patch the check-qemu-install script
         run: |
-          set -eux
           patch <<'EOF'
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
@@ -49,27 +48,33 @@ jobs:
         name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ inputs.version }}-liveimage
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
           path: build
       - id: run_smoketest
         name: Run smoketest
         run: |
-          set -eux
-          sudo make testcvpp
-          if [ $? = 0 ]; then
-            echo "exit_code=success" >> $GITHUB_OUTPUT
-            return 0
+          if sudo make testcvpp; then
+            echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+            exit 0
           else
-            echo "exit_code=fail" >> $GITHUB_OUTPUT
-            return 1
+            echo "exit_code_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+            exit 1
           fi
     timeout-minutes: 60
 name: "Smoketest: Configuration Load (VPP)"
 on:
   workflow_call:
     inputs:
+      arch:
+        description: CPU architecture of the ISO build
+        required: true
+        type: string
       build_container:
         description: Build container to use
+        required: true
+        type: string
+      runner_os:
+        description: Runner OS to use
         required: true
         type: string
       version:
@@ -85,8 +90,11 @@ on:
         required: false
         type: string
     outputs:
-      exit_code:
-        description: Exit code of the ISO build process
-        value: ${{ jobs.smoketest.outputs.exit_code }}
+      exit_code_amd64:
+        description: Exit code of the AMD64 ISO smoketest
+        value: ${{ jobs.smoketest.outputs.exit_code_amd64 }}
+      exit_code_arm64:
+        description: Exit code of the ARM64 ISO smoketest
+        value: ${{ jobs.smoketest.outputs.exit_code_arm64 }}
 permissions:
   contents: read
