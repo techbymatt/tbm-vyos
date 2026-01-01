@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+        with:
+          platforms: arm64
       - name: Set up buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
       - name: Checkout repository vyos/vyos-build
@@ -20,7 +22,7 @@ jobs:
       - name: Log into registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
-          password: ${{ secrets.github_token }}
+          password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
           username: ${{ github.actor }}
       - id: meta
@@ -32,13 +34,8 @@ jobs:
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
-          set -eux
           for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
-              jq -r .title)
+            title=$(gh pr view "$pr" --repo vyos/vyos-build --json title --template '{{.title}}')
             git config user.email "tbm-vyos@tech.bymatt.au"
             git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
@@ -48,11 +45,15 @@ jobs:
       - name: Build and push container image
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           context: docker
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,push-by-digest=true
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-    timeout-minutes: 30
+    timeout-minutes: 120
 name: Container
 on:
   workflow_call:

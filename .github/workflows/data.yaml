@@ -15,13 +15,11 @@ jobs:
       - id: version_string
         name: Generate version string
         run: |
-          set -eux
           echo "version=$(date +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
       - id: patch_string
         if: inputs.patch_string != ''
         name: Add patch string
         run: |
-          set -eux
           echo "version=${{ steps.version_string.outputs.version }}-${{ inputs.patch_string }}" >> "$GITHUB_OUTPUT"
       - id: checkout_vyos_build
         name: Checkout repository vyos/vyos-build
@@ -33,13 +31,11 @@ jobs:
       - id: get_vyos_build_commit
         name: Get latest commit to vyos/vyos-build
         run: |
-          set -eux
           echo "vyos_build_commit=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build
       - id: get_vyos_build_commit_sha
         name: Get latest commit to vyos/vyos-build (full SHA)
         run: |
-          set -eux
           echo "vyos_build_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build
       - id: checkout_vyos_1x
@@ -52,13 +48,11 @@ jobs:
       - id: get_vyos_1x_commit
         name: Get latest commit to vyos/vyos-1x
         run: |
-          set -eux
           echo "vyos_1x_commit=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build/build/vyos-1x
       - id: get_vyos_1x_commit_sha
         name: Get latest commit to vyos/vyos-1x (full SHA)
         run: |
-          set -eux
           echo "vyos_1x_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build/build/vyos-1x
     timeout-minutes: 5
