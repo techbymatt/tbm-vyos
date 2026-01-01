@@ -5,7 +5,7 @@ jobs:
     permissions:
       contents: read
     secrets: inherit
-    uses: techbymatt/tbm-vyos/.github/workflows/data.yaml@main
+    uses: ./.github/workflows/data.yaml
     with:
       patch_string: ${{ inputs.patch_string }}
   build_container:
@@ -16,7 +16,7 @@ jobs:
       contents: read
       packages: write
     secrets: inherit
-    uses: techbymatt/tbm-vyos/.github/workflows/container.yaml@main
+    uses: ./.github/workflows/container.yaml
     with:
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
       vyos_build_ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -30,9 +30,20 @@ jobs:
       contents: write
       packages: read
     secrets: inherit
-    uses: techbymatt/tbm-vyos/.github/workflows/iso.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+          - arch: arm64
+            runner-os: ubuntu-24.04-arm
+    uses: ./.github/workflows/iso.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
@@ -47,9 +58,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_cli.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -62,9 +82,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_interfaces.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_cli_interfaces.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -77,9 +106,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_vpp.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_cli_vpp.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -92,9 +130,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_config.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -107,9 +154,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config_vpp.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_config_vpp.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -122,9 +178,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_raid.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_raid.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -137,9 +202,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_secureboot.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_secureboot.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -152,9 +226,18 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_tpm.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        include:
+          - arch: amd64
+            runner-os: ubuntu-24.04
+    uses: ./.github/workflows/smoketest_tpm.yaml
     with:
+      arch: ${{ matrix.arch }}
       build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -201,48 +284,58 @@ jobs:
           echo "----------------"
           echo "build_iso"
           echo "----------------"
-          echo "exit_code: ${{ needs.build_iso.outputs.exit_code }}"
-          echo "release_filename: ${{ needs.build_iso.outputs.release_filename }}"
+          echo "exit_code_amd64: ${{ needs.build_iso.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.build_iso.outputs.exit_code_arm64 }}"
+          echo "release_filename_amd64: ${{ needs.build_iso.outputs.release_filename_amd64 }}"
+          echo "release_filename_arm64: ${{ needs.build_iso.outputs.release_filename_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_cli"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_cli.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_cli.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_cli.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_cli_interfaces"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_cli_interfaces.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_cli_interfaces.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_cli_interfaces.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_cli_vpp"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_cli_vpp.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_cli_vpp.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_cli_vpp.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_config"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_config.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_config.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_config.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_config_vpp"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_config_vpp.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_config_vpp.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_config_vpp.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_raid"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_raid.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_raid.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_raid.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_secureboot"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_secureboot.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_secureboot.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_secureboot.outputs.exit_code_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_tpm"
           echo "----------------"
-          echo "exit_code: ${{ needs.smoketest_tpm.outputs.exit_code }}"
+          echo "exit_code_amd64: ${{ needs.smoketest_tpm.outputs.exit_code_amd64 }}"
+          echo "exit_code_arm64: ${{ needs.smoketest_tpm.outputs.exit_code_arm64 }}"
           echo ""
 name: Development
 on:
