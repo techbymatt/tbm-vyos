@@ -158,7 +158,7 @@ jobs:
             --env GOSU_UID=$(id -u) \
             --no-TTY \
             --rm \
-            --workdir vyos/build/vyos-1x \
+            --workdir /vyos/build/vyos-1x \
             build \
               make deb \
               && cp ../*.deb ../../packages
