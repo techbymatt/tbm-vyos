@@ -156,11 +156,10 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --rm \
-            build <<-'EOF'
-              cd vyos/build/vyos-1x
-              make deb
-              cp ../*.deb ../../packages
-            EOF
+            build \
+              cd vyos/build/vyos-1x \
+              && make deb \
+              && cp ../*.deb ../../packages
         timeout-minutes: 10
       - id: build_iso
         name: Build ISO
@@ -171,7 +170,7 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --rm \
-            build <<-'EOF'
+            build \
               sudo --preserve-env ./build-vyos-image \
                 --architecture ${{ inputs.arch }} \
                 --build-by tbm-vyos@tech.bymatt.au \
@@ -179,8 +178,7 @@ jobs:
                 --build-type release \
                 --version ${{ inputs.version }} \
                 --custom-package vyos-1x-smoketest \
-              generic
-          EOF; then
+              generic; then
               echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
               exit 0
           else
