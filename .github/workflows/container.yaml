@@ -82,7 +82,7 @@ jobs:
       - build
     permissions:
       contents: read
-      packages: read
+      packages: write
     runs-on: ubuntu-24.04
     steps:
       - name: Download digests
