@@ -5,6 +5,9 @@ services:
     build:
       context: ./vyos-build/docker
       dockerfile: Dockerfile
+    environment:
+      - "GOSU_GID=$(id -g)"
+      - "GOSU_UID=$(id -u)"
     networks:
       - build-amd64
     platform: linux/amd64
