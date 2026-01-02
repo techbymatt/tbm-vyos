@@ -52,6 +52,7 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --file smoketest-${{ inputs.arch }}.yaml \
+            --rm \
             run smoketest \
               echo "Container build completed successfully!"
         timeout-minutes: 10
@@ -67,6 +68,7 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --file smoketest-${{ inputs.arch }}.yaml \
+            --rm \
             run smoketest ${{ inputs.test_cmd }}; then
               echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
               exit 0

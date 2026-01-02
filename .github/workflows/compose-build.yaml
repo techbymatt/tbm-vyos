@@ -142,6 +142,7 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --file build-${{ inputs.arch }}.yaml \
+            --rm \
             run build \
               echo "Container build completed successfully!"
         timeout-minutes: 10
@@ -152,6 +153,7 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --file build-${{ inputs.arch }}.yaml \
+            --rm \
             run build <<-'EOF'
               cd vyos/build/vyos-1x
               make deb
@@ -165,6 +167,7 @@ jobs:
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
             --file build-${{ inputs.arch }}.yaml \
+            --rm \
             run build <<-'EOF'
               sudo --preserve-env ./build-vyos-image \
                 --architecture ${{ inputs.arch }} \
