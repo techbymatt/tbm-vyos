@@ -3,6 +3,10 @@
 services:
   build:
     build:
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
       context: ./vyos-build/docker
       dockerfile: Dockerfile
     networks:
