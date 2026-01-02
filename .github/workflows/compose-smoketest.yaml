@@ -45,6 +45,16 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: scripts
+      - id: build_container
+        name: Build vyos-build container
+        run: |
+          docker compose \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --file smoketest-${{ inputs.arch }}.yaml \
+            run smoketest \
+              echo "Container build completed successfully!"
+        timeout-minutes: 10
       - name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -53,8 +63,11 @@ jobs:
       - id: run_smoketest
         name: Run smoketest
         run: |
-          if docker compose -f smoketest-${{ inputs.arch }}.yaml run smoketest \
-            ${{ inputs.test_cmd }}; then
+          if docker compose \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --file smoketest-${{ inputs.arch }}.yaml \
+            run smoketest ${{ inputs.test_cmd }}; then
               echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
               exit 0
           else
