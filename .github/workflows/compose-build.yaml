@@ -137,6 +137,11 @@ jobs:
           # Cleanup
           rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
         working-directory: vyos-build
+      - id: build_container
+        name: Build vyos-build container
+        run: |
+          docker compose -f build-${{ inputs.arch }}.yaml run build echo "Container build completed successfully!"
+        timeout-minutes: 10
       - id: build_vyos_1x
         name: Build vyos-1x package
         run: |
