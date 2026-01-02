@@ -1,0 +1,105 @@
+---
+jobs:
+  smoketest:
+    name: "Smoketest"
+    outputs:
+      exit_code_amd64: ${{ steps.run_smoketest.outputs.exit_code_amd64 }}
+      exit_code_arm64: ${{ steps.run_smoketest.outputs.exit_code_arm64 }}
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ${{ inputs.runner_os }}
+    steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@e61617a16c407a86262fb923c35a616ddbe070b3 # v4.6.0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+      - name: Checkout repository techbymatt/tbm-vyos
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - if: inputs.vyos_build_pr != ''
+        name: Merge requested PRs from vyos/vyos-build
+        run: |
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
+            title=$(curl -s \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
+              jq -r .title)
+            git config user.email "tbm-vyos@tech.bymatt.au"
+            git config user.name "TBM VyOS"
+            git fetch origin "pull/${pr}/head:pr-${pr}"
+            git rebase ${{ inputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ inputs.vyos_build_commit_sha }}
+            git merge --no-commit "pr-${pr}"
+          done
+        working-directory: vyos-build
+      - name: Patch the check-qemu-install script
+        run: |
+          patch <<'EOF'
+          ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
+          EOF
+        working-directory: scripts
+      - name: Download the ISO artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
+          path: build
+      - id: run_smoketest
+        name: Run smoketest
+        run: |
+          if docker compose -f smoketest-${{ inputs.arch }}.yaml run smoketest \
+            ${{ inputs.test_cmd }}; then
+              echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+              exit 0
+          else
+              echo "exit_code_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+              exit 1
+          fi
+    timeout-minutes: ${{ inputs.test_timeout }}
+name: Smoketest
+on:
+  workflow_call:
+    inputs:
+      arch:
+        description: CPU architecture of the ISO build
+        required: true
+        type: string
+      runner_os:
+        description: Runner OS to use
+        required: true
+        type: string
+      test_cmd:
+        description: Smoketest command to execute
+        required: true
+        type: string
+      test_timeout:
+        description: Timeout for the smoketest
+        required: true
+        type: number
+      version:
+        description: The version string to use when building the ISO
+        required: true
+        type: string
+      vyos_build_commit_sha:
+        description: Full SHA of the latest commit to vyos/vyos-build
+        required: true
+        type: string
+      vyos_build_pr:
+        description: List of vyos/vyos-build PR IDs to merge (optional)
+        required: false
+        type: string
+    outputs:
+      exit_code_amd64:
+        description: Exit code of the AMD64 ISO smoketest
+        value: ${{ jobs.smoketest.outputs.exit_code_amd64 }}
+      exit_code_arm64:
+        description: Exit code of the ARM64 ISO smoketest
+        value: ${{ jobs.smoketest.outputs.exit_code_arm64 }}
+permissions:
+  contents: read

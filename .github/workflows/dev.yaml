@@ -8,24 +8,11 @@ jobs:
     uses: ./.github/workflows/data.yaml
     with:
       patch_string: ${{ inputs.patch_string }}
-  build_container:
-    if: inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current'
-    name: Build container
-    needs: [gather_data]
-    permissions:
-      contents: read
-      packages: write
-    secrets: inherit
-    uses: ./.github/workflows/container.yaml
-    with:
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-      vyos_build_ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
   build_iso:
     if: |
-      !cancelled() && 
-      contains(fromJSON('["success", "skipped"]'), needs.build_container.result)
+      !cancelled()
     name: Build ISO
-    needs: [gather_data, build_container]
+    needs: [gather_data]
     permissions:
       contents: write
       packages: read
@@ -39,10 +26,9 @@ jobs:
             runner-os: ubuntu-24.04
           - arch: arm64
             runner-os: ubuntu-24.04-arm
-    uses: ./.github/workflows/iso.yaml
+    uses: ./.github/workflows/compose-build.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
@@ -65,11 +51,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_cli.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make test-no-interfaces-no-vpp
+      test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -89,11 +76,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_cli_interfaces.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make test-no-interfaces
+      test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -113,11 +101,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_cli_vpp.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make test-vpp
+      test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -137,11 +126,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_config.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make testc
+      test_timeout: 90
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -161,11 +151,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_config_vpp.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make testcvpp
+      test_timeout: 60
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -185,11 +176,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_raid.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make testraid
+      test_timeout: 20
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -209,11 +201,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_secureboot.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make testsb
+      test_timeout: 20
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -233,11 +226,12 @@ jobs:
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest_tpm.yaml
+    uses: ./.github/workflows/compose-smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
       runner_os: ${{ matrix.runner-os }}
+      test_cmd: sudo make testtpm
+      test_timeout: 20
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
@@ -267,7 +261,6 @@ jobs:
           echo "----------------"
           echo "Workflow Inputs"
           echo "----------------"
-          echo "build_container: ${{ inputs.build_container }}"
           echo "patch_string: ${{ inputs.patch_string }}"
           echo "vyos_1x_pr: ${{ inputs.vyos_1x_pr }}"
           echo "vyos_build_pr: ${{ inputs.vyos_build_pr }}"
@@ -341,14 +334,6 @@ name: Development
 on:
   workflow_dispatch:
     inputs:
-      build_container:
-        default: ghcr.io/techbymatt/vyos-build:current
-        description: Build container to use
-        options:
-          - vyos/vyos-build:current
-          - ghcr.io/techbymatt/vyos-build:current
-        required: true
-        type: choice
       patch_string:
         description: Patch version (optional)
         required: false

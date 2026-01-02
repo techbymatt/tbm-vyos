@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/refs/tags/v2.10.0/schema/compose-spec.json
+services:
+  build:
+    build:
+      context: ./vyos-build/docker
+      dockerfile: Dockerfile
+    networks:
+      - build-arm64
+    platform: linux/arm64
+    privileged: true
+    restart: "no"
+    sysctls:
+      - net.ipv6.conf.lo.disable_ipv6=0
+    volumes:
+      - ./vyos-build:/vyos:rw
+    working_dir: /vyos
+name: build-arm64
+networks:
+  build-arm64:
+    driver: bridge
+    enable_ipv6: false
+    ipam:
+      config:
+        - gateway: 10.5.1.1
+          subnet: 10.5.1.0/24
+          ip_range: 10.5.1.128/25
+    name: build-arm64
