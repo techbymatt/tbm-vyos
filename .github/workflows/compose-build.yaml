@@ -165,9 +165,8 @@ jobs:
             --no-TTY \
             --rm \
             --workdir /vyos/build/vyos-1x \
-            build \
-              make deb \
-              && cp /vyos/build/*.deb /vyos/packages
+            build make deb
+          cp vyos-build/build/*.deb vyos-build/packages
         timeout-minutes: 10
       - id: build_iso
         name: Build ISO
