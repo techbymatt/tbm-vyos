@@ -4,7 +4,9 @@ services:
   build:
     build:
       cache_from:
-        - type=registry,ref=vyos/vyos-build:current
+        - ref=ghcr.io/techbymatt/vyos-build:current,type=registry
+      cache_to:
+        - compression=zstd,mode=max,ref=ghcr.io/techbymatt/vyos-build:current,type=registry
       context: ./vyos-build/docker
       dockerfile: Dockerfile
     networks:
