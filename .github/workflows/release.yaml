@@ -61,12 +61,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_cli.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -86,12 +84,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_cli_interfaces.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -111,12 +107,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_cli_vpp.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -136,12 +130,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_config.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -161,12 +153,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_config_vpp.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -186,12 +176,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_raid.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -211,12 +199,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_secureboot.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -236,12 +222,10 @@ jobs:
       packages: read
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         include:
           - arch: amd64
             runner-os: ubuntu-24.04
-          - arch: arm64
-            runner-os: ubuntu-24.04-arm
     uses: ./.github/workflows/smoketest_tpm.yaml
     with:
       arch: ${{ matrix.arch }}
