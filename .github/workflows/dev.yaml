@@ -15,7 +15,7 @@ jobs:
     needs: [gather_data]
     permissions:
       contents: write
-      packages: read
+      packages: write
     secrets: inherit
     strategy:
       fail-fast: false
@@ -43,7 +43,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -68,7 +68,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -93,7 +93,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -118,7 +118,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -143,7 +143,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -168,7 +168,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -193,7 +193,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -218,7 +218,7 @@ jobs:
     needs: [gather_data, build_iso]
     permissions:
       contents: read
-      packages: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:

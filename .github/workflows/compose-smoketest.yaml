@@ -7,11 +7,17 @@ jobs:
       exit_code_arm64: ${{ steps.run_smoketest.outputs.exit_code_arm64 }}
     permissions:
       contents: read
-      packages: read
+      packages: write
     runs-on: ${{ inputs.runner_os }}
     steps:
       - name: Set up Docker
         uses: docker/setup-docker-action@e61617a16c407a86262fb923c35a616ddbe070b3 # v4.6.0
+      - name: Log into registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
       - name: Checkout repository techbymatt/tbm-vyos
