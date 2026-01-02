@@ -4,9 +4,7 @@ services:
   smoketest:
     build:
       cache_from:
-        - type=gha
-      cache_to:
-        - type=gha,mode=max
+        - type=registry,ref=vyos/vyos-build:current
       context: ./vyos-build/docker
       dockerfile: Dockerfile
     networks:
