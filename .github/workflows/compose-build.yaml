@@ -197,7 +197,7 @@ jobs:
       - id: get_release_filename
         name: Get file name of release ISO
         run: |
-          RELEASE_FILENAME=tbm-$(ls vyos-*${{ inputs.arch }}-generic.iso | head -n 1)
+          RELEASE_FILENAME=tbm-$(ls vyos*.iso)
           echo "release_filename_${{ inputs.arch }}=$RELEASE_FILENAME" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build/build
       - id: upload-artifact
