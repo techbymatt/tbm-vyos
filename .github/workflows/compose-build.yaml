@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Set up Docker
         uses: docker/setup-docker-action@e61617a16c407a86262fb923c35a616ddbe070b3 # v4.6.0
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Checkout repository vyos/vyos-build
@@ -140,32 +138,45 @@ jobs:
       - id: build_container
         name: Build vyos-build container
         run: |
-          docker compose -f build-${{ inputs.arch }}.yaml run build echo "Container build completed successfully!"
+          docker compose \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --file build-${{ inputs.arch }}.yaml \
+            run build \
+              echo "Container build completed successfully!"
         timeout-minutes: 10
       - id: build_vyos_1x
         name: Build vyos-1x package
         run: |
-          docker compose -f build-${{ inputs.arch }}.yaml run build <<-'EOF'
-            cd vyos/build/vyos-1x
-            make deb
-            cp ../*.deb ../../packages
-          EOF
+          docker compose \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --file build-${{ inputs.arch }}.yaml \
+            run build <<-'EOF'
+              cd vyos/build/vyos-1x
+              make deb
+              cp ../*.deb ../../packages
+            EOF
         timeout-minutes: 10
       - id: build_iso
         name: Build ISO
         run: |
-          if docker compose -f build-${{ inputs.arch }}.yaml run build <<-'EOF'
-            sudo --preserve-env ./build-vyos-image \
-              --architecture ${{ inputs.arch }} \
-              --build-by tbm-vyos@tech.bymatt.au \
-              --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
-              --build-type release \
-              --version ${{ inputs.version }} \
-              --custom-package vyos-1x-smoketest \
-            generic
+          if ddocker compose \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --file build-${{ inputs.arch }}.yaml \
+            run build <<-'EOF'
+              sudo --preserve-env ./build-vyos-image \
+                --architecture ${{ inputs.arch }} \
+                --build-by tbm-vyos@tech.bymatt.au \
+                --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
+                --build-type release \
+                --version ${{ inputs.version }} \
+                --custom-package vyos-1x-smoketest \
+              generic
           EOF; then
-            echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
-            exit 0
+              echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+              exit 0
           else
             echo "exit_code_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
             exit 1
