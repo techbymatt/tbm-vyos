@@ -167,7 +167,7 @@ jobs:
             --workdir /vyos/build/vyos-1x \
             build \
               make deb \
-              && cp ../*.deb ../../packages
+              && cp /vyos/build/*.deb /vyos/packages
         timeout-minutes: 10
       - id: build_iso
         name: Build ISO
