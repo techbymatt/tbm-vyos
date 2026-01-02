@@ -53,6 +53,7 @@ jobs:
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
+            --no-TTY \
             --rm \
             smoketest \
               echo "Container build completed successfully!"
@@ -70,6 +71,7 @@ jobs:
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
+            --no-TTY \
             --rm \
             smoketest ${{ inputs.test_cmd }}; then
               echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT

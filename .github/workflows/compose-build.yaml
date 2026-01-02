@@ -143,6 +143,7 @@ jobs:
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
+            --no-TTY \
             --rm \
             build \
               echo "Container build completed successfully!"
@@ -155,10 +156,11 @@ jobs:
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
+            --no-TTY \
             --rm \
+            --workdir vyos/build/vyos-1x \
             build \
-              cd vyos/build/vyos-1x \
-              && make deb \
+              make deb \
               && cp ../*.deb ../../packages
         timeout-minutes: 10
       - id: build_iso
@@ -169,6 +171,7 @@ jobs:
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
+            --no-TTY \
             --rm \
             build \
               sudo --preserve-env ./build-vyos-image \
