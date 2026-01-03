@@ -27,7 +27,8 @@ jobs:
               qemu-system-aarch64 \
               qemu-system-x86 \
               qemu-utils \
-              swtpm
+              swtpm \
+            && sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
           else
             echo "ERROR: System does not support virtualisation"
             exit 1
