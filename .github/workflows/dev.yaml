@@ -50,7 +50,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -75,7 +75,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -100,7 +100,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -125,7 +125,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -150,7 +150,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -175,7 +175,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -200,7 +200,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -225,7 +225,7 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04-8core
+            runner-os: ubuntu-24.04
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
