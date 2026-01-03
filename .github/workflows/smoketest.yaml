@@ -22,6 +22,7 @@ jobs:
             sudo apt-get update \
             && sudo apt-get install --no-install-recommends --yes \
               bridge-utils \
+              genisoimage \
               ipxe-qemu \
               ovmf \
               qemu-efi-aarch64 \
