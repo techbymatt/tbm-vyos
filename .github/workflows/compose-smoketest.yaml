@@ -12,16 +12,10 @@ jobs:
     steps:
       - name: Set up Docker
         uses: docker/setup-docker-action@e61617a16c407a86262fb923c35a616ddbe070b3 # v4.6.0
-      - name: Log into registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
-          username: ${{ github.actor }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
-      - name: Checkout repository techbymatt/tbm-vyos
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up uv
+        uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 # v7.1.6
       - name: Checkout repository vyos/vyos-build
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -52,19 +46,6 @@ jobs:
           ${{ vars.CHECK_QEMU_INSTALL_PATCH }}
           EOF
         working-directory: vyos-build/scripts
-      - id: build_container
-        name: Build vyos-build container
-        run: |
-          docker compose \
-            --file smoketest-${{ inputs.arch }}.yaml \
-            run \
-            --env GOSU_GID=$(id -g) \
-            --env GOSU_UID=$(id -u) \
-            --no-TTY \
-            --rm \
-            smoketest \
-              echo "Container build completed successfully!"
-        timeout-minutes: 20
       - name: Download the ISO artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -73,20 +54,14 @@ jobs:
       - id: run_smoketest
         name: Run smoketest
         run: |
-          if docker compose \
-            --file smoketest-${{ inputs.arch }}.yaml \
-            run \
-            --env GOSU_GID=$(id -g) \
-            --env GOSU_UID=$(id -u) \
-            --no-TTY \
-            --rm \
-            smoketest ${{ inputs.test_cmd }}; then
+          if sudo $(which uv) run --python 3.14.2 --with pexpect --with tomli ${{ inputs.test_cmd }}; then
               echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
               exit 0
           else
               echo "exit_code_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
               exit 1
           fi
+        working-directory: vyos-build
     timeout-minutes: ${{ inputs.test_timeout }}
 name: Smoketest
 on:
