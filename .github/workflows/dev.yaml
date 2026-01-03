@@ -55,7 +55,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make test-no-interfaces-no-vpp
+      test_cmd: make test-no-interfaces-no-vpp
       test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -80,7 +80,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make test-no-interfaces
+      test_cmd: make test-no-interfaces
       test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -105,7 +105,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make test-vpp
+      test_cmd: make test-vpp
       test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -130,7 +130,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make testc
+      test_cmd: make testc
       test_timeout: 90
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -155,7 +155,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make testcvpp
+      test_cmd: make testcvpp
       test_timeout: 60
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -180,7 +180,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make testraid
+      test_cmd: make testraid
       test_timeout: 20
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -205,7 +205,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make testsb
+      test_cmd: make testsb
       test_timeout: 20
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
@@ -230,7 +230,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: sudo make testtpm
+      test_cmd: make testtpm
       test_timeout: 20
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
