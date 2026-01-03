@@ -26,7 +26,7 @@ jobs:
             runner-os: ubuntu-24.04
           - arch: arm64
             runner-os: ubuntu-24.04-arm
-    uses: ./.github/workflows/compose-build.yaml
+    uses: ./.github/workflows/build.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -50,8 +50,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -75,8 +75,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -100,8 +100,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -125,8 +125,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -150,8 +150,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -175,8 +175,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -200,8 +200,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
@@ -225,8 +225,8 @@ jobs:
         arch: [amd64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/compose-smoketest.yaml
+            runner-os: ubuntu-24.04-8core
+    uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
