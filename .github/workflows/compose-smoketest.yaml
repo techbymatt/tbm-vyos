@@ -21,9 +21,13 @@ jobs:
             sudo apt-get update \
             && sudo apt-get install --no-install-recommends --yes \
               bridge-utils \
+              ipxe-qemu \
               ovmf \
-              qemu-system \
-              qemu-utils
+              qemu-efi-aarch64 \
+              qemu-system-aarch64 \
+              qemu-system-x86 \
+              qemu-utils \
+              swtpm
           else
             echo "ERROR: System does not support virtualisation"
             exit 1
