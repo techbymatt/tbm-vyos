@@ -10,8 +10,11 @@ jobs:
       packages: write
     runs-on: ${{ inputs.runner_os }}
     steps:
-      - name: Set up uv
-        uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 # v7.1.6
+      - name: Set up Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          pip-install: pexpect==4.9.0 tomli==2.3.0
+          python-version: '3.14.2'
       - name: Install smoketest dependencies
         run: |
           if grep -qE "svm|vmx" /proc/cpuinfo; then
@@ -63,7 +66,7 @@ jobs:
       - id: run_smoketest
         name: Run smoketest
         run: |
-          if sudo $(which uv) run --python 3.14.2 --with pexpect --with tomli ${{ inputs.test_cmd }}; then
+          if sudo --preserve-env=PATH ${{ inputs.test_cmd }}; then
             echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
             exit 0
           else
