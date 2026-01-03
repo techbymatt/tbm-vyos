@@ -7,7 +7,6 @@ jobs:
       exit_code_arm64: ${{ steps.run_smoketest.outputs.exit_code_arm64 }}
     permissions:
       contents: read
-      packages: write
     runs-on: ${{ inputs.runner_os }}
     steps:
       - name: Set up Python
