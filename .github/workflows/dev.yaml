@@ -80,7 +80,7 @@ jobs:
     with:
       arch: ${{ matrix.arch }}
       runner_os: ${{ matrix.runner-os }}
-      test_cmd: make test-no-interfaces
+      test_cmd: make test-interfaces
       test_timeout: 180
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
