@@ -44,6 +44,11 @@ jobs:
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
+      - id: patch_vyos_build
+        name: Patch vyos-build
+        run: |
+          patch -p1 < ../vyos-build.patch
+        working-directory: vyos-build
       - name: Checkout repository vyos/vyos-1x
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -72,11 +77,6 @@ jobs:
         run: |
           patch -p1 < ../../../vyos-1x.patch
         working-directory: vyos-build/build/vyos-1x
-      - id: patch_vyos_build
-        name: Patch vyos-build
-        run: |
-          patch -p1 < ../vyos-build.patch
-        working-directory: vyos-build
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
