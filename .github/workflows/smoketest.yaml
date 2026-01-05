@@ -1,7 +1,7 @@
 ---
 jobs:
   smoketest:
-    name: "Smoketest"
+    name: Smoketest
     outputs:
       result_cli_amd64: ${{ steps.run_smoketest.outputs.result_cli_amd64 }}
       result_cli_arm64: ${{ steps.run_smoketest.outputs.result_cli_arm64 }}

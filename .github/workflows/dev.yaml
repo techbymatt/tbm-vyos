@@ -98,14 +98,14 @@ jobs:
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
   debug_data:
     if: ${{ !cancelled() }}
-    name: "Print Debug Data"
+    name: Print debug data
     needs: [gather_data, build, smoketest]
     permissions:
       contents: read
     runs-on: ubuntu-24.04
     steps:
       - id: debug_data
-        name: Print Debug Data
+        name: Print debug data
         run: |
           echo "----------------"
           echo "Workflow Inputs"
