@@ -44,11 +44,6 @@ jobs:
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
-      - id: patch_vyos_build
-        name: Patch vyos-build
-        run: |
-          patch -p1 < ../vyos-build.patch
-        working-directory: vyos-build
       - name: Checkout repository vyos/vyos-1x
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -72,11 +67,27 @@ jobs:
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build/build/vyos-1x
+      - id: generate_patch
+        name: Generate patch files
+        run: |
+          ./generate.sh
+        working-directory: patch
+      - id: patch_vyos_build
+        name: Patch vyos-build
+        run: |
+          patch -p1 < ${{ github.workspace }}/patch/vyos-build.patch
+        working-directory: vyos-build
       - id: patch_vyos_1x
         name: Patch vyos-1x
         run: |
-          patch -p1 < ../../../vyos-1x.patch
+          patch -p1 < ${{ github.workspace }}/patch/vyos-1x.patch
         working-directory: vyos-build/build/vyos-1x
+      - id: upload_patch
+        name: Upload patch artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-patch
+          path: patch/*.patch
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
@@ -161,7 +172,7 @@ jobs:
           RELEASE_FILENAME=tbm-$(ls vyos*.iso)
           echo "release_filename_${{ inputs.arch }}=$RELEASE_FILENAME" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build/build
-      - id: upload-artifact
+      - id: upload_image
         name: Upload live image artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
