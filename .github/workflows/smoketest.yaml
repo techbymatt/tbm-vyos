@@ -3,8 +3,22 @@ jobs:
   smoketest:
     name: "Smoketest"
     outputs:
-      exit_code_amd64: ${{ steps.run_smoketest.outputs.exit_code_amd64 }}
-      exit_code_arm64: ${{ steps.run_smoketest.outputs.exit_code_arm64 }}
+      result_cli_amd64: ${{ steps.run_smoketest.outputs.result_cli_amd64 }}
+      result_cli_arm64: ${{ steps.run_smoketest.outputs.result_cli_arm64 }}
+      result_cli-interfaces_amd64: ${{ steps.run_smoketest.outputs.result_cli-interfaces_amd64 }}
+      result_cli-interfaces_arm64: ${{ steps.run_smoketest.outputs.result_cli-interfaces_arm64 }}
+      result_cli-vpp_amd64: ${{ steps.run_smoketest.outputs.result_cli-vpp_amd64 }}
+      result_cli-vpp_arm64: ${{ steps.run_smoketest.outputs.result_cli-vpp_arm64 }}
+      result_config_amd64: ${{ steps.run_smoketest.outputs.result_config_amd64 }}
+      result_config_arm64: ${{ steps.run_smoketest.outputs.result_config_arm64 }}
+      result_config-vpp_amd64: ${{ steps.run_smoketest.outputs.result_config-vpp_amd64 }}
+      result_config-vpp_arm64: ${{ steps.run_smoketest.outputs.result_config-vpp_arm64 }}
+      result_raid_amd64: ${{ steps.run_smoketest.outputs.result_raid_amd64 }}
+      result_raid_arm64: ${{ steps.run_smoketest.outputs.result_raid_arm64 }}
+      result_secureboot_amd64: ${{ steps.run_smoketest.outputs.result_secureboot_amd64 }}
+      result_secureboot_arm64: ${{ steps.run_smoketest.outputs.result_secureboot_arm64 }}
+      result_tpm_amd64: ${{ steps.run_smoketest.outputs.result_tpm_amd64 }}
+      result_tpm_arm64: ${{ steps.run_smoketest.outputs.result_tpm_arm64 }}
     permissions:
       contents: read
     runs-on: ${{ inputs.runner_os }}
@@ -23,8 +37,8 @@ jobs:
       - name: Install smoketest dependencies
         run: |
           if grep -qE "svm|vmx" /proc/cpuinfo; then
-            sudo apt-get update \
-            && sudo apt-get install --no-install-recommends --yes \
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends --yes \
               bridge-utils \
               genisoimage \
               ipxe-qemu \
@@ -33,9 +47,8 @@ jobs:
               qemu-system-aarch64 \
               qemu-system-x86 \
               qemu-utils \
-              socat \
-              swtpm \
-            && sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
+              swtpm
+            sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
           else
             echo "ERROR: System does not support virtualisation"
             exit 1
@@ -79,10 +92,10 @@ jobs:
         name: Run smoketest
         run: |
           if sudo --preserve-env=PATH ${{ inputs.test_cmd }}; then
-            echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+            echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
             exit 0
           else
-            echo "exit_code_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+            echo "result_${{ inputs.test }}_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
             exit 1
           fi
         working-directory: vyos-build
@@ -97,6 +110,10 @@ on:
         type: string
       runner_os:
         description: Runner OS to use
+        required: true
+        type: string
+      test:
+        description: Name of the smoketest
         required: true
         type: string
       test_cmd:
@@ -120,11 +137,53 @@ on:
         required: false
         type: string
     outputs:
-      exit_code_amd64:
-        description: Exit code of the AMD64 ISO smoketest
-        value: ${{ jobs.smoketest.outputs.exit_code_amd64 }}
-      exit_code_arm64:
-        description: Exit code of the ARM64 ISO smoketest
-        value: ${{ jobs.smoketest.outputs.exit_code_arm64 }}
+      result_cli_amd64:
+        description: Result of the `cli` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli_amd64 }}
+      result_cli_arm64:
+        description: Result of the `cli` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli_arm64 }}
+      result_cli-interfaces_amd64:
+        description: Result of the `cli-interfaces` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-interfaces_amd64 }}
+      result_cli-interfaces_arm64:
+        description: Result of the `cli-interfaces` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-interfaces_arm64 }}
+      result_cli-vpp_amd64:
+        description: Result of the `cli-vpp` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-vpp_amd64 }}
+      result_cli-vpp_arm64:
+        description: Result of the `cli-vpp` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-vpp_arm64 }}
+      result_config_amd64:
+        description: Result of the `config` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_config_amd64 }}
+      result_config_arm64:
+        description: Result of the `config` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_config_arm64 }}
+      result_config-vpp_amd64:
+        description: Result of the `config-vpp` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_config-vpp_amd64 }}
+      result_config-vpp_arm64:
+        description: Result of the `config-vpp` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_config-vpp_arm64 }}
+      result_raid_amd64:
+        description: Result of the `raid` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_raid_amd64 }}
+      result_raid_arm64:
+        description: Result of the `raid` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_raid_arm64 }}
+      result_secureboot_amd64:
+        description: Result of the `secureboot` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_secureboot_amd64 }}
+      result_secureboot_arm64:
+        description: Result of the `secureboot` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_secureboot_arm64 }}
+      result_tpm_amd64:
+        description: Result of the `tpm` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_tpm_amd64 }}
+      result_tpm_arm64:
+        description: Result of the `tpm` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_tpm_arm64 }}
 permissions:
   contents: read

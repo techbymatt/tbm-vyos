@@ -8,7 +8,7 @@ jobs:
     uses: ./.github/workflows/data.yaml
     with:
       patch_string: ${{ inputs.patch_string }}
-  build_iso:
+  build:
     if: |
       !cancelled()
     name: Build ISO
@@ -23,24 +23,24 @@ jobs:
         arch: [amd64, arm64]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
+            runner_os: ubuntu-24.04
           - arch: arm64
-            runner-os: ubuntu-24.04-arm
+            runner_os: ubuntu-24.04-arm
     uses: ./.github/workflows/build.yaml
     with:
       arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
+      runner_os: ${{ matrix.runner_os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_cli:
+  smoketest:
     if: |
       !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: CLI"
-    needs: [gather_data, build_iso]
+      needs.build.result == 'success'
+    name: "Smoketest"
+    needs: [gather_data, build]
     permissions:
       contents: read
       packages: write
@@ -48,209 +48,58 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64]
+        test:
+          [
+            cli,
+            cli-interfaces,
+            cli-vpp,
+            config,
+            config-vpp,
+            raid,
+            secureboot,
+            tpm,
+          ]
         include:
           - arch: amd64
-            runner-os: ubuntu-24.04
+            runner_os: ubuntu-24.04
+          - test: cli
+            test_cmd: make test-no-interfaces-no-vpp
+            test_timeout: 180
+          - test: cli-interfaces
+            test_cmd: make test-interfaces
+            test_timeout: 180
+          - test: cli-vpp
+            test_cmd: make test-vpp
+            test_timeout: 180
+          - test: config
+            test_cmd: make testc
+            test_timeout: 90
+          - test: config-vpp
+            test_cmd: make testcvpp
+            test_timeout: 60
+          - test: raid
+            test_cmd: make testraid
+            test_timeout: 20
+          - test: secureboot
+            test_cmd: make testsb
+            test_timeout: 20
+          - test: tpm
+            test_cmd: make testtpm
+            test_timeout: 20
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make test-no-interfaces-no-vpp
-      test_timeout: 180
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_cli_interfaces:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: CLI (interfaces)"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make test-interfaces
-      test_timeout: 180
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_cli_vpp:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: CLI (VPP)"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make test-vpp
-      test_timeout: 180
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_config:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: Configuration Load"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make testc
-      test_timeout: 90
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_config_vpp:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: Configuration Load (VPP)"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make testcvpp
-      test_timeout: 60
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_raid:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: RAID1 Installation"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make testraid
-      test_timeout: 20
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_secureboot:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: Secure Boot"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make testsb
-      test_timeout: 20
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_tpm:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: TPM Encryption"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64]
-        include:
-          - arch: amd64
-            runner-os: ubuntu-24.04
-    uses: ./.github/workflows/smoketest.yaml
-    with:
-      arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner-os }}
-      test_cmd: make testtpm
-      test_timeout: 20
+      runner_os: ${{ matrix.runner_os }}
+      test: ${{ matrix.test }}
+      test_cmd: ${{ matrix.test_cmd }}
+      test_timeout: ${{ matrix.test_timeout }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
   debug_data:
     if: ${{ !cancelled() }}
     name: "Print Debug Data"
-    needs:
-      [
-        gather_data,
-        build_iso,
-        smoketest_cli,
-        smoketest_cli_interfaces,
-        smoketest_cli_vpp,
-        smoketest_config,
-        smoketest_config_vpp,
-        smoketest_raid,
-        smoketest_secureboot,
-        smoketest_tpm
-      ]
+    needs: [gather_data, build, smoketest]
     permissions:
       contents: read
     runs-on: ubuntu-24.04
@@ -275,60 +124,60 @@ jobs:
           echo "vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}"
           echo ""
           echo "----------------"
-          echo "build_iso"
+          echo "build"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.build_iso.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.build_iso.outputs.exit_code_arm64 }}"
-          echo "release_filename_amd64: ${{ needs.build_iso.outputs.release_filename_amd64 }}"
-          echo "release_filename_arm64: ${{ needs.build_iso.outputs.release_filename_arm64 }}"
+          echo "result_amd64: ${{ needs.build.outputs.result_amd64 }}"
+          echo "result_arm64: ${{ needs.build.outputs.result_arm64 }}"
+          echo "release_filename_amd64: ${{ needs.build.outputs.release_filename_amd64 }}"
+          echo "release_filename_arm64: ${{ needs.build.outputs.release_filename_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_cli"
+          echo "Smoketest (`cli`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_cli.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_cli.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_cli_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_cli_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_cli_interfaces"
+          echo "Smoketest (`cli-interfaces`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_cli_interfaces.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_cli_interfaces.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_cli_vpp"
+          echo "Smoketest (`cli-vpp`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_cli_vpp.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_cli_vpp.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_cli-vpp_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_cli-vpp_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_config"
+          echo "Smoketest (`config`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_config.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_config.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_config_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_config_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_config_vpp"
+          echo "Smoketest (`config-vpp`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_config_vpp.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_config_vpp.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_config-vpp_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_config-vpp_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_raid"
+          echo "Smoketest (`raid`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_raid.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_raid.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_raid_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_raid_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_secureboot"
+          echo "Smoketest (`secureboot`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_secureboot.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_secureboot.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_secureboot_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_secureboot_arm64 }}"
           echo ""
           echo "----------------"
-          echo "smoketest_tpm"
+          echo "Smoketest (`tpm`)"
           echo "----------------"
-          echo "exit_code_amd64: ${{ needs.smoketest_tpm.outputs.exit_code_amd64 }}"
-          echo "exit_code_arm64: ${{ needs.smoketest_tpm.outputs.exit_code_arm64 }}"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_tpm_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_tpm_arm64 }}"
           echo ""
 name: Development
 on:

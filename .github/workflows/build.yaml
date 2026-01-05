@@ -3,8 +3,8 @@ jobs:
   build:
     name: Build ISO
     outputs:
-      exit_code_amd64: ${{ steps.build_iso.outputs.exit_code_amd64 }}
-      exit_code_arm64: ${{ steps.build_iso.outputs.exit_code_arm64 }}
+      result_amd64: ${{ steps.build_iso.outputs.result_amd64 }}
+      result_arm64: ${{ steps.build_iso.outputs.result_arm64 }}
       release_filename_amd64: ${{ steps.get_release_filename.outputs.release_filename_amd64 }}
       release_filename_arm64: ${{ steps.get_release_filename.outputs.release_filename_arm64 }}
     permissions:
@@ -187,10 +187,10 @@ jobs:
                 --version ${{ inputs.version }} \
                 --custom-package vyos-1x-smoketest \
               generic; then
-              echo "exit_code_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+              echo "result_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
               exit 0
           else
-            echo "exit_code_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+            echo "result_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
             exit 1
           fi
         timeout-minutes: 30
@@ -240,12 +240,12 @@ on:
         required: false
         type: string
     outputs:
-      exit_code_amd64:
+      result_amd64:
         description: Exit code of the AMD64 ISO build process
-        value: ${{ jobs.build.outputs.exit_code_amd64 }}
-      exit_code_arm64:
+        value: ${{ jobs.build.outputs.result_amd64 }}
+      result_arm64:
         description: Exit code of the ARM64 ISO build process
-        value: ${{ jobs.build.outputs.exit_code_arm64 }}
+        value: ${{ jobs.build.outputs.result_arm64 }}
       release_filename_amd64:
         description: File name of the AMD64 release ISO
         value: ${{ jobs.build.outputs.release_filename_amd64 }}
