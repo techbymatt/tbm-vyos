@@ -5,215 +5,142 @@ jobs:
     permissions:
       contents: read
     secrets: inherit
-    uses: techbymatt/tbm-vyos/.github/workflows/data.yaml@main
+    uses: ./.github/workflows/data.yaml
     with:
       patch_string: ${{ inputs.patch_string }}
-  build_container:
+  build:
     if: |
-      inputs.build_container == 'ghcr.io/techbymatt/vyos-build:current' ||
-      github.event.schedule
-    name: Build container
+      !cancelled()
+    name: Build ISO
     needs: [gather_data]
     permissions:
-      contents: read
+      contents: write
       packages: write
     secrets: inherit
-    uses: techbymatt/tbm-vyos/.github/workflows/container.yaml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner_os: ubuntu-24.04
+          - arch: arm64
+            runner_os: ubuntu-24.04-arm
+    uses: ./.github/workflows/build.yaml
     with:
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-      vyos_build_ref: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-  build_iso:
-    if: |
-      !cancelled() && 
-      contains(fromJSON('["success", "skipped"]'), needs.build_container.result)
-    name: Build ISO
-    needs: [gather_data, build_container]
-    permissions:
-      contents: write
-      packages: read
-    secrets: inherit
-    uses: techbymatt/tbm-vyos/.github/workflows/iso.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      arch: ${{ matrix.arch }}
+      runner_os: ${{ matrix.runner_os }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_cli:
+  smoketest:
     if: |
       !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: CLI"
-    needs: [gather_data, build_iso]
+      needs.build.result == 'success'
+    name: "Smoketest"
+    needs: [gather_data, build]
     permissions:
       contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli.yaml@main
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64]
+        test:
+          [
+            cli,
+            cli-interfaces,
+            cli-vpp,
+            config,
+            config-vpp,
+            raid,
+            secureboot,
+            tpm,
+          ]
+        include:
+          - arch: amd64
+            runner_os: ubuntu-24.04
+          - test: cli
+            test_cmd: make test-no-interfaces-no-vpp
+            test_timeout: 180
+          - test: cli-interfaces
+            test_cmd: make test-interfaces
+            test_timeout: 180
+          - test: cli-vpp
+            test_cmd: make test-vpp
+            test_timeout: 180
+          - test: config
+            test_cmd: make testc
+            test_timeout: 90
+          - test: config-vpp
+            test_cmd: make testcvpp
+            test_timeout: 60
+          - test: raid
+            test_cmd: make testraid
+            test_timeout: 20
+          - test: secureboot
+            test_cmd: make testsb
+            test_timeout: 20
+          - test: tpm
+            test_cmd: make testtpm
+            test_timeout: 20
+    uses: ./.github/workflows/smoketest.yaml
     with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_cli_interfaces:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: CLI (interfaces)"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_interfaces.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_cli_vpp:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: CLI (VPP)"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_cli_vpp.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_config:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: Configuration Load"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_config_vpp:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: Configuration Load (VPP)"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_config_vpp.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_raid:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: RAID1 Installation"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_raid.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_secureboot:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: Secure Boot"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_secureboot.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
-      version: ${{ needs.gather_data.outputs.version }}
-      vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
-      vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  smoketest_tpm:
-    if: |
-      !cancelled() && 
-      needs.build_iso.result == 'success'
-    name: "Smoketest: TPM Encryption"
-    needs: [gather_data, build_iso]
-    permissions:
-      contents: read
-      packages: read
-    uses: techbymatt/tbm-vyos/.github/workflows/smoketest_tpm.yaml@main
-    with:
-      build_container: ${{ inputs.build_container || 'ghcr.io/techbymatt/vyos-build:current' }}
+      arch: ${{ matrix.arch }}
+      runner_os: ${{ matrix.runner_os }}
+      test: ${{ matrix.test }}
+      test_cmd: ${{ matrix.test_cmd }}
+      test_timeout: ${{ matrix.test_timeout }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
   draft_release:
     if: |
       !cancelled() &&
-      needs.build_iso.result == 'success' &&
-      needs.smoketest_cli.result == 'success' &&
-      needs.smoketest_cli_interfaces.result == 'success' &&
-      needs.smoketest_cli_vpp.result == 'success' &&
-      needs.smoketest_config.result == 'success' &&
-      needs.smoketest_config_vpp.result == 'success' &&
-      needs.smoketest_raid.result == 'success' &&
-      needs.smoketest_secureboot.result == 'success' &&
-      needs.smoketest_tpm.result == 'success'
+      needs.build.result == 'success'
     name: Draft release
-    needs:
-      [
-        gather_data,
-        build_iso,
-        smoketest_cli,
-        smoketest_cli_interfaces,
-        smoketest_cli_vpp,
-        smoketest_config,
-        smoketest_config_vpp,
-        smoketest_raid,
-        smoketest_secureboot,
-        smoketest_tpm
-      ]
+    needs: [gather_data, build, smoketest]
     outputs:
       release_url: ${{ steps.draft_release.outputs.html_url }}
     permissions:
       contents: write
     runs-on: ubuntu-24.04
     steps:
-      - id: download_artifact
-        name: Download live image artifact
+      - id: download_artifact_amd64
+        name: Download AMD64 live image artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: tbm-vyos-${{ needs.gather_data.outputs.version }}-liveimage
+          name: tbm-vyos-amd64-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
-      - id: rename_artifact
-        name: Rename live image artifact
+      - id: rename_artifact_amd64
+        name: Rename AMD64 live image artifact
         run: |
-          set -eux
-          mv live-image-*.hybrid.iso ${{ needs.build_iso.outputs.release_filename }}
+          mv live-image-*.hybrid.iso ${{ needs.build.outputs.release_filename_amd64 }}
+        working-directory: build
+      - id: download_artifact_arm64
+        name: Download ARM64 live image artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tbm-vyos-arm64-${{ needs.gather_data.outputs.version }}-liveimage
+          path: build
+      - id: rename_artifact_arm64
+        name: Rename ARM64 live image artifact
+        run: |
+          mv live-image-*.hybrid.iso ${{ needs.build.outputs.release_filename_arm64 }}
         working-directory: build
       - id: sign_release
         name: Sign release image
         run: |
-          set -eux
           sudo apt-get update
-          sudo apt-get install minisign
+          sudo apt-get --no-install-recommends --quiet=2 install \
+            minisign
           mkdir -p ~/.minisign
           echo "${{ secrets.MINISIGN_SECRET }}" > ~/.minisign/minisign.key
           echo "${{ secrets.MINISIGN_PUB }}" > minisign.pub
-          echo | minisign -Sm ${{ needs.build_iso.outputs.release_filename }}
+          echo | minisign -Sm ${{ needs.build.outputs.release_filename_amd64 }}
+          echo | minisign -Sm ${{ needs.build.outputs.release_filename_arm64 }}
         working-directory: build
       - id: draft_release
         name: Create draft release
@@ -227,15 +154,25 @@ jobs:
             ### Build Log
             https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
-            ### Smoketest Results
-            * CLI: ${{ needs.smoketest_cli.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (interfaces): ${{ needs.smoketest_cli_interfaces.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (VPP): ${{ needs.smoketest_cli_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load: ${{ needs.smoketest_config.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load (VPP): ${{ needs.smoketest_config_vpp.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * RAID1 Installation: ${{ needs.smoketest_raid.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * Secure Boot: ${{ needs.smoketest_secureboot.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
-            * TPM Encryption: ${{ needs.smoketest_tpm.outputs.exit_code == 'success' && '✅ passed' || '❌ failed' }}
+            ### Smoketest Results (amd64)
+            * CLI: ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (interfaces): ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (VPP): ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load: ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load (VPP): ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * RAID1 Installation: ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * Secure Boot: ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            * TPM Encryption: ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+
+            ### Smoketest Results (arm64)
+            * CLI: ${{ needs.smoketest.outputs.result_cli_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (interfaces): ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * CLI (VPP): ${{ needs.smoketest.outputs.result_cli-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load: ${{ needs.smoketest.outputs.result_config_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * Configuration Load (VPP): ${{ needs.smoketest.outputs.result_config-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * RAID1 Installation: ${{ needs.smoketest.outputs.result_raid_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * Secure Boot: ${{ needs.smoketest.outputs.result_secureboot_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            * TPM Encryption: ${{ needs.smoketest.outputs.result_tpm_arm64 == 'success' && '✅ passed' || '❌ failed' }}
 
             ### Upstream Comparison
             Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}
@@ -272,14 +209,6 @@ on:
     - cron: "0 7 1 * *"
   workflow_dispatch:
     inputs:
-      build_container:
-        default: ghcr.io/techbymatt/vyos-build:current
-        description: Build container to use?
-        options:
-          - vyos/vyos-build:current
-          - ghcr.io/techbymatt/vyos-build:current
-        required: true
-        type: choice
       patch_string:
         description: Patch version? (leave blank for none)
         required: false

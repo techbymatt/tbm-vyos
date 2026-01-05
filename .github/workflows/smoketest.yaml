@@ -1,0 +1,193 @@
+---
+jobs:
+  smoketest:
+    name: Smoketest
+    outputs:
+      result_cli_amd64: ${{ steps.run_smoketest.outputs.result_cli_amd64 }}
+      result_cli_arm64: ${{ steps.run_smoketest.outputs.result_cli_arm64 }}
+      result_cli-interfaces_amd64: ${{ steps.run_smoketest.outputs.result_cli-interfaces_amd64 }}
+      result_cli-interfaces_arm64: ${{ steps.run_smoketest.outputs.result_cli-interfaces_arm64 }}
+      result_cli-vpp_amd64: ${{ steps.run_smoketest.outputs.result_cli-vpp_amd64 }}
+      result_cli-vpp_arm64: ${{ steps.run_smoketest.outputs.result_cli-vpp_arm64 }}
+      result_config_amd64: ${{ steps.run_smoketest.outputs.result_config_amd64 }}
+      result_config_arm64: ${{ steps.run_smoketest.outputs.result_config_arm64 }}
+      result_config-vpp_amd64: ${{ steps.run_smoketest.outputs.result_config-vpp_amd64 }}
+      result_config-vpp_arm64: ${{ steps.run_smoketest.outputs.result_config-vpp_arm64 }}
+      result_raid_amd64: ${{ steps.run_smoketest.outputs.result_raid_amd64 }}
+      result_raid_arm64: ${{ steps.run_smoketest.outputs.result_raid_arm64 }}
+      result_secureboot_amd64: ${{ steps.run_smoketest.outputs.result_secureboot_amd64 }}
+      result_secureboot_arm64: ${{ steps.run_smoketest.outputs.result_secureboot_arm64 }}
+      result_tpm_amd64: ${{ steps.run_smoketest.outputs.result_tpm_amd64 }}
+      result_tpm_arm64: ${{ steps.run_smoketest.outputs.result_tpm_arm64 }}
+    permissions:
+      contents: read
+    runs-on: ${{ inputs.runner_os }}
+    steps:
+      - name: Random delay
+        run: |
+          delay=$((RANDOM % 300))
+          echo "Delaying for $delay seconds"
+          sleep $delay
+      - name: Set up Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          pip-install: |
+            multiprocess==0.70.18 pexpect==4.9.0 qemu.qmp==0.0.5 tomli==2.3.0
+          python-version: '3.14.2'
+      - name: Install smoketest dependencies
+        run: |
+          if grep -qE "svm|vmx" /proc/cpuinfo; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends --yes \
+              bridge-utils \
+              genisoimage \
+              ipxe-qemu \
+              ovmf \
+              qemu-efi-aarch64 \
+              qemu-system-aarch64 \
+              qemu-system-x86 \
+              qemu-utils \
+              swtpm
+            sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
+          else
+            echo "ERROR: System does not support virtualisation"
+            exit 1
+          fi
+      - name: Download patch artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-patch
+          path: patch
+      - name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          path: vyos-build
+          ref: ${{ inputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - if: inputs.vyos_build_pr != ''
+        name: Merge requested PRs from vyos/vyos-build
+        run: |
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
+            title=$(curl -s \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
+              jq -r .title)
+            git config user.email "tbm-vyos@tech.bymatt.au"
+            git config user.name "TBM VyOS"
+            git fetch origin "pull/${pr}/head:pr-${pr}"
+            git rebase ${{ inputs.vyos_build_commit_sha }} "pr-${pr}"
+            git switch --detach ${{ inputs.vyos_build_commit_sha }}
+            git merge --no-commit "pr-${pr}"
+          done
+        working-directory: vyos-build
+      - id: patch_vyos_build
+        name: Patch vyos-build
+        run: |
+          patch -p1 < ../patch/vyos-build.patch
+        working-directory: vyos-build
+      - name: Download image artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
+          path: vyos-build/build
+      - id: run_smoketest
+        name: Run smoketest
+        run: |
+          if sudo --preserve-env=PATH ${{ inputs.test_cmd }}; then
+            echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "result_${{ inputs.test }}_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        working-directory: vyos-build
+    timeout-minutes: ${{ inputs.test_timeout }}
+name: Smoketest
+on:
+  workflow_call:
+    inputs:
+      arch:
+        description: CPU architecture of the ISO build
+        required: true
+        type: string
+      runner_os:
+        description: Runner OS to use
+        required: true
+        type: string
+      test:
+        description: Name of the smoketest
+        required: true
+        type: string
+      test_cmd:
+        description: Smoketest command to execute
+        required: true
+        type: string
+      test_timeout:
+        description: Timeout for the smoketest
+        required: true
+        type: number
+      version:
+        description: The version string to use when building the ISO
+        required: true
+        type: string
+      vyos_build_commit_sha:
+        description: Full SHA of the latest commit to vyos/vyos-build
+        required: true
+        type: string
+      vyos_build_pr:
+        description: List of vyos/vyos-build PR IDs to merge (optional)
+        required: false
+        type: string
+    outputs:
+      result_cli_amd64:
+        description: Result of the `cli` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli_amd64 }}
+      result_cli_arm64:
+        description: Result of the `cli` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli_arm64 }}
+      result_cli-interfaces_amd64:
+        description: Result of the `cli-interfaces` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-interfaces_amd64 }}
+      result_cli-interfaces_arm64:
+        description: Result of the `cli-interfaces` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-interfaces_arm64 }}
+      result_cli-vpp_amd64:
+        description: Result of the `cli-vpp` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-vpp_amd64 }}
+      result_cli-vpp_arm64:
+        description: Result of the `cli-vpp` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_cli-vpp_arm64 }}
+      result_config_amd64:
+        description: Result of the `config` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_config_amd64 }}
+      result_config_arm64:
+        description: Result of the `config` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_config_arm64 }}
+      result_config-vpp_amd64:
+        description: Result of the `config-vpp` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_config-vpp_amd64 }}
+      result_config-vpp_arm64:
+        description: Result of the `config-vpp` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_config-vpp_arm64 }}
+      result_raid_amd64:
+        description: Result of the `raid` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_raid_amd64 }}
+      result_raid_arm64:
+        description: Result of the `raid` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_raid_arm64 }}
+      result_secureboot_amd64:
+        description: Result of the `secureboot` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_secureboot_amd64 }}
+      result_secureboot_arm64:
+        description: Result of the `secureboot` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_secureboot_arm64 }}
+      result_tpm_amd64:
+        description: Result of the `tpm` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_tpm_amd64 }}
+      result_tpm_arm64:
+        description: Result of the `tpm` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_tpm_arm64 }}
+permissions:
+  contents: read

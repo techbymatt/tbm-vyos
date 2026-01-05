@@ -1,0 +1,228 @@
+---
+jobs:
+  build:
+    name: Build ISO
+    outputs:
+      result_amd64: ${{ steps.build_iso.outputs.result_amd64 }}
+      result_arm64: ${{ steps.build_iso.outputs.result_arm64 }}
+      release_filename_amd64: ${{ steps.get_release_filename.outputs.release_filename_amd64 }}
+      release_filename_arm64: ${{ steps.get_release_filename.outputs.release_filename_arm64 }}
+    permissions:
+      contents: write
+      packages: write
+    runs-on: ${{ inputs.runner_os }}
+    steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@e61617a16c407a86262fb923c35a616ddbe070b3 # v4.6.0
+      - name: Log into registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+      - name: Checkout repository techbymatt/tbm-vyos
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          path: vyos-build
+          ref: ${{ inputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
+      - if: inputs.vyos_build_pr != ''
+        name: Merge requested PRs from vyos/vyos-build
+        run: |
+          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
+            title=$(curl -s \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
+              jq -r .title)
+            git config user.email "tbm-vyos@tech.bymatt.au"
+            git config user.name "TBM VyOS"
+            git fetch origin "pull/${pr}/head:pr-${pr}"
+            git merge --no-commit "pr-${pr}"
+          done
+        working-directory: vyos-build
+      - name: Checkout repository vyos/vyos-1x
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          path: vyos-build/build/vyos-1x
+          ref: ${{ inputs.vyos_1x_commit_sha }}
+          repository: vyos/vyos-1x
+          submodules: recursive
+      - if: inputs.vyos_1x_pr != ''
+        name: Merge requested PRs from vyos/vyos-1x
+        run: |
+          for pr in $(echo "${{ inputs.vyos_1x_pr }}"); do
+            title=$(curl -s \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/vyos/vyos-1x/pulls/${pr}" | \
+              jq -r .title)
+            git config user.email "tbm-vyos@tech.bymatt.au"
+            git config user.name "TBM VyOS"
+            git fetch origin "pull/${pr}/head:pr-${pr}"
+            git merge --no-commit "pr-${pr}"
+          done
+        working-directory: vyos-build/build/vyos-1x
+      - id: generate_patch
+        name: Generate patch files
+        run: |
+          ./generate.sh
+        working-directory: patch
+      - id: patch_vyos_build
+        name: Patch vyos-build
+        run: |
+          patch -p1 < ${{ github.workspace }}/patch/vyos-build.patch
+        working-directory: vyos-build
+      - id: patch_vyos_1x
+        name: Patch vyos-1x
+        run: |
+          patch -p1 < ${{ github.workspace }}/patch/vyos-1x.patch
+        working-directory: vyos-build/build/vyos-1x
+      - id: upload_patch
+        name: Upload patch artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-patch
+          path: patch/*.patch
+      - id: add_minisign_pub
+        name: Add TBM Minisign public key
+        run: |
+          echo "${{ secrets.MINISIGN_PUB }}" > vyos-build/data/live-build-config/includes.chroot/usr/share/vyos/keys/tbm.minisign.pub
+      - env:
+          CA_DIR: data/certificates
+          SHIM_CERT_NAME: vyos-dev-2025-shim
+          VYOS_KERNEL_CERT_NAME: vyos-dev-2025-linux
+        id: secure_boot_certs
+        name: Generate Secure Boot certificates
+        run: |
+          # Shim
+          echo "${{ secrets.VYOS_DEV_2025_SHIM }}" > ${CA_DIR}/${SHIM_CERT_NAME}.key
+          openssl req -new -x509 -key ${CA_DIR}/${SHIM_CERT_NAME}.key -out ${CA_DIR}/${SHIM_CERT_NAME}.der \
+            -outform DER -days 36500 -subj "/CN=Tech By Matt Secure Boot CA/" -nodes
+          openssl x509 -inform der -in ${CA_DIR}/${SHIM_CERT_NAME}.der -out ${CA_DIR}/${SHIM_CERT_NAME}.pem
+          # Kernel
+          echo "${{ secrets.VYOS_DEV_2025_LINUX }}" > ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key
+          openssl req -new -sha256 -key ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr \
+            -outform PEM -days 3650 -subj "/CN=Tech By Matt Secure Boot Signer 2025 - linux/"
+          openssl x509 -req -in ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr -CA ${CA_DIR}/${SHIM_CERT_NAME}.pem \
+            -CAkey ${CA_DIR}/${SHIM_CERT_NAME}.key -CAcreateserial -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.pem -days 3650 -sha256
+          # Cleanup
+          rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
+        working-directory: vyos-build
+      - id: build_container
+        name: Build vyos-build container
+        run: |
+          docker compose \
+            --file build-${{ inputs.arch }}.yaml \
+            run \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --no-TTY \
+            --rm \
+            build \
+              echo "Container build completed successfully!"
+        timeout-minutes: 20
+      - id: build_vyos_1x
+        name: Build vyos-1x package
+        run: |
+          docker compose \
+            --file build-${{ inputs.arch }}.yaml \
+            run \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --no-TTY \
+            --rm \
+            --workdir /vyos/build/vyos-1x \
+            build make deb
+          cp vyos-build/build/*.deb vyos-build/packages
+        timeout-minutes: 10
+      - id: build_iso
+        name: Build ISO
+        run: |
+          if docker compose \
+            --file build-${{ inputs.arch }}.yaml \
+            run \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --no-TTY \
+            --rm \
+            build \
+              sudo --preserve-env ./build-vyos-image \
+                --architecture ${{ inputs.arch }} \
+                --build-by tbm-vyos@tech.bymatt.au \
+                --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
+                --build-type release \
+                --version ${{ inputs.version }} \
+                --custom-package vyos-1x-smoketest \
+              generic; then
+              echo "result_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+              exit 0
+          else
+            echo "result_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        timeout-minutes: 30
+      - id: get_release_filename
+        name: Get file name of release ISO
+        run: |
+          RELEASE_FILENAME=tbm-$(ls vyos*.iso)
+          echo "release_filename_${{ inputs.arch }}=$RELEASE_FILENAME" >> "$GITHUB_OUTPUT"
+        working-directory: vyos-build/build
+      - id: upload_image
+        name: Upload live image artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
+          path: vyos-build/build/live-image-*.hybrid.iso
+    timeout-minutes: 45
+name: Build
+on:
+  workflow_call:
+    inputs:
+      arch:
+        description: CPU architecture of the ISO build
+        required: true
+        type: string
+      runner_os:
+        description: Runner OS to use
+        required: true
+        type: string
+      version:
+        description: The version string to use when building the ISO
+        required: true
+        type: string
+      vyos_1x_commit_sha:
+        description: Full SHA of the latest commit to vyos/vyos-1x
+        required: true
+        type: string
+      vyos_1x_pr:
+        description: List of vyos/vyos-1x PR IDs to merge (optional)
+        required: false
+        type: string
+      vyos_build_commit_sha:
+        description: Full SHA of the latest commit to vyos/vyos-build
+        required: true
+        type: string
+      vyos_build_pr:
+        description: List of vyos/vyos-build PR IDs to merge (optional)
+        required: false
+        type: string
+    outputs:
+      result_amd64:
+        description: Exit code of the AMD64 ISO build process
+        value: ${{ jobs.build.outputs.result_amd64 }}
+      result_arm64:
+        description: Exit code of the ARM64 ISO build process
+        value: ${{ jobs.build.outputs.result_arm64 }}
+      release_filename_amd64:
+        description: File name of the AMD64 release ISO
+        value: ${{ jobs.build.outputs.release_filename_amd64 }}
+      release_filename_arm64:
+        description: File name of the ARM64 release ISO
+        value: ${{ jobs.build.outputs.release_filename_arm64 }}
+permissions:
+  contents: read
