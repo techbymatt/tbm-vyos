@@ -67,55 +67,16 @@ jobs:
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build/build/vyos-1x
-      - id: patch_build_vyos_image
-        name: Patch build-vyos-image
+      - id: patch_vyos_1x
+        name: Patch vyos-1x
         run: |
-          patch <<'EOF'
-          ${{ vars.BUILD_VYOS_IMAGE_PATCH }}
-          EOF
-        working-directory: vyos-build/scripts/image-build
-      - id: patch_default_motd_j2
-        name: Patch default_motd.j2
+          patch -p1 < ../../../vyos-1x.patch
+        working-directory: vyos-build/build/vyos-1x
+      - id: patch_vyos_build
+        name: Patch vyos-build
         run: |
-          patch <<'EOF'
-          ${{ vars.DEFAULT_MOTD_J2_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/data/templates/login
-      - id: patch_defaults_toml
-        name: Patch defaults.toml
-        run: |
-          patch <<'EOF'
-          ${{ vars.DEFAULTS_TOML_PATCH }}
-          EOF
-        working-directory: vyos-build/data
-      - id: patch_image_installer_py
-        name: Patch image_installer.py
-        run: |
-          patch <<'EOF'
-          ${{ vars.IMAGE_INSTALLER_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/src/op_mode
-      - id: patch_system_login_banner_py
-        name: Patch system_login_banner.py
-        run: |
-          patch <<'EOF'
-          ${{ vars.SYSTEM_LOGIN_BANNER_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/src/conf_mode
-      - id: patch_test_opmode_show_py
-        name: Patch test_op-mode_show.py
-        run: |
-          patch <<'EOF'
-          ${{ vars.TEST_OPMODE_SHOW_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/smoketest/scripts/cli
-      - id: patch_version_py
-        name: Patch version.py
-        run: |
-          patch <<'EOF'
-          ${{ vars.VERSION_PY_PATCH }}
-          EOF
-        working-directory: vyos-build/build/vyos-1x/src/op_mode
+          patch -p1 < ../vyos-build.patch
+        working-directory: vyos-build
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
