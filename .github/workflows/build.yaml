@@ -29,6 +29,16 @@ jobs:
           path: vyos-build
           ref: ${{ inputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: patch_vyos_build
+        name: Patch vyos-build
+        run: |
+          patch -p1 < ${{ github.workspace }}/patch/vyos-build.patch
+        working-directory: vyos-build
+      - id: patch_vyos_1x
+        name: Patch vyos-1x
+        run: |
+          patch -p1 < ${{ github.workspace }}/patch/vyos-1x.patch
+        working-directory: vyos-build/build/vyos-1x
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
@@ -66,16 +76,6 @@ jobs:
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git merge --no-commit "pr-${pr}"
           done
-        working-directory: vyos-build/build/vyos-1x
-      - id: patch_vyos_build
-        name: Patch vyos-build
-        run: |
-          patch -p1 < ${{ github.workspace }}/patch/vyos-build.patch
-        working-directory: vyos-build
-      - id: patch_vyos_1x
-        name: Patch vyos-1x
-        run: |
-          patch -p1 < ${{ github.workspace }}/patch/vyos-1x.patch
         working-directory: vyos-build/build/vyos-1x
       - id: add_minisign_pub
         name: Add TBM Minisign public key
