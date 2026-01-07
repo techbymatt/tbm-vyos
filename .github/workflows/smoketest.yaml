@@ -186,5 +186,39 @@ on:
       result_tpm_arm64:
         description: Result of the `tpm` smoketest on `arm64` arch
         value: ${{ jobs.smoketest.outputs.result_tpm_arm64 }}
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: CPU architecture of the ISO build
+        required: true
+        type: string
+      runner_os:
+        description: Runner OS to use
+        required: true
+        type: string
+      test:
+        description: Name of the smoketest
+        required: true
+        type: string
+      test_cmd:
+        description: Smoketest command to execute
+        required: true
+        type: string
+      test_timeout:
+        description: Timeout for the smoketest
+        required: true
+        type: number
+      version:
+        description: The version string of the built ISO
+        required: true
+        type: string
+      vyos_build_commit_sha:
+        description: Full SHA of the latest commit to vyos/vyos-build
+        required: true
+        type: string
+      vyos_build_pr:
+        description: List of vyos/vyos-build PR IDs to merge (optional)
+        required: false
+        type: string
 permissions:
   contents: read
