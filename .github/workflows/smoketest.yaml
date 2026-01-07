@@ -89,14 +89,14 @@ jobs:
         run: |
           patch -p1 < ../patch/vyos-build.patch
         working-directory: vyos-build
-      - if: github.event_name == 'workflow_call'
+      - if: ${{ !inputs.build_run }}
         name: Download image artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
           path: vyos-build/build
-      - if: github.event_name == 'workflow_dispatch'
-        name: Download pre-built image artifact          
+      - if: ${{ inputs.build_run }}
+        name: Download pre-built image artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           github-token: ${{ github.token }}
@@ -114,7 +114,7 @@ jobs:
             exit 1
           fi
         working-directory: vyos-build
-    timeout-minutes: ${{ fromJson(inputs.test_timeout) }}
+    timeout-minutes: ${{ inputs.build_run && fromJson(inputs.test_timeout) || inputs.test_timeout }}
 name: Smoketest
 on:
   workflow_call:
