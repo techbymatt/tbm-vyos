@@ -42,6 +42,7 @@ jobs:
     name: "Smoketest"
     needs: [gather_data, build]
     permissions:
+      actions: read
       contents: read
       packages: write
     strategy:
