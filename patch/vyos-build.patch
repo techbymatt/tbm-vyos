@@ -1,5 +1,5 @@
 --- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-01-07 11:08:43
-+++ ./scripts/check-qemu-install	2026-01-07 11:08:40
++++ ./scripts/check-qemu-install	2026-01-07 13:48:27
 @@ -43,12 +43,14 @@
  import re
  import shutil
@@ -101,20 +101,20 @@
          time.sleep(3)
          # press any key
          c.send(KEY_RETURN)
-@@ -720,13 +743,6 @@
-     if args.sbtest:
-         log.info('Enable UEFI Secure Boot for initial installation')
+@@ -722,13 +745,6 @@
          toggleUEFISecureBoot(c)
--
--    #################################################
+ 
+     #################################################
 -    # Removing CD installation media
 -    #################################################
 -    time.sleep(2)
 -    log.info('eject installation media')
 -    os.system(f'echo "eject -f drive-cd1" | socat - unix-connect:/tmp/qemu-monitor-socket-{args.disk}')
- 
-     #################################################
+-
+-    #################################################
      # Booting installed system
+     #################################################
+     log.info('Booting installed system')
 @@ -782,7 +798,7 @@
      # Verify /etc/os-release via lsb_release
      #################################################
@@ -124,7 +124,7 @@
      if os.path.isfile(manifest_file):
          c.sendline('lsb_release --short --release 2>/dev/null')
          c.expect(vyos_version)
-@@ -828,7 +844,7 @@
+@@ -828,10 +844,12 @@
  
          log.info('Encrypting config to TPM')
          c.sendline('encryption enable')
@@ -133,7 +133,12 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -957,7 +973,7 @@
++        c.expect('Confirm key: ')
++        c.sendline(test_recovery_key)
+         c.expect('Enter size of encrypted config partition.*', timeout=30)
+         c.sendline('32')
+         c.expect('Encrypted config volume has been enabled', timeout=tpm_timeout)
+@@ -957,7 +975,7 @@
  
          log.info('Encrypting config')
          c.sendline('encryption enable')
@@ -142,7 +147,7 @@
          c.sendline('y')
          c.expect('Enter key: ')
          c.sendline(test_recovery_key)
-@@ -1088,7 +1104,7 @@
+@@ -1088,7 +1106,7 @@
          if args.match:
              # Remove tests that we don't want to run
              match_str = '-o '.join([f'-name "test_*{name}*.py" ' for name in args.match.split("|")]).strip()
@@ -151,7 +156,7 @@
              c.expect(op_mode_prompt)
          if args.no_interfaces:
              # remove interface tests as they consume a lot of time
-@@ -1119,7 +1135,7 @@
+@@ -1119,7 +1137,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -160,7 +165,7 @@
          if i == 0:
              log.info('Smoketest finished successfully!')
              pass
-@@ -1180,7 +1196,7 @@
+@@ -1180,7 +1198,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
