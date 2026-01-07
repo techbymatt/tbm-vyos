@@ -100,7 +100,8 @@ jobs:
   draft_release:
     if: |
       !cancelled() &&
-      needs.build.result == 'success'
+      needs.smoketest.result == 'success' &&
+      !inputs.debug_mode
     name: Draft release
     needs: [gather_data, build, smoketest]
     outputs:
@@ -188,7 +189,8 @@ jobs:
   notify_release:
     if: |
       !cancelled() &&
-      needs.draft_release.result == 'success'
+      needs.draft_release.result == 'success' &&
+      !inputs.debug_mode
     name: Release notifications
     needs: [draft_release]
     permissions:
@@ -204,12 +206,102 @@ jobs:
             --form-string "message=A new draft release has been created!" \
             --form-string "url=${{ needs.draft_release.outputs.release_url }}" \
             https://api.pushover.net/1/messages.json
+  debug_data:
+    if: |
+      !cancelled() &&
+      inputs.debug_mode
+    name: Print debug data
+    needs: [gather_data, build, smoketest]
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    steps:
+      - id: debug_data
+        name: Print debug data
+        run: |
+          echo "----------------"
+          echo "Workflow Inputs"
+          echo "----------------"
+          echo "patch_string: ${{ inputs.patch_string }}"
+          echo "vyos_1x_pr: ${{ inputs.vyos_1x_pr }}"
+          echo "vyos_build_pr: ${{ inputs.vyos_build_pr }}"
+          echo ""
+          echo "----------------"
+          echo "gather_data"
+          echo "----------------"
+          echo "version: ${{ needs.gather_data.outputs.version }}"
+          echo "vyos_1x_commit: ${{ needs.gather_data.outputs.vyos_1x_commit }}"
+          echo "vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}"
+          echo "vyos_build_commit: ${{ needs.gather_data.outputs.vyos_build_commit }}"
+          echo "vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}"
+          echo ""
+          echo "----------------"
+          echo "build"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.build.outputs.result_amd64 }}"
+          echo "result_arm64: ${{ needs.build.outputs.result_arm64 }}"
+          echo "release_filename_amd64: ${{ needs.build.outputs.release_filename_amd64 }}"
+          echo "release_filename_arm64: ${{ needs.build.outputs.release_filename_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_cli"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_cli_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_cli_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_cli-interfaces"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_cli-vpp"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_cli-vpp_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_cli-vpp_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_config"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_config_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_config_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_config-vpp"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_config-vpp_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_config-vpp_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_raid"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_raid_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_raid_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_secureboot"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_secureboot_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_secureboot_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_tpm"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_tpm_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_tpm_arm64 }}"
+          echo ""
 name: Release
 on:
   schedule:
     - cron: "0 7 1 * *"
   workflow_dispatch:
     inputs:
+      debug_mode:
+        default: false
+        description: Enable debug mode?
+        required: true
+        type: boolean
       patch_string:
         description: Patch version? (leave blank for none)
         required: false
