@@ -67,11 +67,6 @@ jobs:
           path: vyos-build
           ref: ${{ inputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - id: patch_vyos_build
-        name: Patch vyos-build
-        run: |
-          patch -p1 < ../patch/vyos-build.patch
-        working-directory: vyos-build
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
@@ -88,6 +83,11 @@ jobs:
             git switch --detach ${{ inputs.vyos_build_commit_sha }}
             git merge --no-commit "pr-${pr}"
           done
+        working-directory: vyos-build
+      - id: patch_vyos_build
+        name: Patch vyos-build
+        run: |
+          patch -p1 < ../patch/vyos-build.patch
         working-directory: vyos-build
       - if: github.event_name == 'workflow_call'
         name: Download image artifact
