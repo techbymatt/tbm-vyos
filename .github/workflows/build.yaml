@@ -67,11 +67,6 @@ jobs:
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build/build/vyos-1x
-      - id: generate_patch
-        name: Generate patch files
-        run: |
-          ./generate.sh
-        working-directory: patch
       - id: patch_vyos_build
         name: Patch vyos-build
         run: |
@@ -82,12 +77,6 @@ jobs:
         run: |
           patch -p1 < ${{ github.workspace }}/patch/vyos-1x.patch
         working-directory: vyos-build/build/vyos-1x
-      - id: upload_patch
-        name: Upload patch artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-patch
-          path: patch/*.patch
       - id: add_minisign_pub
         name: Add TBM Minisign public key
         run: |
