@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-01-07 11:08:43
-+++ ./scripts/check-qemu-install	2026-01-07 15:57:18
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-01-16 12:27:13
++++ ./scripts/check-qemu-install	2026-01-16 12:57:54
 @@ -43,12 +43,14 @@
  import re
  import shutil
@@ -15,20 +15,19 @@
  
  EXCEPTION = 0
  DISK_IMAGE_EXTENSION = '.raw'
-@@ -212,7 +214,7 @@
+@@ -243,7 +245,7 @@
+         {vga} {vnc}\
          -uuid {uuid} \
-         {cdrom} \
-         -enable-kvm \
+         {enable_kvm} \
 -        -monitor unix:/tmp/qemu-monitor-socket-{disk_img},server,nowait \
 +        -qmp unix:/tmp/qemu-monitor-socket-{disk_img},server,nowait \
          -netdev user,id=n0,net=192.0.2.0/24,dhcpstart=192.0.2.101,dns=192.0.2.10 -device virtio-net-pci,netdev=n0,mac={macbase}:00,romfile="",host_mtu=1500 \
          -netdev user,id=n1 -device virtio-net-pci,netdev=n1,mac={macbase}:01,romfile="",host_mtu=1500 \
          -netdev user,id=n2 -device virtio-net-pci,netdev=n2,mac={macbase}:02,romfile="",host_mtu=1500 \
-@@ -268,6 +270,16 @@
-     c.sendline(default_password)
+@@ -301,6 +303,16 @@
      c.expect(op_mode_prompt)
      log.info('Logged in!')
-+
+ 
 +async def qmp_eject_cdrom(socket_path, device_id, log):
 +    log.info(f'QMP: ejecting {device_id}')
 +    client = QMPClient('qemu-monitor')
@@ -38,10 +37,11 @@
 +        await client.disconnect()
 +    except Exception as e:
 +        log.error(f'QMP: failed to eject {device_id}: {e}')
- 
++
  # Setting up logger
  log = logging.getLogger()
-@@ -350,7 +362,7 @@
+ log.setLevel(logging.DEBUG)
+@@ -381,7 +393,7 @@
              '--ctrl', f'type=unixio,path={tpm_folder}/swtpm-sock', '--tpm2', '--log', 'level=1'
          ])
  
@@ -50,16 +50,7 @@
      tpm_process = Process(target=swtpm_thread)
      tpm_process.start()
      return tpm_process
-@@ -400,7 +412,7 @@
- def BOOTLOADERchooseSerialConsole(c, live: bool) -> None:
-     """ Select GRUB boot entry that uses the serial console. This differs
-         between a LIVE ISO image and an already installed system. """
--    BOOTLOADER_TMO = 20
-+    BOOTLOADER_TMO = 30
-     BOOTLOADER_SLEEP = 0.5
-     BOOTLOADER_LOAD_TMO = 5 # let GRUB screen load
- 
-@@ -580,11 +592,11 @@
+@@ -611,11 +623,11 @@
          basic_cli_tests(c)
  
          # Valida assigned IPv4 and IPv6 addresses
@@ -73,7 +64,7 @@
          c.expect(CI_CONFIG_ARGS['eth0_ipv6'])
          c.expect(op_mode_prompt)
  
-@@ -672,7 +684,18 @@
+@@ -703,7 +715,18 @@
          c.expect('input password again:.*')
          c.sendline(mok_password)
          c.expect(op_mode_prompt)
@@ -92,7 +83,7 @@
      log.info('system installed, rebooting')
      c.sendline('reboot now')
  
-@@ -682,7 +705,7 @@
+@@ -713,7 +736,7 @@
      if args.sbtest:
          log.info('Install Secure Boot Machine Owner Key')
          MOK_SLEEP = 0.5
@@ -101,7 +92,7 @@
          time.sleep(3)
          # press any key
          c.send(KEY_RETURN)
-@@ -720,13 +743,6 @@
+@@ -751,13 +774,6 @@
      if args.sbtest:
          log.info('Enable UEFI Secure Boot for initial installation')
          toggleUEFISecureBoot(c)
@@ -115,16 +106,7 @@
  
      #################################################
      # Booting installed system
-@@ -782,7 +798,7 @@
-     # Verify /etc/os-release via lsb_release
-     #################################################
-     c.sendline('lsb_release --short --id 2>/dev/null')
--    c.expect('VyOS')
-+    c.expect('Tbm-vyos')
-     if os.path.isfile(manifest_file):
-         c.sendline('lsb_release --short --release 2>/dev/null')
-         c.expect(vyos_version)
-@@ -828,7 +844,7 @@
+@@ -859,7 +875,7 @@
  
          log.info('Encrypting config to TPM')
          c.sendline('encryption enable')
@@ -133,7 +115,7 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -957,7 +973,7 @@
+@@ -988,7 +1004,7 @@
  
          log.info('Encrypting config')
          c.sendline('encryption enable')
@@ -142,7 +124,7 @@
          c.sendline('y')
          c.expect('Enter key: ')
          c.sendline(test_recovery_key)
-@@ -1088,7 +1104,7 @@
+@@ -1121,7 +1137,7 @@
          if args.match:
              # Remove tests that we don't want to run
              match_str = '-o '.join([f'-name "test_*{name}*.py" ' for name in args.match.split("|")]).strip()
@@ -151,7 +133,7 @@
              c.expect(op_mode_prompt)
          if args.no_interfaces:
              # remove interface tests as they consume a lot of time
-@@ -1119,7 +1135,7 @@
+@@ -1152,7 +1168,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -160,7 +142,7 @@
          if i == 0:
              log.info('Smoketest finished successfully!')
              pass
-@@ -1180,7 +1196,7 @@
+@@ -1213,7 +1229,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -170,7 +152,7 @@
              log.info('Configtest finished successfully!')
              pass
 --- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-01-07 11:08:43
-+++ ./scripts/image-build/build-vyos-image	2026-01-07 11:08:40
++++ ./scripts/image-build/build-vyos-image	2026-01-16 12:57:54
 @@ -341,7 +341,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -216,7 +198,7 @@
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
 --- ../../upstream/vyos-build/./data/defaults.toml	2026-01-07 11:08:43
-+++ ./data/defaults.toml	2026-01-07 11:08:40
++++ ./data/defaults.toml	2026-01-16 12:57:54
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  

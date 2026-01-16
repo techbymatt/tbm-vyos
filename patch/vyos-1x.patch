@@ -1,5 +1,5 @@
 --- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-01-07 11:11:25
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-01-07 11:08:40
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-01-16 12:57:54
 @@ -29,7 +29,7 @@
          tmp = self.op_mode(base_path + ['version'])
          # Validate
@@ -10,7 +10,7 @@
      def test_op_mode_show_version_kernel(self):
          # Retrieve output of "show version" OP-mode command
 --- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-01-07 11:11:24
-+++ ./data/templates/login/default_motd.j2	2026-01-07 18:55:19
++++ ./data/templates/login/default_motd.j2	2026-01-16 12:57:54
 @@ -1,8 +1,8 @@
 -Welcome to VyOS!
 +Welcome to TBM VyOS!
@@ -31,7 +31,7 @@
 +TBM VyOS is a free software distribution that includes multiple components,
  you can check individual component licenses under /usr/share/doc/*/copyright
 --- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-01-07 11:11:25
-+++ ./src/op_mode/version.py	2026-01-07 11:08:40
++++ ./src/op_mode/version.py	2026-01-16 12:57:54
 @@ -31,7 +31,7 @@
  from jinja2 import Template
  
@@ -55,7 +55,7 @@
          sys.exit(1)
 -
 --- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-01-07 11:11:25
-+++ ./src/op_mode/image_installer.py	2026-01-07 18:59:21
++++ ./src/op_mode/image_installer.py	2026-01-16 12:57:54
 @@ -79,8 +79,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -68,7 +68,7 @@
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
 --- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-01-07 11:11:25
-+++ ./src/conf_mode/system_login_banner.py	2026-01-07 11:08:40
++++ ./src/conf_mode/system_login_banner.py	2026-01-16 12:57:54
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
