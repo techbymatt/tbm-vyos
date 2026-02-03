@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-01-16 12:27:13
-+++ ./scripts/check-qemu-install	2026-02-03 10:22:17
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-02-03 21:26:05
++++ ./scripts/check-qemu-install	2026-02-03 21:27:57
 @@ -43,12 +43,14 @@
  import re
  import shutil
@@ -24,10 +24,11 @@
          -netdev user,id=n0,net=192.0.2.0/24,dhcpstart=192.0.2.101,dns=192.0.2.10 -device virtio-net-pci,netdev=n0,mac={macbase}:00,romfile="",host_mtu=1500 \
          -netdev user,id=n1 -device virtio-net-pci,netdev=n1,mac={macbase}:01,romfile="",host_mtu=1500 \
          -netdev user,id=n2 -device virtio-net-pci,netdev=n2,mac={macbase}:02,romfile="",host_mtu=1500 \
-@@ -301,6 +303,16 @@
+@@ -300,6 +302,16 @@
+     c.sendline(default_password)
      c.expect(op_mode_prompt)
      log.info('Logged in!')
- 
++
 +async def qmp_eject_cdrom(socket_path, device_id, log):
 +    log.info(f'QMP: ejecting {device_id}')
 +    client = QMPClient('qemu-monitor')
@@ -37,10 +38,9 @@
 +        await client.disconnect()
 +    except Exception as e:
 +        log.error(f'QMP: failed to eject {device_id}: {e}')
-+
+ 
  # Setting up logger
  log = logging.getLogger()
- log.setLevel(logging.DEBUG)
 @@ -381,7 +393,7 @@
              '--ctrl', f'type=unixio,path={tpm_folder}/swtpm-sock', '--tpm2', '--log', 'level=1'
          ])
@@ -92,20 +92,29 @@
          time.sleep(3)
          # press any key
          c.send(KEY_RETURN)
-@@ -751,13 +774,6 @@
-     if args.sbtest:
-         log.info('Enable UEFI Secure Boot for initial installation')
+@@ -753,13 +776,6 @@
          toggleUEFISecureBoot(c)
--
--    #################################################
+ 
+     #################################################
 -    # Removing CD installation media
 -    #################################################
 -    time.sleep(2)
 -    log.info('eject installation media')
 -    os.system(f'echo "eject -f drive-cd1" | socat - unix-connect:/tmp/qemu-monitor-socket-{args.disk}')
- 
-     #################################################
+-
+-    #################################################
      # Booting installed system
+     #################################################
+     log.info('Booting installed system')
+@@ -813,7 +829,7 @@
+     # Verify /etc/os-release via lsb_release
+     #################################################
+     c.sendline('lsb_release --short --id 2>/dev/null')
+-    c.expect('VyOS')
++    c.expect('Tbm-vyos')
+     if os.path.isfile(manifest_file):
+         c.sendline('lsb_release --short --release 2>/dev/null')
+         c.expect(vyos_version)
 @@ -859,7 +875,7 @@
  
          log.info('Encrypting config to TPM')
@@ -152,7 +161,7 @@
              log.info('Configtest finished successfully!')
              pass
 --- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-02-03 10:22:17
-+++ ./scripts/image-build/build-vyos-image	2026-02-03 10:22:17
++++ ./scripts/image-build/build-vyos-image	2026-02-03 21:26:33
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -198,7 +207,7 @@
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
 --- ../../upstream/vyos-build/./data/defaults.toml	2026-02-03 10:22:17
-+++ ./data/defaults.toml	2026-02-03 10:22:17
++++ ./data/defaults.toml	2026-02-03 21:26:33
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
