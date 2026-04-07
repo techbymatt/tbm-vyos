@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-03-26 06:36:23.657909762 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-03-26 06:36:24.384129668 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-04 18:17:03.978491391 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-04 18:17:04.082071727 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -18,7 +18,7 @@
              build_config["artifact_format"] = [ build_config["artifact_format"] ]
  
      ## Dump the complete config if the user enabled debug mode
-@@ -459,12 +459,12 @@
+@@ -465,12 +465,12 @@
  
          # Multi line strings needs to be un-indented to not have leading
          # whitespaces in the resulting file
@@ -34,7 +34,7 @@
  BUILD_ID="{build_git}"
  HOME_URL="{build_defaults['website_url']}"
  SUPPORT_URL="{build_defaults['support_url']}"
-@@ -748,7 +748,8 @@
+@@ -756,7 +756,8 @@
  
      # os.path.splitext returns extensions with dots,
      # so we need to remove the dots, hence [1:]
@@ -44,8 +44,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-03-26 06:36:23.657909762 +0000
-+++ ./scripts/check-qemu-install	2026-03-26 06:36:24.383733078 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-04 18:17:03.219974022 +0000
++++ ./scripts/check-qemu-install	2026-04-04 18:17:04.082461474 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -205,8 +205,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./data/defaults.toml	2026-03-26 06:36:23.650634803 +0000
-+++ ./data/defaults.toml	2026-03-26 06:36:24.384481145 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-04 18:17:03.212978304 +0000
++++ ./data/defaults.toml	2026-04-04 18:17:04.082836744 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
