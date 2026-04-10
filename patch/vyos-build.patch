@@ -1,51 +1,5 @@
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-04 18:17:03.978491391 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-04 18:17:04.082071727 +0000
-@@ -339,7 +339,7 @@
- 
-     ## Convert the image_format field to a single-item list if it's a scalar
-     ## (like `image_format = "iso"`)
--    if type(build_config["image_format"]) != list:
-+    if not isinstance(build_config["image_format"], list):
-         build_config["image_format"] = [ build_config["image_format"] ]
- 
-     ## If the user didn't explicitly specify what extensions build artifact should have,
-@@ -350,7 +350,7 @@
-         build_config["artifact_format"] = build_config["image_format"]
-     else:
-         # If the option is there, also make it list if it's a scalar
--        if type(build_config["artifact_format"]) != list:
-+        if not isinstance(build_config["artifact_format"], list):
-             build_config["artifact_format"] = [ build_config["artifact_format"] ]
- 
-     ## Dump the complete config if the user enabled debug mode
-@@ -465,12 +465,12 @@
- 
-         # Multi line strings needs to be un-indented to not have leading
-         # whitespaces in the resulting file
--        os_release = f"""PRETTY_NAME="VyOS {version} ({build_config['release_train']})"
--NAME="VyOS"
-+        os_release = f"""PRETTY_NAME="TBM VyOS {version} ({build_config['release_train']})"
-+NAME="TBM VyOS"
- VERSION_ID="{version}"
- VERSION="{version} ({build_config['release_train']})"
- VERSION_CODENAME={build_defaults['release_train']}
--ID=vyos
-+ID=tbm-vyos
- BUILD_ID="{build_git}"
- HOME_URL="{build_defaults['website_url']}"
- SUPPORT_URL="{build_defaults['support_url']}"
-@@ -756,7 +756,8 @@
- 
-     # os.path.splitext returns extensions with dots,
-     # so we need to remove the dots, hence [1:]
--    is_artifact = lambda f: os.path.splitext(f)[-1][1:] in build_config['artifact_format']
-+    def is_artifact(f):
-+        return os.path.splitext(f)[-1][1:] in build_config['artifact_format']
- 
-     manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
- 
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-04 18:17:03.219974022 +0000
-+++ ./scripts/check-qemu-install	2026-04-04 18:17:04.082461474 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-09 18:29:21.190357122 +0000
++++ ./scripts/check-qemu-install	2026-04-09 18:29:22.287973638 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -205,8 +159,54 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-04 18:17:03.212978304 +0000
-+++ ./data/defaults.toml	2026-04-04 18:17:04.082836744 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-09 18:29:21.190357122 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-09 18:29:22.287600525 +0000
+@@ -339,7 +339,7 @@
+ 
+     ## Convert the image_format field to a single-item list if it's a scalar
+     ## (like `image_format = "iso"`)
+-    if type(build_config["image_format"]) != list:
++    if not isinstance(build_config["image_format"], list):
+         build_config["image_format"] = [ build_config["image_format"] ]
+ 
+     ## If the user didn't explicitly specify what extensions build artifact should have,
+@@ -350,7 +350,7 @@
+         build_config["artifact_format"] = build_config["image_format"]
+     else:
+         # If the option is there, also make it list if it's a scalar
+-        if type(build_config["artifact_format"]) != list:
++        if not isinstance(build_config["artifact_format"], list):
+             build_config["artifact_format"] = [ build_config["artifact_format"] ]
+ 
+     ## Dump the complete config if the user enabled debug mode
+@@ -465,12 +465,12 @@
+ 
+         # Multi line strings needs to be un-indented to not have leading
+         # whitespaces in the resulting file
+-        os_release = f"""PRETTY_NAME="VyOS {version} ({build_config['release_train']})"
+-NAME="VyOS"
++        os_release = f"""PRETTY_NAME="TBM VyOS {version} ({build_config['release_train']})"
++NAME="TBM VyOS"
+ VERSION_ID="{version}"
+ VERSION="{version} ({build_config['release_train']})"
+ VERSION_CODENAME={build_defaults['release_train']}
+-ID=vyos
++ID=tbm-vyos
+ BUILD_ID="{build_git}"
+ HOME_URL="{build_defaults['website_url']}"
+ SUPPORT_URL="{build_defaults['support_url']}"
+@@ -756,7 +756,8 @@
+ 
+     # os.path.splitext returns extensions with dots,
+     # so we need to remove the dots, hence [1:]
+-    is_artifact = lambda f: os.path.splitext(f)[-1][1:] in build_config['artifact_format']
++    def is_artifact(f):
++        return os.path.splitext(f)[-1][1:] in build_config['artifact_format']
+ 
+     manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
+ 
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-09 18:29:22.199761769 +0000
++++ ./data/defaults.toml	2026-04-09 18:29:22.288317127 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
