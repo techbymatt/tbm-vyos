@@ -112,7 +112,7 @@ jobs:
     steps:
       - id: download_artifact_amd64
         name: Download AMD64 live image artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: tbm-vyos-amd64-${{ needs.gather_data.outputs.version }}-liveimage
           path: build
@@ -123,7 +123,7 @@ jobs:
         working-directory: build
       - id: download_artifact_arm64
         name: Download ARM64 live image artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: tbm-vyos-arm64-${{ needs.gather_data.outputs.version }}-liveimage
           path: build

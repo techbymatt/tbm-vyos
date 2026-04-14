@@ -91,13 +91,13 @@ jobs:
         working-directory: vyos-build
       - if: ${{ !inputs.build_run }}
         name: Download image artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
           path: vyos-build/build
       - if: ${{ inputs.build_run }}
         name: Download pre-built image artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           github-token: ${{ github.token }}
           name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
