@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-09 18:29:21.190357122 +0000
-+++ ./scripts/check-qemu-install	2026-04-09 18:29:22.287973638 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-13 18:35:36.477803566 +0000
++++ ./scripts/check-qemu-install	2026-04-13 18:35:36.501803831 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -50,7 +50,7 @@
      tpm_process = Process(target=swtpm_thread)
      tpm_process.start()
      return tpm_process
-@@ -615,11 +627,11 @@
+@@ -642,11 +654,11 @@
          basic_cli_tests(c)
  
          # Valida assigned IPv4 and IPv6 addresses
@@ -64,7 +64,7 @@
          c.expect(CI_CONFIG_ARGS['eth0_ipv6'])
          c.expect(op_mode_prompt)
  
-@@ -708,6 +720,17 @@
+@@ -735,6 +747,17 @@
          c.sendline(mok_password)
          c.expect(op_mode_prompt)
  
@@ -82,7 +82,7 @@
      log.info('system installed, rebooting')
      c.sendline('reboot now')
  
-@@ -717,7 +740,7 @@
+@@ -744,7 +767,7 @@
      if args.sbtest:
          log.info('Install Secure Boot Machine Owner Key')
          MOK_SLEEP = 0.5
@@ -91,7 +91,7 @@
          time.sleep(3)
          # press any key
          c.send(KEY_RETURN)
-@@ -757,13 +780,6 @@
+@@ -784,13 +807,6 @@
          toggleUEFISecureBoot(c)
  
      #################################################
@@ -105,7 +105,7 @@
      # Booting installed system
      #################################################
      log.info('Booting installed system')
-@@ -817,7 +833,7 @@
+@@ -844,7 +860,7 @@
      # Verify /etc/os-release via lsb_release
      #################################################
      c.sendline('lsb_release --short --id 2>/dev/null')
@@ -114,7 +114,7 @@
      if os.path.isfile(manifest_file):
          c.sendline('lsb_release --short --release 2>/dev/null')
          c.expect(vyos_version)
-@@ -863,7 +879,7 @@
+@@ -890,7 +906,7 @@
  
          log.info('Encrypting config to TPM')
          c.sendline('encryption enable')
@@ -123,7 +123,7 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -992,7 +1008,7 @@
+@@ -1019,7 +1035,7 @@
  
          log.info('Encrypting config')
          c.sendline('encryption enable')
@@ -132,7 +132,7 @@
          c.sendline('y')
          c.expect('Enter key: ')
          c.sendline(test_recovery_key)
-@@ -1125,7 +1141,7 @@
+@@ -1152,7 +1168,7 @@
          if args.match:
              # Remove tests that we don't want to run
              match_str = '-o '.join([f'-name "test_*{name}*.py" ' for name in args.match.split("|")]).strip()
@@ -141,7 +141,7 @@
              c.expect(op_mode_prompt)
          if args.no_interfaces:
              # remove interface tests as they consume a lot of time
-@@ -1156,7 +1172,7 @@
+@@ -1183,7 +1199,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -150,7 +150,7 @@
          if i == 0:
              log.info('Smoketest finished successfully!')
              pass
-@@ -1217,7 +1233,7 @@
+@@ -1244,7 +1260,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -159,8 +159,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-09 18:29:21.190357122 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-09 18:29:22.287600525 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-13 18:35:35.641462148 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-13 18:35:36.503250788 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -205,8 +205,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-09 18:29:22.199761769 +0000
-+++ ./data/defaults.toml	2026-04-09 18:29:22.288317127 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-13 18:35:35.634660729 +0000
++++ ./data/defaults.toml	2026-04-13 18:35:36.503518181 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
