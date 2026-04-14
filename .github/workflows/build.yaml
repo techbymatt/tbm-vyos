@@ -15,7 +15,7 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-docker-action@1a6edb0ba9ac496f6850236981f15d8f9a82254d # v5.0.0
       - name: Log into registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
