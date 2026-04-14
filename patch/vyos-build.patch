@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-13 18:35:36.477803566 +0000
-+++ ./scripts/check-qemu-install	2026-04-13 18:35:36.501803831 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-14 18:34:19.923711843 +0000
++++ ./scripts/check-qemu-install	2026-04-14 18:34:21.196188504 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -159,8 +159,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-13 18:35:35.641462148 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-13 18:35:36.503250788 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-14 18:34:19.923711843 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-14 18:34:21.196581369 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -205,8 +205,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-13 18:35:35.634660729 +0000
-+++ ./data/defaults.toml	2026-04-13 18:35:36.503518181 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-14 18:34:19.916868414 +0000
++++ ./data/defaults.toml	2026-04-14 18:34:21.196875679 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
