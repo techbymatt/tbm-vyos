@@ -119,8 +119,7 @@ jobs:
           name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
           path: vyos-build/build
           run-id: ${{ fromJson(inputs.build_run) }}
-      - continue-on-error: true
-        id: run_smoketest
+      - id: run_smoketest
         name: Run smoketest
         run: |
           if sudo --preserve-env=PATH ${{ inputs.test_cmd }}; then
