@@ -1,19 +1,19 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-15 12:18:33.457414961 +0000
-+++ ./docker/Dockerfile	2026-04-15 12:18:34.493475660 +0000
-@@ -95,7 +95,10 @@
-       apt-transport-https
- 
- # Packages needed for vyos-build
--RUN apt-get update && apt-get install -y \
-+RUN pip --no-cache --no-cache-dir install --break-system-packages \
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-15 12:24:36.552908140 +0000
++++ ./docker/Dockerfile	2026-04-15 12:24:37.819659649 +0000
+@@ -114,7 +114,10 @@
+       gdisk \
+       sbsigntool \
+       dosfstools \
+-      kpartx
++      kpartx; \
++    pip --no-cache --no-cache-dir install --break-system-packages \
 +      multiprocess==0.70.18 \
-+      qemu.qmp==0.0.5; \
-+    apt-get update && apt-get install -y \
-       build-essential \
-       python3-pystache \
-       squashfs-tools \
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 12:18:33.458311323 +0000
-+++ ./scripts/check-qemu-install	2026-04-15 12:18:34.493814206 +0000
++      qemu.qmp==0.0.5
+ 
+ # Packages for TPM test
+ RUN apt-get update && apt-get install -y swtpm
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 12:24:36.553561075 +0000
++++ ./scripts/check-qemu-install	2026-04-15 12:24:37.819879070 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -173,8 +173,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 12:18:33.458311323 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-15 12:18:34.494177038 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 12:24:36.553561075 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-15 12:24:37.820175368 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -219,8 +219,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 12:18:33.451428307 +0000
-+++ ./data/defaults.toml	2026-04-15 12:18:34.494453156 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 12:24:36.548257981 +0000
++++ ./data/defaults.toml	2026-04-15 12:24:37.820399881 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
