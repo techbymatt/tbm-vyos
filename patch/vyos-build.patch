@@ -1,5 +1,19 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 07:26:20.832995414 +0000
-+++ ./scripts/check-qemu-install	2026-04-15 07:26:22.347018181 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-15 12:18:33.457414961 +0000
++++ ./docker/Dockerfile	2026-04-15 12:18:34.493475660 +0000
+@@ -95,7 +95,10 @@
+       apt-transport-https
+ 
+ # Packages needed for vyos-build
+-RUN apt-get update && apt-get install -y \
++RUN pip --no-cache --no-cache-dir install --break-system-packages \
++      multiprocess==0.70.18 \
++      qemu.qmp==0.0.5; \
++    apt-get update && apt-get install -y \
+       build-essential \
+       python3-pystache \
+       squashfs-tools \
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 12:18:33.458311323 +0000
++++ ./scripts/check-qemu-install	2026-04-15 12:18:34.493814206 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -123,15 +137,6 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -962,7 +978,7 @@
-         except pexpect.TIMEOUT:
-             log.warning('Did not find GRUB countdown window, ignoring')
- 
--        c.expect('.*Encrypted config volume has not been mounted', timeout=120)
-+        c.expect('.*Configuration success', timeout=120)
- 
-         loginVM(c, log)
- 
 @@ -1019,7 +1035,7 @@
  
          log.info('Encrypting config')
@@ -168,8 +173,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 07:26:20.832995414 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-15 07:26:22.347456909 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 12:18:33.458311323 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-15 12:18:34.494177038 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -214,8 +219,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 07:26:20.825995434 +0000
-+++ ./data/defaults.toml	2026-04-15 07:26:22.347764763 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 12:18:33.451428307 +0000
++++ ./data/defaults.toml	2026-04-15 12:18:34.494453156 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
