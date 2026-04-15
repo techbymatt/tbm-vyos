@@ -1,9 +1,10 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-14 18:34:19.923711843 +0000
-+++ ./scripts/check-qemu-install	2026-04-14 18:34:21.196188504 +0000
-@@ -44,12 +44,14 @@
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-14 13:47:30
++++ ./scripts/check-qemu-install	2026-04-15 15:23:27
+@@ -43,13 +43,14 @@
+ import re
  import shutil
  import json
- import platform
+-import platform
 +import asyncio
  
  from io import BytesIO
@@ -15,7 +16,19 @@
  
  EXCEPTION = 0
  DISK_IMAGE_EXTENSION = '.raw'
-@@ -247,7 +249,7 @@
+@@ -189,9 +190,9 @@
+     uuid = "f48b60b2-e6ad-49ef-9d09-4245d0585e52"
+     accel = ',accel=kvm' if _kvm_exists() else ''
+ 
+-    if platform.machine() in ['amd64', 'x86_64']:
++    if 'amd64' in disk_img:
+         architecture = 'amd64'
+-    elif platform.machine() in ['arm64', 'aarch64']:
++    elif 'arm64' in disk_img:
+         architecture = 'arm64'
+     else:
+         raise ValueError('Unsupported architecture!')
+@@ -247,7 +248,7 @@
          {vga} {vnc}\
          -uuid {uuid} \
          {enable_kvm} \
@@ -24,10 +37,11 @@
          -netdev user,id=n0,net=192.0.2.0/24,dhcpstart=192.0.2.101,dns=192.0.2.10 -device virtio-net-pci,netdev=n0,mac={macbase}:00,romfile="",host_mtu=1500 \
          -netdev user,id=n1 -device virtio-net-pci,netdev=n1,mac={macbase}:01,romfile="",host_mtu=1500 \
          -netdev user,id=n2 -device virtio-net-pci,netdev=n2,mac={macbase}:02,romfile="",host_mtu=1500 \
-@@ -305,6 +307,16 @@
+@@ -304,6 +305,16 @@
+     c.sendline(default_password)
      c.expect(op_mode_prompt)
      log.info('Logged in!')
- 
++
 +async def qmp_eject_cdrom(socket_path, device_id, log):
 +    log.info(f'QMP: ejecting {device_id}')
 +    client = QMPClient('qemu-monitor')
@@ -37,11 +51,10 @@
 +        await client.disconnect()
 +    except Exception as e:
 +        log.error(f'QMP: failed to eject {device_id}: {e}')
-+
+ 
  # Setting up logger
  log = logging.getLogger()
- log.setLevel(logging.DEBUG)
-@@ -385,7 +397,7 @@
+@@ -385,7 +396,7 @@
              '--ctrl', f'type=unixio,path={tpm_folder}/swtpm-sock', '--tpm2', '--log', 'level=1'
          ])
  
@@ -50,7 +63,7 @@
      tpm_process = Process(target=swtpm_thread)
      tpm_process.start()
      return tpm_process
-@@ -642,11 +654,11 @@
+@@ -642,11 +653,11 @@
          basic_cli_tests(c)
  
          # Valida assigned IPv4 and IPv6 addresses
@@ -64,7 +77,7 @@
          c.expect(CI_CONFIG_ARGS['eth0_ipv6'])
          c.expect(op_mode_prompt)
  
-@@ -735,6 +747,17 @@
+@@ -735,6 +746,17 @@
          c.sendline(mok_password)
          c.expect(op_mode_prompt)
  
@@ -82,7 +95,7 @@
      log.info('system installed, rebooting')
      c.sendline('reboot now')
  
-@@ -744,7 +767,7 @@
+@@ -744,7 +766,7 @@
      if args.sbtest:
          log.info('Install Secure Boot Machine Owner Key')
          MOK_SLEEP = 0.5
@@ -91,21 +104,21 @@
          time.sleep(3)
          # press any key
          c.send(KEY_RETURN)
-@@ -784,13 +807,6 @@
+@@ -782,13 +804,6 @@
+     if args.sbtest:
+         log.info('Enable UEFI Secure Boot for initial installation')
          toggleUEFISecureBoot(c)
- 
-     #################################################
+-
+-    #################################################
 -    # Removing CD installation media
 -    #################################################
 -    time.sleep(2)
 -    log.info('eject installation media')
 -    os.system(f'echo "eject -f drive-cd1" | socat - unix-connect:/tmp/qemu-monitor-socket-{args.disk}')
--
--    #################################################
-     # Booting installed system
+ 
      #################################################
-     log.info('Booting installed system')
-@@ -844,7 +860,7 @@
+     # Booting installed system
+@@ -844,7 +859,7 @@
      # Verify /etc/os-release via lsb_release
      #################################################
      c.sendline('lsb_release --short --id 2>/dev/null')
@@ -114,7 +127,7 @@
      if os.path.isfile(manifest_file):
          c.sendline('lsb_release --short --release 2>/dev/null')
          c.expect(vyos_version)
-@@ -890,7 +906,7 @@
+@@ -890,7 +905,7 @@
  
          log.info('Encrypting config to TPM')
          c.sendline('encryption enable')
@@ -123,7 +136,7 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -1019,7 +1035,7 @@
+@@ -1019,7 +1034,7 @@
  
          log.info('Encrypting config')
          c.sendline('encryption enable')
@@ -132,7 +145,7 @@
          c.sendline('y')
          c.expect('Enter key: ')
          c.sendline(test_recovery_key)
-@@ -1152,7 +1168,7 @@
+@@ -1152,7 +1167,7 @@
          if args.match:
              # Remove tests that we don't want to run
              match_str = '-o '.join([f'-name "test_*{name}*.py" ' for name in args.match.split("|")]).strip()
@@ -141,7 +154,7 @@
              c.expect(op_mode_prompt)
          if args.no_interfaces:
              # remove interface tests as they consume a lot of time
-@@ -1183,7 +1199,7 @@
+@@ -1183,7 +1198,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -150,7 +163,7 @@
          if i == 0:
              log.info('Smoketest finished successfully!')
              pass
-@@ -1244,7 +1260,7 @@
+@@ -1244,7 +1259,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -159,8 +172,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-14 18:34:19.923711843 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-14 18:34:21.196581369 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-09 11:32:42
++++ ./scripts/image-build/build-vyos-image	2026-04-07 12:32:47
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -205,8 +218,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-14 18:34:19.916868414 +0000
-+++ ./data/defaults.toml	2026-04-14 18:34:21.196875679 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-10 12:01:15
++++ ./data/defaults.toml	2026-04-10 12:01:17
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
