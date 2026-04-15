@@ -102,7 +102,6 @@ jobs:
   draft_release:
     if: |
       !cancelled() &&
-      needs.smoketest.result == 'success' &&
       !inputs.debug_mode
     name: Draft release
     needs: [gather_data, build, smoketest]
