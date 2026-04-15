@@ -1,5 +1,5 @@
---- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-15 12:24:36.504461715 +0000
-+++ ./src/conf_mode/system_login_banner.py	2026-04-15 12:24:37.818105966 +0000
+--- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-15 13:43:16.387955698 +0000
++++ ./src/conf_mode/system_login_banner.py	2026-04-15 13:43:11.717324335 +0000
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
@@ -9,8 +9,8 @@
      'issue_net': ''
  }
  
---- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-15 12:24:36.522462236 +0000
-+++ ./src/op_mode/image_installer.py	2026-04-15 12:24:37.818316664 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-15 13:43:16.410955631 +0000
++++ ./src/op_mode/image_installer.py	2026-04-15 13:43:11.717324335 +0000
 @@ -87,8 +87,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -22,8 +22,8 @@
  MSG_INFO_INSTALL_SUCCESS: str = 'The image installed successfully; please reboot now.'
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
---- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-15 12:24:36.525462323 +0000
-+++ ./src/op_mode/version.py	2026-04-15 12:24:37.818547703 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-15 13:43:16.415955616 +0000
++++ ./src/op_mode/version.py	2026-04-15 13:43:11.717662795 +0000
 @@ -31,7 +31,7 @@
  from jinja2 import Template
  
@@ -46,8 +46,8 @@
          print(e)
          sys.exit(1)
 -
---- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-15 12:24:36.490461310 +0000
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-15 12:24:37.818675757 +0000
+--- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-15 13:43:16.369955750 +0000
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-15 13:43:11.717157354 +0000
 @@ -29,7 +29,7 @@
          tmp = self.op_mode(base_path + ['version'])
          # Validate
@@ -57,8 +57,8 @@
  
      def test_op_mode_show_version_kernel(self):
          # Retrieve output of "show version" OP-mode command
---- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-15 12:24:36.417967043 +0000
-+++ ./data/templates/login/default_motd.j2	2026-04-15 12:24:37.818806895 +0000
+--- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-15 13:43:16.277456464 +0000
++++ ./data/templates/login/default_motd.j2	2026-04-15 13:43:11.717026801 +0000
 @@ -1,8 +1,8 @@
 -Welcome to VyOS!
 +Welcome to TBM VyOS!

@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-15 12:24:36.552908140 +0000
-+++ ./docker/Dockerfile	2026-04-15 12:24:37.819659649 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-15 13:43:16.448309720 +0000
++++ ./docker/Dockerfile	2026-04-15 13:43:11.717747021 +0000
 @@ -114,7 +114,10 @@
        gdisk \
        sbsigntool \
@@ -12,8 +12,8 @@
  
  # Packages for TPM test
  RUN apt-get update && apt-get install -y swtpm
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 12:24:36.553561075 +0000
-+++ ./scripts/check-qemu-install	2026-04-15 12:24:37.819879070 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 13:43:16.449148440 +0000
++++ ./scripts/check-qemu-install	2026-04-15 13:43:11.717747021 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -96,15 +96,6 @@
      log.info('system installed, rebooting')
      c.sendline('reboot now')
  
-@@ -744,7 +767,7 @@
-     if args.sbtest:
-         log.info('Install Secure Boot Machine Owner Key')
-         MOK_SLEEP = 0.5
--        c.expect('BdsDxe: starting Boot00.*')
-+        c.expect('.*Press any key to perform MOK management.*')
-         time.sleep(3)
-         # press any key
-         c.send(KEY_RETURN)
 @@ -784,13 +807,6 @@
          toggleUEFISecureBoot(c)
  
@@ -173,8 +164,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 12:24:36.553561075 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-15 12:24:37.820175368 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 13:43:16.449148440 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-15 13:43:11.718224249 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -219,8 +210,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 12:24:36.548257981 +0000
-+++ ./data/defaults.toml	2026-04-15 12:24:37.820399881 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 13:43:16.442245950 +0000
++++ ./data/defaults.toml	2026-04-15 13:43:11.717747021 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
