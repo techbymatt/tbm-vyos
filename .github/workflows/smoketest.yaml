@@ -39,7 +39,8 @@ jobs:
             qemu.qmp==0.0.5
             tomli==2.3.0
           python-version: '3.14.4'
-      - name: Install smoketest dependencies (amd64)
+      - if: runner.arch == 'X86' || runner.arch == 'X64'
+        name: Install smoketest dependencies (amd64)
         run: |
           if grep -qE "svm|vmx" /proc/cpuinfo; then
             sudo apt-get update
@@ -48,12 +49,28 @@ jobs:
               genisoimage \
               ipxe-qemu \
               ovmf \
-              qemu-efi-aarch64 \
-              qemu-system-arm \
               qemu-system-x86 \
               qemu-utils \
               swtpm
             sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
+          else
+            echo "ERROR: System does not support virtualisation"
+            exit 1
+          fi
+      - if: runner.arch == 'ARM' || runner.arch == 'ARM64'
+        name: Install smoketest dependencies (arm64)
+        run: |
+          if [ -e "/dev/kvm" ]; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends --yes \
+              bridge-utils \
+              genisoimage \
+              ipxe-qemu \
+              ovmf \
+              qemu-efi-aarch64 \
+              qemu-system-arm \
+              qemu-utils \
+              swtpm
           else
             echo "ERROR: System does not support virtualisation"
             exit 1
