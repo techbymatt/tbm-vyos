@@ -26,6 +26,13 @@ jobs:
     steps:
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout repository vyos/vyos-build
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          path: vyos-build
+          ref: ${{ inputs.vyos_build_commit_sha }}
+          repository: vyos/vyos-build
       - name: Set up Docker
         uses: docker/setup-docker-action@1a6edb0ba9ac496f6850236981f15d8f9a82254d # v5.0.0
       - name: Log into registry
