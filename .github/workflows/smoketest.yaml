@@ -22,6 +22,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      packages: write
     runs-on: ${{ inputs.runner_os }}
     steps:
       - if: github.event_name == 'workflow_call'
