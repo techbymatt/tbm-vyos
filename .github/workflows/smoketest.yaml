@@ -22,6 +22,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      packages: write
     runs-on: ${{ inputs.runner_os }}
     steps:
       - if: github.event_name == 'workflow_call'
@@ -30,51 +31,14 @@ jobs:
           delay=$((RANDOM % 300))
           echo "Delaying for $delay seconds"
           sleep $delay
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - name: Set up Docker
+        uses: docker/setup-docker-action@1a6edb0ba9ac496f6850236981f15d8f9a82254d # v5.0.0
+      - name: Log into registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
-          pip-install: |
-            multiprocess==0.70.18
-            pexpect==4.9.0
-            qemu.qmp==0.0.5
-            tomli==2.3.0
-          python-version: '3.14.4'
-      - if: runner.arch == 'X86' || runner.arch == 'X64'
-        name: Install smoketest dependencies (amd64)
-        run: |
-          if grep -qE "svm|vmx" /proc/cpuinfo; then
-            sudo apt-get update
-            sudo apt-get install --no-install-recommends --yes \
-              bridge-utils \
-              genisoimage \
-              ipxe-qemu \
-              ovmf \
-              qemu-system-x86 \
-              qemu-utils \
-              swtpm
-            sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
-          else
-            echo "ERROR: System does not support virtualisation"
-            exit 1
-          fi
-      - if: runner.arch == 'ARM' || runner.arch == 'ARM64'
-        name: Install smoketest dependencies (arm64)
-        run: |
-          if [ -e "/dev/kvm" ]; then
-            sudo apt-get update
-            sudo apt-get install --no-install-recommends --yes \
-              bridge-utils \
-              genisoimage \
-              ipxe-qemu \
-              ovmf \
-              qemu-efi-aarch64 \
-              qemu-system-arm \
-              qemu-utils \
-              swtpm
-          else
-            echo "ERROR: System does not support virtualisation"
-            exit 1
-          fi
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Checkout repository vyos/vyos-build
@@ -123,15 +87,22 @@ jobs:
       - id: run_smoketest
         name: Run smoketest
         run: |
-          if sudo --preserve-env=PATH ${{ inputs.test_cmd }}; then
-            echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
-            exit 0
+          if docker compose \
+            --file ${{ inputs.arch }}.yaml \
+            run \
+            --env GOSU_GID=$(id -g) \
+            --env GOSU_UID=$(id -u) \
+            --no-TTY \
+            --rm \
+            build \
+              sudo --preserve-env ${{ inputs.test_cmd }}; then
+                echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+                exit 0
           else
             echo "result_${{ inputs.test }}_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
             exit 1
           fi
-        working-directory: vyos-build
-    timeout-minutes: ${{ inputs.build_run && fromJson(inputs.test_timeout) || inputs.test_timeout }}
+        timeout-minutes: ${{ inputs.build_run && fromJson(inputs.test_timeout) || inputs.test_timeout }}
 name: Smoketest
 on:
   workflow_call:
