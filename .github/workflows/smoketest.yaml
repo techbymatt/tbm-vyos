@@ -94,9 +94,10 @@ jobs:
             --env GOSU_UID=$(id -u) \
             --no-TTY \
             --rm \
-            build ${{ inputs.test_cmd }}; then
-              echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
-              exit 0
+            build \
+              sudo --preserve-env ${{ inputs.test_cmd }}; then
+                echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+                exit 0
           else
             echo "result_${{ inputs.test }}_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
             exit 1
