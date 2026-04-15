@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 05:36:18.451318870 +0000
-+++ ./scripts/check-qemu-install	2026-04-15 05:36:19.584608302 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-15 07:26:20.832995414 +0000
++++ ./scripts/check-qemu-install	2026-04-15 07:26:22.347018181 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -123,6 +123,15 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
+@@ -962,7 +978,7 @@
+         except pexpect.TIMEOUT:
+             log.warning('Did not find GRUB countdown window, ignoring')
+ 
+-        c.expect('.*Encrypted config volume has not been mounted', timeout=120)
++        c.expect('.*Configuration success', timeout=120)
+ 
+         loginVM(c, log)
+ 
 @@ -1019,7 +1035,7 @@
  
          log.info('Encrypting config')
@@ -159,8 +168,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 05:36:18.451585327 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-15 05:36:19.585075840 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-15 07:26:20.832995414 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-15 07:26:22.347456909 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -205,8 +214,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 05:36:18.444305443 +0000
-+++ ./data/defaults.toml	2026-04-15 05:36:19.585358641 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-15 07:26:20.825995434 +0000
++++ ./data/defaults.toml	2026-04-15 07:26:22.347764763 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  

@@ -106,7 +106,7 @@ jobs:
         name: Build vyos-build container
         run: |
           docker compose \
-            --file build-${{ inputs.arch }}.yaml \
+            --file ${{ inputs.arch }}.yaml \
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
@@ -119,7 +119,7 @@ jobs:
         name: Build vyos-1x package
         run: |
           docker compose \
-            --file build-${{ inputs.arch }}.yaml \
+            --file ${{ inputs.arch }}.yaml \
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
@@ -133,7 +133,7 @@ jobs:
         name: Build ISO
         run: |
           if docker compose \
-            --file build-${{ inputs.arch }}.yaml \
+            --file ${{ inputs.arch }}.yaml \
             run \
             --env GOSU_GID=$(id -g) \
             --env GOSU_UID=$(id -u) \
