@@ -64,7 +64,7 @@ jobs:
           - arch: amd64
             runner_os: ubuntu-24.04
           - arch: arm64
-            runner_os: ubuntu-24.04-arm
+            runner_os: ubuntu-24.04
           - test: cli
             test_cmd: make test-no-interfaces-no-vpp
             test_timeout: 180

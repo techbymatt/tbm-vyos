@@ -39,8 +39,7 @@ jobs:
             qemu.qmp==0.0.5
             tomli==2.3.0
           python-version: '3.14.4'
-      - if: runner.arch == 'X86' || runner.arch == 'X64'
-        name: Install smoketest dependencies (amd64)
+      - name: Install smoketest dependencies (amd64)
         run: |
           if grep -qE "svm|vmx" /proc/cpuinfo; then
             sudo apt-get update
@@ -59,21 +58,6 @@ jobs:
             echo "ERROR: System does not support virtualisation"
             exit 1
           fi
-      - if: runner.arch == 'ARM' || runner.arch == 'ARM64'
-        name: Install smoketest dependencies (arm64)
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends --yes \
-            bridge-utils \
-            genisoimage \
-            ipxe-qemu \
-            ovmf \
-            qemu-efi-aarch64 \
-            qemu-system-arm \
-            qemu-system-x86 \
-            qemu-utils \
-            swtpm
-          sudo cp /usr/share/ovmf/OVMF.fd /usr/share/OVMF/OVMF_CODE.fd
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Checkout repository vyos/vyos-build
