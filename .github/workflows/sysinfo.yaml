@@ -1,0 +1,32 @@
+---
+jobs:
+  get:
+    name: Get info
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - id: install_deps
+        name: Install dependencies
+        run: |
+          apt-get update \
+          && apt-get install --yes \
+            util-linux
+            lshw
+      - id: cat_proc_cpuinfo
+        name: Print contents of /proc/cpuinfo
+        run: |
+          cat /proc/cpuinfo
+      - id: lscpu
+        name: Run lscpu
+        run: |
+          lscpu
+      - id: lshw
+        name: Run lshw
+        run: |
+          lshw
+name: System info
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
