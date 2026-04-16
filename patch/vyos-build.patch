@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-16 00:56:42.023089899 +0000
-+++ ./docker/Dockerfile	2026-04-16 00:56:37.209699998 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-16 01:49:56.123802602 +0000
++++ ./docker/Dockerfile	2026-04-16 01:49:51.897424727 +0000
 @@ -114,7 +114,10 @@
        gdisk \
        sbsigntool \
@@ -12,8 +12,8 @@
  
  # Packages for TPM test
  RUN apt-get update && apt-get install -y swtpm
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-16 00:56:42.023964370 +0000
-+++ ./scripts/check-qemu-install	2026-04-16 00:56:37.209699998 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-16 01:49:56.124764846 +0000
++++ ./scripts/check-qemu-install	2026-04-16 01:49:51.897424727 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -34,7 +34,7 @@
      "arm64": {
          'bin': 'qemu-system-aarch64',
 -        'machine': 'virt,highmem=on',
-+        'machine': 'virt,virtualization=on,highmem=on',
++        'machine': 'virt',
          'bios': '/usr/share/qemu-efi-aarch64/QEMU_EFI.fd',
      },
  }
@@ -173,8 +173,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-16 00:56:42.023964370 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-16 00:56:37.210230361 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-16 01:49:56.124764846 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-16 01:49:51.898028863 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -219,8 +219,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-16 00:56:42.017140835 +0000
-+++ ./data/defaults.toml	2026-04-16 00:56:37.209699998 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-16 01:49:56.116035762 +0000
++++ ./data/defaults.toml	2026-04-16 01:49:51.897424727 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
