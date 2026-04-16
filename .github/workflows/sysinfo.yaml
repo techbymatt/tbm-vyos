@@ -11,8 +11,10 @@ jobs:
         run: |
           sudo apt-get update \
           && sudo apt-get install --yes \
-            util-linux \
-            lshw
+            lshw \
+            qemu-efi-aarch64 \
+            qemu-system-arm \
+            util-linux
       - id: cat_proc_cpuinfo
         name: Print contents of /proc/cpuinfo
         run: |
@@ -25,6 +27,14 @@ jobs:
         name: Run lshw
         run: |
           sudo lshw
+      - id: qemu_machines
+        name: Query available QEMU machine types
+        run: |
+          qemu-system-aarch64 -machine help
+      - id: qemu_cpus
+        name: Query available QEMU CPU types
+        run: |
+          qemu-system-aarch64 -cpu help
 name: System info
 on:
   workflow_dispatch:
