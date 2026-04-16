@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-16 06:34:14.708470799 +0000
-+++ ./docker/Dockerfile	2026-04-16 06:34:10.978000978 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-16 06:43:18.225771759 +0000
++++ ./docker/Dockerfile	2026-04-16 06:43:13.550592699 +0000
 @@ -114,7 +114,10 @@
        gdisk \
        sbsigntool \
@@ -12,8 +12,8 @@
  
  # Packages for TPM test
  RUN apt-get update && apt-get install -y swtpm
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-16 06:34:14.709343317 +0000
-+++ ./scripts/check-qemu-install	2026-04-16 06:34:10.978000978 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-16 06:43:18.226638274 +0000
++++ ./scripts/check-qemu-install	2026-04-16 06:43:13.550592699 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -29,24 +29,7 @@
  
  EXCEPTION = 0
  DISK_IMAGE_EXTENSION = '.raw'
-@@ -94,6 +96,7 @@
-         'bin': 'qemu-system-aarch64',
-         'machine': 'virt,highmem=on',
-         'bios': '/usr/share/qemu-efi-aarch64/QEMU_EFI.fd',
-+        'cpu_type': 'neoverse-n2',
-     },
- }
- 
-@@ -200,7 +203,7 @@
-     qemu_bin = qemu_arch_config['bin']
-     bios = qemu_arch_config['bios']
- 
--    cpu_type = args.cpu_type
-+    cpu_type = qemu_arch_config['cpu_type'] if 'cpu_type' in qemu_arch_config else args.cpu_type
-     enable_kvm = '-enable-kvm' if _kvm_exists() else ''
-     machine = qemu_arch_config['machine']
-     vga = '-vga none'
-@@ -247,7 +250,7 @@
+@@ -247,7 +249,7 @@
          {vga} {vnc}\
          -uuid {uuid} \
          {enable_kvm} \
@@ -55,7 +38,7 @@
          -netdev user,id=n0,net=192.0.2.0/24,dhcpstart=192.0.2.101,dns=192.0.2.10 -device virtio-net-pci,netdev=n0,mac={macbase}:00,romfile="",host_mtu=1500 \
          -netdev user,id=n1 -device virtio-net-pci,netdev=n1,mac={macbase}:01,romfile="",host_mtu=1500 \
          -netdev user,id=n2 -device virtio-net-pci,netdev=n2,mac={macbase}:02,romfile="",host_mtu=1500 \
-@@ -305,6 +308,16 @@
+@@ -305,6 +307,16 @@
      c.expect(op_mode_prompt)
      log.info('Logged in!')
  
@@ -72,7 +55,7 @@
  # Setting up logger
  log = logging.getLogger()
  log.setLevel(logging.DEBUG)
-@@ -385,7 +398,7 @@
+@@ -385,7 +397,7 @@
              '--ctrl', f'type=unixio,path={tpm_folder}/swtpm-sock', '--tpm2', '--log', 'level=1'
          ])
  
@@ -81,7 +64,7 @@
      tpm_process = Process(target=swtpm_thread)
      tpm_process.start()
      return tpm_process
-@@ -642,11 +655,11 @@
+@@ -642,11 +654,11 @@
          basic_cli_tests(c)
  
          # Valida assigned IPv4 and IPv6 addresses
@@ -95,7 +78,7 @@
          c.expect(CI_CONFIG_ARGS['eth0_ipv6'])
          c.expect(op_mode_prompt)
  
-@@ -735,6 +748,17 @@
+@@ -735,6 +747,17 @@
          c.sendline(mok_password)
          c.expect(op_mode_prompt)
  
@@ -113,7 +96,7 @@
      log.info('system installed, rebooting')
      c.sendline('reboot now')
  
-@@ -784,13 +808,6 @@
+@@ -784,13 +807,6 @@
          toggleUEFISecureBoot(c)
  
      #################################################
@@ -127,7 +110,7 @@
      # Booting installed system
      #################################################
      log.info('Booting installed system')
-@@ -844,7 +861,7 @@
+@@ -844,7 +860,7 @@
      # Verify /etc/os-release via lsb_release
      #################################################
      c.sendline('lsb_release --short --id 2>/dev/null')
@@ -136,7 +119,7 @@
      if os.path.isfile(manifest_file):
          c.sendline('lsb_release --short --release 2>/dev/null')
          c.expect(vyos_version)
-@@ -890,7 +907,7 @@
+@@ -890,7 +906,7 @@
  
          log.info('Encrypting config to TPM')
          c.sendline('encryption enable')
@@ -145,7 +128,7 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -1019,7 +1036,7 @@
+@@ -1019,7 +1035,7 @@
  
          log.info('Encrypting config')
          c.sendline('encryption enable')
@@ -154,7 +137,7 @@
          c.sendline('y')
          c.expect('Enter key: ')
          c.sendline(test_recovery_key)
-@@ -1152,7 +1169,7 @@
+@@ -1152,7 +1168,7 @@
          if args.match:
              # Remove tests that we don't want to run
              match_str = '-o '.join([f'-name "test_*{name}*.py" ' for name in args.match.split("|")]).strip()
@@ -163,7 +146,7 @@
              c.expect(op_mode_prompt)
          if args.no_interfaces:
              # remove interface tests as they consume a lot of time
-@@ -1183,7 +1200,7 @@
+@@ -1183,7 +1199,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -172,7 +155,7 @@
          if i == 0:
              log.info('Smoketest finished successfully!')
              pass
-@@ -1244,7 +1261,7 @@
+@@ -1244,7 +1260,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -181,8 +164,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-16 06:34:14.709343317 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-16 06:34:10.978750577 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-16 06:43:18.226638274 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-16 06:43:13.551087030 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -227,8 +210,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-16 06:34:14.702452891 +0000
-+++ ./data/defaults.toml	2026-04-16 06:34:10.978000978 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-16 06:43:18.219668387 +0000
++++ ./data/defaults.toml	2026-04-16 06:43:13.550592699 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
