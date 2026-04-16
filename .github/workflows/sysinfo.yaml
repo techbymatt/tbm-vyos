@@ -9,9 +9,9 @@ jobs:
       - id: install_deps
         name: Install dependencies
         run: |
-          apt-get update \
-          && apt-get install --yes \
-            util-linux
+          sudo apt-get update \
+          && sudo apt-get install --yes \
+            util-linux \
             lshw
       - id: cat_proc_cpuinfo
         name: Print contents of /proc/cpuinfo
@@ -20,11 +20,11 @@ jobs:
       - id: lscpu
         name: Run lscpu
         run: |
-          lscpu
+          sudo lscpu
       - id: lshw
         name: Run lshw
         run: |
-          lshw
+          sudo lshw
 name: System info
 on:
   workflow_dispatch:
