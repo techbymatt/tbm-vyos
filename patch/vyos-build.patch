@@ -1,5 +1,5 @@
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./data/live-build-config/archives/tailscale.key.chroot	2026-04-23 12:59:18.736351955 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./data/live-build-config/archives/tailscale.key.chroot	2026-04-23 16:07:13.807648621 +0000
 @@ -0,0 +1,53 @@
 +-----BEGIN PGP PUBLIC KEY BLOCK-----
 +
@@ -54,18 +54,12 @@
 +=AIVM
 +-----END PGP PUBLIC KEY BLOCK-----
 +
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./data/live-build-config/archives/tailscale.list.chroot	2026-04-23 12:59:18.736416762 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./data/live-build-config/archives/tailscale.list.chroot	2026-04-23 16:07:13.807802439 +0000
 @@ -0,0 +1 @@
 +deb https://pkgs.tailscale.com/stable/debian bookworm main
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-23 12:59:23.576677279 +0000
-+++ ./data/defaults.toml	2026-04-23 12:59:18.736199537 +0000
-@@ -1,4 +1,4 @@
--build_type = "development"
-+build_type = "tbm"
- 
- architecture = "amd64"
- 
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-23 16:07:17.905488641 +0000
++++ ./data/defaults.toml	2026-04-23 16:07:13.807495223 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
@@ -75,19 +69,15 @@
  bugtracker_url = "https://vyos.dev"
  documentation_url = "https://docs.vyos.io/en/latest"
  project_news_url = "https://blog.vyos.io"
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./data/build-types/tbm.toml	2026-04-23 12:59:18.736199537 +0000
-@@ -0,0 +1,8 @@
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./data/build-types/tbm.toml	2026-04-23 16:07:13.807495223 +0000
+@@ -0,0 +1,4 @@
 +packages = [
-+  "gdb",
-+  "strace",
-+  "apt-rdepends",
 +  "tailscale",
-+  "vim",
 +  "vyos-1x-smoketest"
 +]
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-23 12:59:23.583741192 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-23 12:59:18.736541217 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-23 16:07:17.912500628 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-23 16:07:13.808242155 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -132,8 +122,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-23 12:59:23.583741192 +0000
-+++ ./scripts/check-qemu-install	2026-04-23 12:59:18.736541217 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-23 16:07:17.912500628 +0000
++++ ./scripts/check-qemu-install	2026-04-23 16:07:13.807802439 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -284,8 +274,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-23 12:59:23.582898442 +0000
-+++ ./docker/Dockerfile	2026-04-23 12:59:18.736416762 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-23 16:07:17.911625876 +0000
++++ ./docker/Dockerfile	2026-04-23 16:07:13.807802439 +0000
 @@ -114,7 +114,10 @@
        gdisk \
        sbsigntool \

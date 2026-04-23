@@ -1,5 +1,5 @@
---- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-23 12:59:23.460221050 +0000
-+++ ./src/conf_mode/system_login_banner.py	2026-04-23 12:59:18.735737626 +0000
+--- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-23 16:07:17.846344368 +0000
++++ ./src/conf_mode/system_login_banner.py	2026-04-23 16:07:13.806988863 +0000
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
@@ -9,8 +9,8 @@
      'issue_net': ''
  }
  
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./src/conf_mode/service_tailscale.py	2026-04-23 12:59:18.735541206 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./src/conf_mode/service_tailscale.py	2026-04-23 16:07:13.806910336 +0000
 @@ -0,0 +1,204 @@
 +#!/usr/bin/env python3
 +#
@@ -216,8 +216,8 @@
 +    except ConfigError as e:
 +        print(e)
 +        exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-23 12:59:23.490221396 +0000
-+++ ./src/op_mode/version.py	2026-04-23 12:59:18.736076863 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-23 16:07:17.876344712 +0000
++++ ./src/op_mode/version.py	2026-04-23 16:07:13.807362965 +0000
 @@ -31,7 +31,7 @@
  from jinja2 import Template
  
@@ -240,8 +240,8 @@
          print(e)
          sys.exit(1)
 -
---- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-23 12:59:23.485221338 +0000
-+++ ./src/op_mode/image_installer.py	2026-04-23 12:59:18.735737626 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-23 16:07:17.871344655 +0000
++++ ./src/op_mode/image_installer.py	2026-04-23 16:07:13.806988863 +0000
 @@ -88,8 +88,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -253,8 +253,8 @@
  MSG_INFO_INSTALL_SUCCESS: str = 'The image installed successfully; please reboot now.'
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./src/op_mode/tailscale.py	2026-04-23 12:59:18.736076863 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./src/op_mode/tailscale.py	2026-04-23 16:07:13.807362965 +0000
 @@ -0,0 +1,92 @@
 +#!/usr/bin/env python3
 +#
@@ -348,8 +348,8 @@
 +    except (ValueError, vyos.opmode.Error) as e:
 +        print(e)
 +        sys.exit(1)
---- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-23 12:59:22.801274577 +0000
-+++ ./data/templates/login/default_motd.j2	2026-04-23 12:59:18.735006653 +0000
+--- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-23 16:07:17.725350098 +0000
++++ ./data/templates/login/default_motd.j2	2026-04-23 16:07:13.806166630 +0000
 @@ -1,8 +1,8 @@
 -Welcome to VyOS!
 +Welcome to TBM VyOS!
@@ -369,8 +369,8 @@
 -VyOS is a free software distribution that includes multiple components,
 +TBM VyOS is a free software distribution that includes multiple components,
  you can check individual component licenses under /usr/share/doc/*/copyright
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./data/templates/tailscale/override.conf.j2	2026-04-23 12:59:18.735006653 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./data/templates/tailscale/override.conf.j2	2026-04-23 16:07:13.806166630 +0000
 @@ -0,0 +1,7 @@
 +[Unit]
 +After=vyos-router.service
@@ -379,8 +379,8 @@
 +[Service]
 +ExecStart=
 +ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ config_file }} $FLAGS
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-23 12:59:18.735515374 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-23 16:07:13.806820337 +0000
 @@ -0,0 +1,150 @@
 +#!/usr/bin/env python3
 +#
@@ -532,8 +532,8 @@
 +
 +if __name__ == '__main__':
 +    unittest.main(verbosity=2, failfast=VyOSUnitTestSHIM.TestCase.debug_on())
---- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 12:59:23.441220831 +0000
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 12:59:18.735421634 +0000
+--- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 16:07:17.827344151 +0000
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 16:07:13.806675154 +0000
 @@ -29,7 +29,7 @@
          tmp = self.op_mode(base_path + ['version'])
          # Validate
@@ -543,8 +543,8 @@
  
      def test_op_mode_show_version_kernel(self):
          # Retrieve output of "show version" OP-mode command
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-23 12:59:18.735006653 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-23 16:07:13.806166630 +0000
 @@ -0,0 +1,26 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -572,8 +572,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./op-mode-definitions/tailscale.xml.in	2026-04-23 12:59:18.735354984 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./op-mode-definitions/tailscale.xml.in	2026-04-23 16:07:13.806606035 +0000
 @@ -0,0 +1,53 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -628,8 +628,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-23 12:58:46.352084721 +0000
-+++ ./interface-definitions/service_tailscale.xml.in	2026-04-23 12:59:18.735006653 +0000
+--- /dev/null	2026-04-23 16:06:33.238125509 +0000
++++ ./interface-definitions/service_tailscale.xml.in	2026-04-23 16:07:13.806166630 +0000
 @@ -0,0 +1,173 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
