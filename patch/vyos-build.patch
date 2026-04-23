@@ -1,19 +1,139 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-23 12:25:51.543239052 +0000
-+++ ./docker/Dockerfile	2026-04-23 12:25:45.346022787 +0000
-@@ -114,7 +114,10 @@
-       gdisk \
-       sbsigntool \
-       dosfstools \
--      kpartx
-+      kpartx; \
-+    pip --no-cache --no-cache-dir install --break-system-packages \
-+      multiprocess==0.70.18 \
-+      qemu.qmp==0.0.5
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./data/live-build-config/archives/tailscale.key.chroot	2026-04-23 12:59:18.736351955 +0000
+@@ -0,0 +1,53 @@
++-----BEGIN PGP PUBLIC KEY BLOCK-----
++
++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
++=AIVM
++-----END PGP PUBLIC KEY BLOCK-----
++
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./data/live-build-config/archives/tailscale.list.chroot	2026-04-23 12:59:18.736416762 +0000
+@@ -0,0 +1 @@
++deb https://pkgs.tailscale.com/stable/debian bookworm main
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-23 12:59:23.576677279 +0000
++++ ./data/defaults.toml	2026-04-23 12:59:18.736199537 +0000
+@@ -1,4 +1,4 @@
+-build_type = "development"
++build_type = "tbm"
  
- # Packages for TPM test
- RUN apt-get update && apt-get install -y swtpm
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-23 12:25:51.543740182 +0000
-+++ ./scripts/check-qemu-install	2026-04-23 12:25:45.346022787 +0000
+ architecture = "amd64"
+ 
+@@ -21,7 +21,7 @@
+ squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
+ 
+ website_url = "https://vyos.io"
+-support_url = "https://support.vyos.io"
++support_url = "https://tech.bymatt.au"
+ bugtracker_url = "https://vyos.dev"
+ documentation_url = "https://docs.vyos.io/en/latest"
+ project_news_url = "https://blog.vyos.io"
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./data/build-types/tbm.toml	2026-04-23 12:59:18.736199537 +0000
+@@ -0,0 +1,8 @@
++packages = [
++  "gdb",
++  "strace",
++  "apt-rdepends",
++  "tailscale",
++  "vim",
++  "vyos-1x-smoketest"
++]
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-23 12:59:23.583741192 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-23 12:59:18.736541217 +0000
+@@ -339,7 +339,7 @@
+ 
+     ## Convert the image_format field to a single-item list if it's a scalar
+     ## (like `image_format = "iso"`)
+-    if type(build_config["image_format"]) != list:
++    if not isinstance(build_config["image_format"], list):
+         build_config["image_format"] = [ build_config["image_format"] ]
+ 
+     ## If the user didn't explicitly specify what extensions build artifact should have,
+@@ -350,7 +350,7 @@
+         build_config["artifact_format"] = build_config["image_format"]
+     else:
+         # If the option is there, also make it list if it's a scalar
+-        if type(build_config["artifact_format"]) != list:
++        if not isinstance(build_config["artifact_format"], list):
+             build_config["artifact_format"] = [ build_config["artifact_format"] ]
+ 
+     ## Dump the complete config if the user enabled debug mode
+@@ -466,12 +466,12 @@
+ 
+         # Multi line strings needs to be un-indented to not have leading
+         # whitespaces in the resulting file
+-        os_release = f"""PRETTY_NAME="VyOS {version} ({build_config['release_train']})"
+-NAME="VyOS"
++        os_release = f"""PRETTY_NAME="TBM VyOS {version} ({build_config['release_train']})"
++NAME="TBM VyOS"
+ VERSION_ID="{version}"
+ VERSION="{version} ({build_config['release_train']})"
+ VERSION_CODENAME={build_defaults['release_train']}
+-ID=vyos
++ID=tbm-vyos
+ BUILD_ID="{build_git}"
+ HOME_URL="{build_defaults['website_url']}"
+ SUPPORT_URL="{build_defaults['support_url']}"
+@@ -757,7 +757,8 @@
+ 
+     # os.path.splitext returns extensions with dots,
+     # so we need to remove the dots, hence [1:]
+-    is_artifact = lambda f: os.path.splitext(f)[-1][1:] in build_config['artifact_format']
++    def is_artifact(f):
++        return os.path.splitext(f)[-1][1:] in build_config['artifact_format']
+ 
+     manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
+ 
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-23 12:59:23.583741192 +0000
++++ ./scripts/check-qemu-install	2026-04-23 12:59:18.736541217 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -164,137 +284,17 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-23 12:25:51.543740182 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-23 12:25:45.346388437 +0000
-@@ -339,7 +339,7 @@
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-23 12:59:23.582898442 +0000
++++ ./docker/Dockerfile	2026-04-23 12:59:18.736416762 +0000
+@@ -114,7 +114,10 @@
+       gdisk \
+       sbsigntool \
+       dosfstools \
+-      kpartx
++      kpartx; \
++    pip --no-cache --no-cache-dir install --break-system-packages \
++      multiprocess==0.70.18 \
++      qemu.qmp==0.0.5
  
-     ## Convert the image_format field to a single-item list if it's a scalar
-     ## (like `image_format = "iso"`)
--    if type(build_config["image_format"]) != list:
-+    if not isinstance(build_config["image_format"], list):
-         build_config["image_format"] = [ build_config["image_format"] ]
- 
-     ## If the user didn't explicitly specify what extensions build artifact should have,
-@@ -350,7 +350,7 @@
-         build_config["artifact_format"] = build_config["image_format"]
-     else:
-         # If the option is there, also make it list if it's a scalar
--        if type(build_config["artifact_format"]) != list:
-+        if not isinstance(build_config["artifact_format"], list):
-             build_config["artifact_format"] = [ build_config["artifact_format"] ]
- 
-     ## Dump the complete config if the user enabled debug mode
-@@ -466,12 +466,12 @@
- 
-         # Multi line strings needs to be un-indented to not have leading
-         # whitespaces in the resulting file
--        os_release = f"""PRETTY_NAME="VyOS {version} ({build_config['release_train']})"
--NAME="VyOS"
-+        os_release = f"""PRETTY_NAME="TBM VyOS {version} ({build_config['release_train']})"
-+NAME="TBM VyOS"
- VERSION_ID="{version}"
- VERSION="{version} ({build_config['release_train']})"
- VERSION_CODENAME={build_defaults['release_train']}
--ID=vyos
-+ID=tbm-vyos
- BUILD_ID="{build_git}"
- HOME_URL="{build_defaults['website_url']}"
- SUPPORT_URL="{build_defaults['support_url']}"
-@@ -757,7 +757,8 @@
- 
-     # os.path.splitext returns extensions with dots,
-     # so we need to remove the dots, hence [1:]
--    is_artifact = lambda f: os.path.splitext(f)[-1][1:] in build_config['artifact_format']
-+    def is_artifact(f):
-+        return os.path.splitext(f)[-1][1:] in build_config['artifact_format']
- 
-     manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
- 
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./data/build-types/tbm.toml	2026-04-23 12:25:45.345905053 +0000
-@@ -0,0 +1,8 @@
-+packages = [
-+  "gdb",
-+  "strace",
-+  "apt-rdepends",
-+  "tailscale",
-+  "vim",
-+  "vyos-1x-smoketest"
-+]
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./data/live-build-config/archives/tailscale.key.chroot	2026-04-23 12:25:45.345979076 +0000
-@@ -0,0 +1,53 @@
-+-----BEGIN PGP PUBLIC KEY BLOCK-----
-+
-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
-+=AIVM
-+-----END PGP PUBLIC KEY BLOCK-----
-+
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./data/live-build-config/archives/tailscale.list.chroot	2026-04-23 12:25:45.346022787 +0000
-@@ -0,0 +1 @@
-+deb https://pkgs.tailscale.com/stable/debian bookworm main
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-23 12:25:51.538878189 +0000
-+++ ./data/defaults.toml	2026-04-23 12:25:45.345905053 +0000
-@@ -1,4 +1,4 @@
--build_type = "development"
-+build_type = "tbm"
- 
- architecture = "amd64"
- 
-@@ -21,7 +21,7 @@
- squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
- 
- website_url = "https://vyos.io"
--support_url = "https://support.vyos.io"
-+support_url = "https://tech.bymatt.au"
- bugtracker_url = "https://vyos.dev"
- documentation_url = "https://docs.vyos.io/en/latest"
- project_news_url = "https://blog.vyos.io"
+ # Packages for TPM test
+ RUN apt-get update && apt-get install -y swtpm

@@ -1,181 +1,5 @@
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./interface-definitions/service_tailscale.xml.in	2026-04-23 12:25:45.345133536 +0000
-@@ -0,0 +1,173 @@
-+<?xml version="1.0"?>
-+<interfaceDefinition>
-+  <node name="service">
-+    <children>
-+      <node name="tailscale" owner="${vyos_conf_scripts_dir}/service_tailscale.py">
-+        <properties>
-+          <help>Tailscale client</help>
-+          <priority>500</priority>
-+        </properties>
-+        <children>
-+          #include <include/generic-disable-node.xml.i>
-+          <leafNode name="accept-dns">
-+            <properties>
-+              <help>Accept DNS configuration from the Tailscale control plane</help>
-+              <completionHelp>
-+                <list>enable disable</list>
-+              </completionHelp>
-+              <valueHelp>
-+                <format>enable</format>
-+                <description>Use DNS settings from the tailnet</description>
-+              </valueHelp>
-+              <valueHelp>
-+                <format>disable</format>
-+                <description>Ignore DNS settings from the tailnet</description>
-+              </valueHelp>
-+              <constraint>
-+                <regex>(enable|disable)</regex>
-+              </constraint>
-+              <constraintErrorMessage>accept-dns must be enable or disable</constraintErrorMessage>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="accept-routes">
-+            <properties>
-+              <help>Accept subnet routes advertised by other Tailscale nodes</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="advertise-exit-node">
-+            <properties>
-+              <help>Advertise this node as a Tailscale exit node</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="advertise-routes">
-+            <properties>
-+              <help>Advertise subnet routes to the tailnet</help>
-+              <valueHelp>
-+                <format>ipv4net</format>
-+                <description>IPv4 subnet prefix</description>
-+              </valueHelp>
-+              <valueHelp>
-+                <format>ipv6net</format>
-+                <description>IPv6 subnet prefix</description>
-+              </valueHelp>
-+              <constraint>
-+                <validator name="ipv4-prefix"/>
-+                <validator name="ipv6-prefix"/>
-+              </constraint>
-+              <constraintErrorMessage>advertise-routes must be a valid IPv4 or IPv6 prefix</constraintErrorMessage>
-+              <multi/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="auth-key-file">
-+            <properties>
-+              <help>File containing the Tailscale auth key</help>
-+              <valueHelp>
-+                <format>filename</format>
-+                <description>File in /config/auth directory</description>
-+              </valueHelp>
-+              <constraint>
-+                <validator name="file-path" argument="--strict --parent-dir /config/auth"/>
-+              </constraint>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="disable-snat">
-+            <properties>
-+              <help>Disable source NAT for advertised subnet routes</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="exit-node">
-+            <properties>
-+              <help>Exit node to use for outbound traffic</help>
-+              <valueHelp>
-+                <format>txt</format>
-+                <description>Exit node IP, stable node ID, MagicDNS name, or auto:any</description>
-+              </valueHelp>
-+              <constraint>
-+                <regex>[^[:space:]]+</regex>
-+              </constraint>
-+              <constraintErrorMessage>exit-node must not contain whitespace</constraintErrorMessage>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="exit-node-allow-lan-access">
-+            <properties>
-+              <help>Allow local LAN access while using an exit node</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="hostname">
-+            <properties>
-+              <help>Hostname advertised to Tailscale</help>
-+              <valueHelp>
-+                <format>txt</format>
-+                <description>Hostname used for the Tailscale node</description>
-+              </valueHelp>
-+              <constraint>
-+                <regex>[A-Za-z0-9]([A-Za-z0-9-]{0,62})</regex>
-+              </constraint>
-+              <constraintErrorMessage>hostname must start with a letter or digit and may only contain letters, digits, and hyphens</constraintErrorMessage>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="login-server">
-+            <properties>
-+              <help>Base URL of the Tailscale control server</help>
-+              <valueHelp>
-+                <format>url</format>
-+                <description>Remote HTTP(S) URL</description>
-+              </valueHelp>
-+              <constraint>
-+                <validator name="url" argument="--scheme http --scheme https"/>
-+              </constraint>
-+              <constraintErrorMessage>Invalid HTTP(S) URL format</constraintErrorMessage>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="netfilter-mode">
-+            <properties>
-+              <help>Firewall management mode for the Tailscale client</help>
-+              <completionHelp>
-+                <list>on nodivert off</list>
-+              </completionHelp>
-+              <constraint>
-+                <regex>(on|nodivert|off)</regex>
-+              </constraint>
-+              <constraintErrorMessage>netfilter-mode must be on, nodivert, or off</constraintErrorMessage>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="operator">
-+            <properties>
-+              <help>Local user allowed to operate tailscaled without root</help>
-+              <valueHelp>
-+                <format>txt</format>
-+                <description>Local user account name</description>
-+              </valueHelp>
-+              <constraint>
-+                <regex>[A-Za-z_][A-Za-z0-9_.-]{0,31}</regex>
-+              </constraint>
-+              <constraintErrorMessage>operator must be a valid local user name</constraintErrorMessage>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="shields-up">
-+            <properties>
-+              <help>Block all incoming connections from the tailnet</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="ssh">
-+            <properties>
-+              <help>Enable the Tailscale SSH server</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+          <leafNode name="webclient">
-+            <properties>
-+              <help>Enable the Tailscale web client</help>
-+              <valueless/>
-+            </properties>
-+          </leafNode>
-+        </children>
-+      </node>
-+    </children>
-+  </node>
-+</interfaceDefinition>
---- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-23 12:25:51.497460833 +0000
-+++ ./src/conf_mode/system_login_banner.py	2026-04-23 12:25:45.345569083 +0000
+--- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-23 12:59:23.460221050 +0000
++++ ./src/conf_mode/system_login_banner.py	2026-04-23 12:59:18.735737626 +0000
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
@@ -185,8 +9,8 @@
      'issue_net': ''
  }
  
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./src/conf_mode/service_tailscale.py	2026-04-23 12:25:45.345517125 +0000
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./src/conf_mode/service_tailscale.py	2026-04-23 12:59:18.735541206 +0000
 @@ -0,0 +1,204 @@
 +#!/usr/bin/env python3
 +#
@@ -392,8 +216,32 @@
 +    except ConfigError as e:
 +        print(e)
 +        exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-23 12:25:51.513460841 +0000
-+++ ./src/op_mode/image_installer.py	2026-04-23 12:25:45.345569083 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-23 12:59:23.490221396 +0000
++++ ./src/op_mode/version.py	2026-04-23 12:59:18.736076863 +0000
+@@ -31,7 +31,7 @@
+ from jinja2 import Template
+ 
+ version_output_tmpl = """
+-Version:          VyOS {{version}}
++Version:          TBM VyOS {{version}}
+ Release train:    {{release_train}}
+ Release flavor:   {{flavor}}
+ 
+@@ -54,6 +54,7 @@
+ Hardware UUID:    {{hardware_uuid}}
+ 
+ Copyright:        VyOS maintainers and contributors
++                  Tech By Matt <info@tech.bymatt.au>
+ {%- if limerick %}
+ {{limerick}}
+ {% endif -%}
+@@ -94,4 +95,3 @@
+     except (ValueError, vyos.opmode.Error) as e:
+         print(e)
+         sys.exit(1)
+-
+--- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-23 12:59:23.485221338 +0000
++++ ./src/op_mode/image_installer.py	2026-04-23 12:59:18.735737626 +0000
 @@ -88,8 +88,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -405,8 +253,8 @@
  MSG_INFO_INSTALL_SUCCESS: str = 'The image installed successfully; please reboot now.'
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./src/op_mode/tailscale.py	2026-04-23 12:25:45.345832877 +0000
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./src/op_mode/tailscale.py	2026-04-23 12:59:18.736076863 +0000
 @@ -0,0 +1,92 @@
 +#!/usr/bin/env python3
 +#
@@ -500,43 +348,39 @@
 +    except (ValueError, vyos.opmode.Error) as e:
 +        print(e)
 +        sys.exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-23 12:25:51.516460843 +0000
-+++ ./src/op_mode/version.py	2026-04-23 12:25:45.345832877 +0000
-@@ -31,7 +31,7 @@
- from jinja2 import Template
+--- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-23 12:59:22.801274577 +0000
++++ ./data/templates/login/default_motd.j2	2026-04-23 12:59:18.735006653 +0000
+@@ -1,8 +1,8 @@
+-Welcome to VyOS!
++Welcome to TBM VyOS!
  
- version_output_tmpl = """
--Version:          VyOS {{version}}
-+Version:          TBM VyOS {{version}}
- Release train:    {{release_train}}
- Release flavor:   {{flavor}}
+    ┌── ┐
+-   . VyOS {{ version_data.version }}
+-   └ ──┘  {{ version_data.release_train }}
++   . TBM VyOS {{ version_data.version }}
++   └ ──┘
  
-@@ -54,6 +54,7 @@
- Hardware UUID:    {{hardware_uuid}}
+ {% if version_data.lts_build %}
+  * Support portal: {{ version_data.support_url }}
+@@ -13,5 +13,5 @@
  
- Copyright:        VyOS maintainers and contributors
-+                  Tech By Matt <info@tech.bymatt.au>
- {%- if limerick %}
- {{limerick}}
- {% endif -%}
-@@ -94,4 +95,3 @@
-     except (ValueError, vyos.opmode.Error) as e:
-         print(e)
-         sys.exit(1)
--
---- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 12:25:51.482460825 +0000
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 12:25:45.345409537 +0000
-@@ -29,7 +29,7 @@
-         tmp = self.op_mode(base_path + ['version'])
-         # Validate
-         version = get_version()
--        self.assertIn(f'Version:          VyOS {version}', tmp)
-+        self.assertIn(f'Version:          TBM VyOS {version}', tmp)
+ You can change this banner using "set system login banner post-login" command.
  
-     def test_op_mode_show_version_kernel(self):
-         # Retrieve output of "show version" OP-mode command
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-23 12:25:45.345457371 +0000
+-VyOS is a free software distribution that includes multiple components,
++TBM VyOS is a free software distribution that includes multiple components,
+ you can check individual component licenses under /usr/share/doc/*/copyright
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./data/templates/tailscale/override.conf.j2	2026-04-23 12:59:18.735006653 +0000
+@@ -0,0 +1,7 @@
++[Unit]
++After=vyos-router.service
++ConditionPathExists={{ config_file }}
++
++[Service]
++ExecStart=
++ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ config_file }} $FLAGS
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-23 12:59:18.735515374 +0000
 @@ -0,0 +1,150 @@
 +#!/usr/bin/env python3
 +#
@@ -688,14 +532,28 @@
 +
 +if __name__ == '__main__':
 +    unittest.main(verbosity=2, failfast=VyOSUnitTestSHIM.TestCase.debug_on())
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-23 12:25:45.345133536 +0000
-@@ -0,0 +1,23 @@
+--- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 12:59:23.441220831 +0000
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-23 12:59:18.735421634 +0000
+@@ -29,7 +29,7 @@
+         tmp = self.op_mode(base_path + ['version'])
+         # Validate
+         version = get_version()
+-        self.assertIn(f'Version:          VyOS {version}', tmp)
++        self.assertIn(f'Version:          TBM VyOS {version}', tmp)
+ 
+     def test_op_mode_show_version_kernel(self):
+         # Retrieve output of "show version" OP-mode command
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-23 12:59:18.735006653 +0000
+@@ -0,0 +1,26 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
 +  <node name="execute">
 +    <children>
 +      <node name="tailscale">
++        <properties>
++          <help>Start or stop Tailscale</help>
++        </properties>
 +        <children>
 +          <node name="up">
 +            <properties>
@@ -714,8 +572,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./op-mode-definitions/tailscale.xml.in	2026-04-23 12:25:45.345378607 +0000
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./op-mode-definitions/tailscale.xml.in	2026-04-23 12:59:18.735354984 +0000
 @@ -0,0 +1,53 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -770,34 +628,179 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-23 12:25:13.516317226 +0000
-+++ ./data/templates/tailscale/override.conf.j2	2026-04-23 12:25:45.345133536 +0000
-@@ -0,0 +1,7 @@
-+[Unit]
-+After=vyos-router.service
-+ConditionPathExists={{ config_file }}
-+
-+[Service]
-+ExecStart=
-+ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ config_file }} $FLAGS
---- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-23 12:25:51.415369253 +0000
-+++ ./data/templates/login/default_motd.j2	2026-04-23 12:25:45.345133536 +0000
-@@ -1,8 +1,8 @@
--Welcome to VyOS!
-+Welcome to TBM VyOS!
- 
-    ┌── ┐
--   . VyOS {{ version_data.version }}
--   └ ──┘  {{ version_data.release_train }}
-+   . TBM VyOS {{ version_data.version }}
-+   └ ──┘
- 
- {% if version_data.lts_build %}
-  * Support portal: {{ version_data.support_url }}
-@@ -13,5 +13,5 @@
- 
- You can change this banner using "set system login banner post-login" command.
- 
--VyOS is a free software distribution that includes multiple components,
-+TBM VyOS is a free software distribution that includes multiple components,
- you can check individual component licenses under /usr/share/doc/*/copyright
+--- /dev/null	2026-04-23 12:58:46.352084721 +0000
++++ ./interface-definitions/service_tailscale.xml.in	2026-04-23 12:59:18.735006653 +0000
+@@ -0,0 +1,173 @@
++<?xml version="1.0"?>
++<interfaceDefinition>
++  <node name="service">
++    <children>
++      <node name="tailscale" owner="${vyos_conf_scripts_dir}/service_tailscale.py">
++        <properties>
++          <help>Tailscale client</help>
++          <priority>500</priority>
++        </properties>
++        <children>
++          #include <include/generic-disable-node.xml.i>
++          <leafNode name="accept-dns">
++            <properties>
++              <help>Accept DNS configuration from the Tailscale control plane</help>
++              <completionHelp>
++                <list>enable disable</list>
++              </completionHelp>
++              <valueHelp>
++                <format>enable</format>
++                <description>Use DNS settings from the tailnet</description>
++              </valueHelp>
++              <valueHelp>
++                <format>disable</format>
++                <description>Ignore DNS settings from the tailnet</description>
++              </valueHelp>
++              <constraint>
++                <regex>(enable|disable)</regex>
++              </constraint>
++              <constraintErrorMessage>accept-dns must be enable or disable</constraintErrorMessage>
++            </properties>
++          </leafNode>
++          <leafNode name="accept-routes">
++            <properties>
++              <help>Accept subnet routes advertised by other Tailscale nodes</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++          <leafNode name="advertise-exit-node">
++            <properties>
++              <help>Advertise this node as a Tailscale exit node</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++          <leafNode name="advertise-routes">
++            <properties>
++              <help>Advertise subnet routes to the tailnet</help>
++              <valueHelp>
++                <format>ipv4net</format>
++                <description>IPv4 subnet prefix</description>
++              </valueHelp>
++              <valueHelp>
++                <format>ipv6net</format>
++                <description>IPv6 subnet prefix</description>
++              </valueHelp>
++              <constraint>
++                <validator name="ipv4-prefix"/>
++                <validator name="ipv6-prefix"/>
++              </constraint>
++              <constraintErrorMessage>advertise-routes must be a valid IPv4 or IPv6 prefix</constraintErrorMessage>
++              <multi/>
++            </properties>
++          </leafNode>
++          <leafNode name="auth-key-file">
++            <properties>
++              <help>File containing the Tailscale auth key</help>
++              <valueHelp>
++                <format>filename</format>
++                <description>File in /config/auth directory</description>
++              </valueHelp>
++              <constraint>
++                <validator name="file-path" argument="--strict --parent-dir /config/auth"/>
++              </constraint>
++            </properties>
++          </leafNode>
++          <leafNode name="disable-snat">
++            <properties>
++              <help>Disable source NAT for advertised subnet routes</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++          <leafNode name="exit-node">
++            <properties>
++              <help>Exit node to use for outbound traffic</help>
++              <valueHelp>
++                <format>txt</format>
++                <description>Exit node IP, stable node ID, MagicDNS name, or auto:any</description>
++              </valueHelp>
++              <constraint>
++                <regex>[^[:space:]]+</regex>
++              </constraint>
++              <constraintErrorMessage>exit-node must not contain whitespace</constraintErrorMessage>
++            </properties>
++          </leafNode>
++          <leafNode name="exit-node-allow-lan-access">
++            <properties>
++              <help>Allow local LAN access while using an exit node</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++          <leafNode name="hostname">
++            <properties>
++              <help>Hostname advertised to Tailscale</help>
++              <valueHelp>
++                <format>txt</format>
++                <description>Hostname used for the Tailscale node</description>
++              </valueHelp>
++              <constraint>
++                <regex>[A-Za-z0-9]([A-Za-z0-9-]{0,62})</regex>
++              </constraint>
++              <constraintErrorMessage>hostname must start with a letter or digit and may only contain letters, digits, and hyphens</constraintErrorMessage>
++            </properties>
++          </leafNode>
++          <leafNode name="login-server">
++            <properties>
++              <help>Base URL of the Tailscale control server</help>
++              <valueHelp>
++                <format>url</format>
++                <description>Remote HTTP(S) URL</description>
++              </valueHelp>
++              <constraint>
++                <validator name="url" argument="--scheme http --scheme https"/>
++              </constraint>
++              <constraintErrorMessage>Invalid HTTP(S) URL format</constraintErrorMessage>
++            </properties>
++          </leafNode>
++          <leafNode name="netfilter-mode">
++            <properties>
++              <help>Firewall management mode for the Tailscale client</help>
++              <completionHelp>
++                <list>on nodivert off</list>
++              </completionHelp>
++              <constraint>
++                <regex>(on|nodivert|off)</regex>
++              </constraint>
++              <constraintErrorMessage>netfilter-mode must be on, nodivert, or off</constraintErrorMessage>
++            </properties>
++          </leafNode>
++          <leafNode name="operator">
++            <properties>
++              <help>Local user allowed to operate tailscaled without root</help>
++              <valueHelp>
++                <format>txt</format>
++                <description>Local user account name</description>
++              </valueHelp>
++              <constraint>
++                <regex>[A-Za-z_][A-Za-z0-9_.-]{0,31}</regex>
++              </constraint>
++              <constraintErrorMessage>operator must be a valid local user name</constraintErrorMessage>
++            </properties>
++          </leafNode>
++          <leafNode name="shields-up">
++            <properties>
++              <help>Block all incoming connections from the tailnet</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++          <leafNode name="ssh">
++            <properties>
++              <help>Enable the Tailscale SSH server</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++          <leafNode name="webclient">
++            <properties>
++              <help>Enable the Tailscale web client</help>
++              <valueless/>
++            </properties>
++          </leafNode>
++        </children>
++      </node>
++    </children>
++  </node>
++</interfaceDefinition>
