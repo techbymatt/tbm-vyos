@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-16 06:43:18.225771759 +0000
-+++ ./docker/Dockerfile	2026-04-16 06:43:13.550592699 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-22 18:32:38.552955752 +0000
++++ ./docker/Dockerfile	2026-04-22 18:32:39.727638337 +0000
 @@ -114,7 +114,10 @@
        gdisk \
        sbsigntool \
@@ -12,8 +12,8 @@
  
  # Packages for TPM test
  RUN apt-get update && apt-get install -y swtpm
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-16 06:43:18.226638274 +0000
-+++ ./scripts/check-qemu-install	2026-04-16 06:43:13.550592699 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-22 18:32:39.632181599 +0000
++++ ./scripts/check-qemu-install	2026-04-22 18:32:39.727967018 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -29,7 +29,7 @@
  
  EXCEPTION = 0
  DISK_IMAGE_EXTENSION = '.raw'
-@@ -247,7 +249,7 @@
+@@ -248,7 +250,7 @@
          {vga} {vnc}\
          -uuid {uuid} \
          {enable_kvm} \
@@ -38,7 +38,7 @@
          -netdev user,id=n0,net=192.0.2.0/24,dhcpstart=192.0.2.101,dns=192.0.2.10 -device virtio-net-pci,netdev=n0,mac={macbase}:00,romfile="",host_mtu=1500 \
          -netdev user,id=n1 -device virtio-net-pci,netdev=n1,mac={macbase}:01,romfile="",host_mtu=1500 \
          -netdev user,id=n2 -device virtio-net-pci,netdev=n2,mac={macbase}:02,romfile="",host_mtu=1500 \
-@@ -305,6 +307,16 @@
+@@ -306,6 +308,16 @@
      c.expect(op_mode_prompt)
      log.info('Logged in!')
  
@@ -55,7 +55,7 @@
  # Setting up logger
  log = logging.getLogger()
  log.setLevel(logging.DEBUG)
-@@ -385,7 +397,7 @@
+@@ -386,7 +398,7 @@
              '--ctrl', f'type=unixio,path={tpm_folder}/swtpm-sock', '--tpm2', '--log', 'level=1'
          ])
  
@@ -64,7 +64,7 @@
      tpm_process = Process(target=swtpm_thread)
      tpm_process.start()
      return tpm_process
-@@ -642,11 +654,11 @@
+@@ -648,11 +660,11 @@
          basic_cli_tests(c)
  
          # Valida assigned IPv4 and IPv6 addresses
@@ -78,7 +78,7 @@
          c.expect(CI_CONFIG_ARGS['eth0_ipv6'])
          c.expect(op_mode_prompt)
  
-@@ -735,6 +747,17 @@
+@@ -744,6 +756,17 @@
          c.sendline(mok_password)
          c.expect(op_mode_prompt)
  
@@ -96,7 +96,7 @@
      log.info('system installed, rebooting')
      c.sendline('reboot now')
  
-@@ -784,13 +807,6 @@
+@@ -793,13 +816,6 @@
          toggleUEFISecureBoot(c)
  
      #################################################
@@ -110,7 +110,7 @@
      # Booting installed system
      #################################################
      log.info('Booting installed system')
-@@ -844,7 +860,7 @@
+@@ -853,7 +869,7 @@
      # Verify /etc/os-release via lsb_release
      #################################################
      c.sendline('lsb_release --short --id 2>/dev/null')
@@ -119,7 +119,7 @@
      if os.path.isfile(manifest_file):
          c.sendline('lsb_release --short --release 2>/dev/null')
          c.expect(vyos_version)
-@@ -890,7 +906,7 @@
+@@ -899,7 +915,7 @@
  
          log.info('Encrypting config to TPM')
          c.sendline('encryption enable')
@@ -128,7 +128,7 @@
          c.sendline('n')
          c.expect('Enter recovery key: ')
          c.sendline(test_recovery_key)
-@@ -1019,7 +1035,7 @@
+@@ -1028,7 +1044,7 @@
  
          log.info('Encrypting config')
          c.sendline('encryption enable')
@@ -137,7 +137,7 @@
          c.sendline('y')
          c.expect('Enter key: ')
          c.sendline(test_recovery_key)
-@@ -1152,7 +1168,7 @@
+@@ -1161,7 +1177,7 @@
          if args.match:
              # Remove tests that we don't want to run
              match_str = '-o '.join([f'-name "test_*{name}*.py" ' for name in args.match.split("|")]).strip()
@@ -146,7 +146,7 @@
              c.expect(op_mode_prompt)
          if args.no_interfaces:
              # remove interface tests as they consume a lot of time
-@@ -1183,7 +1199,7 @@
+@@ -1192,7 +1208,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -155,7 +155,7 @@
          if i == 0:
              log.info('Smoketest finished successfully!')
              pass
-@@ -1244,7 +1260,7 @@
+@@ -1253,7 +1269,7 @@
              raise Exception(tmp)
  
          c.sendline('echo EXITCODE:$\x16?')
@@ -164,8 +164,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-16 06:43:18.226638274 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-16 06:43:13.551087030 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-22 18:32:39.632181599 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-22 18:32:39.728458854 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -184,7 +184,7 @@
              build_config["artifact_format"] = [ build_config["artifact_format"] ]
  
      ## Dump the complete config if the user enabled debug mode
-@@ -465,12 +465,12 @@
+@@ -466,12 +466,12 @@
  
          # Multi line strings needs to be un-indented to not have leading
          # whitespaces in the resulting file
@@ -200,7 +200,7 @@
  BUILD_ID="{build_git}"
  HOME_URL="{build_defaults['website_url']}"
  SUPPORT_URL="{build_defaults['support_url']}"
-@@ -756,7 +756,8 @@
+@@ -757,7 +757,8 @@
  
      # os.path.splitext returns extensions with dots,
      # so we need to remove the dots, hence [1:]
@@ -210,8 +210,8 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-16 06:43:18.219668387 +0000
-+++ ./data/defaults.toml	2026-04-16 06:43:13.550592699 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-22 18:32:38.547021084 +0000
++++ ./data/defaults.toml	2026-04-22 18:32:39.728791032 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  
