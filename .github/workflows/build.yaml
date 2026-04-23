@@ -144,7 +144,7 @@ jobs:
                 --architecture ${{ inputs.arch }} \
                 --build-by tbm-vyos@tech.bymatt.au \
                 --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
-                --build-type release \
+                --build-type tbm \
                 --version ${{ inputs.version }} \
                 --custom-package vyos-1x-smoketest \
               generic; then
