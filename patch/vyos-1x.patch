@@ -1,5 +1,5 @@
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./interface-definitions/service_tailscale.xml.in	2026-04-24 03:44:05.003511131 +0000
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./interface-definitions/service_tailscale.xml.in	2026-04-24 06:54:17.670558385 +0000
 @@ -0,0 +1,173 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -174,8 +174,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-24 03:44:09.587503288 +0000
-+++ ./src/conf_mode/system_login_banner.py	2026-04-24 03:44:05.004409147 +0000
+--- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-24 06:54:22.219874883 +0000
++++ ./src/conf_mode/system_login_banner.py	2026-04-24 06:54:17.671813128 +0000
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
@@ -185,8 +185,8 @@
      'issue_net': ''
  }
  
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./src/conf_mode/service_tailscale.py	2026-04-24 03:44:05.004328817 +0000
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./src/conf_mode/service_tailscale.py	2026-04-24 06:54:17.671666389 +0000
 @@ -0,0 +1,206 @@
 +#!/usr/bin/env python3
 +#
@@ -394,8 +394,8 @@
 +    except ConfigError as e:
 +        print(e)
 +        exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-24 03:44:09.612503350 +0000
-+++ ./src/op_mode/image_installer.py	2026-04-24 03:44:05.004409147 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-24 06:54:22.243874999 +0000
++++ ./src/op_mode/image_installer.py	2026-04-24 06:54:17.671813128 +0000
 @@ -88,8 +88,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -407,8 +407,8 @@
  MSG_INFO_INSTALL_SUCCESS: str = 'The image installed successfully; please reboot now.'
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./src/op_mode/tailscale.py	2026-04-24 03:44:05.004773648 +0000
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./src/op_mode/tailscale.py	2026-04-24 06:54:17.672313445 +0000
 @@ -0,0 +1,96 @@
 +#!/usr/bin/env python3
 +#
@@ -506,8 +506,8 @@
 +    except (ValueError, vyos.opmode.Error) as e:
 +        print(e)
 +        sys.exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-24 03:44:09.617503362 +0000
-+++ ./src/op_mode/version.py	2026-04-24 03:44:05.004773648 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-24 06:54:22.248875023 +0000
++++ ./src/op_mode/version.py	2026-04-24 06:54:17.672313445 +0000
 @@ -31,7 +31,7 @@
  from jinja2 import Template
  
@@ -530,8 +530,8 @@
          print(e)
          sys.exit(1)
 -
---- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 03:44:09.569503243 +0000
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 03:44:05.004104148 +0000
+--- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 06:54:22.198874782 +0000
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 06:54:17.671419430 +0000
 @@ -29,7 +29,7 @@
          tmp = self.op_mode(base_path + ['version'])
          # Validate
@@ -541,9 +541,9 @@
  
      def test_op_mode_show_version_kernel(self):
          # Retrieve output of "show version" OP-mode command
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-24 03:44:05.004238458 +0000
-@@ -0,0 +1,150 @@
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-24 06:54:17.671537336 +0000
+@@ -0,0 +1,161 @@
 +#!/usr/bin/env python3
 +#
 +# Copyright VyOS maintainers and contributors <maintainers@vyos.io>
@@ -605,7 +605,6 @@
 +
 +        self.cli_set(base_path + ['accept-dns', 'disable'])
 +        self.cli_set(base_path + ['accept-routes'])
-+        self.cli_set(base_path + ['advertise-exit-node'])
 +        for route in advertise_routes:
 +            self.cli_set(base_path + ['advertise-routes', route])
 +        self.cli_set(base_path + ['disable-snat'])
@@ -640,7 +639,7 @@
 +        self.assertTrue(config['runSSHServer'])
 +        self.assertTrue(config['runWebClient'])
 +        self.assertTrue(config['shieldsUp'])
-+        self.assertEqual(sorted(config['advertiseRoutes']), sorted(expected_routes))
++        self.assertEqual(sorted(config['advertiseRoutes']), sorted(advertise_routes))
 +
 +        override = read_file(TAILSCALED_OVERRIDE)
 +        self.assertIn(f'ConditionPathExists={TAILSCALED_CONFIG}', override)
@@ -660,7 +659,7 @@
 +        self.assertFalse(prefs_json['corp_dns'])
 +        self.assertTrue(prefs_json['route_all'])
 +        self.assertEqual(
-+            sorted(prefs_json['advertise_routes']), sorted(expected_routes)
++            sorted(prefs_json['advertise_routes']), sorted(advertise_routes)
 +        )
 +        self.assertTrue(prefs_json['no_snat'])
 +        self.assertEqual(prefs_json['netfilter_mode'], 'nodivert')
@@ -670,6 +669,18 @@
 +        self.assertTrue(prefs_json['run_web_client'])
 +        self.assertTrue(prefs_json['shields_up'])
 +        self.assertTrue(prefs_json['want_running'])
++
++        self.cli_set(base_path + ['advertise-exit-node'])
++        self.cli_commit()
++
++        config = json.loads(read_file(TAILSCALED_CONFIG, sudo=True))
++        self.assertEqual(sorted(config['advertiseRoutes']), sorted(expected_routes))
++        self.assertTrue(config['disableSNAT'])
++
++        prefs_json = json.loads(self.op_mode(['show', 'tailscale', 'prefs', 'json']))
++        self.assertEqual(
++            sorted(prefs_json['advertise_routes']), sorted(expected_routes)
++        )
 +
 +        self.op_mode(['execute', 'tailscale', 'down'])
 +        self.assertFalse(is_systemd_service_active(TAILSCALE_SERVICE))
@@ -694,8 +705,8 @@
 +
 +if __name__ == '__main__':
 +    unittest.main(verbosity=2, failfast=VyOSUnitTestSHIM.TestCase.debug_on())
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-24 03:44:05.003511131 +0000
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-24 06:54:17.670558385 +0000
 @@ -0,0 +1,26 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -723,8 +734,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./op-mode-definitions/tailscale.xml.in	2026-04-24 03:44:05.004031131 +0000
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./op-mode-definitions/tailscale.xml.in	2026-04-24 06:54:17.671332891 +0000
 @@ -0,0 +1,53 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -779,8 +790,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-24 03:42:24.643032880 +0000
-+++ ./data/templates/tailscale/override.conf.j2	2026-04-24 03:44:05.003511131 +0000
+--- /dev/null	2026-04-24 06:53:44.284461427 +0000
++++ ./data/templates/tailscale/override.conf.j2	2026-04-24 06:54:17.670558385 +0000
 @@ -0,0 +1,7 @@
 +[Unit]
 +After=vyos-router.service
@@ -789,8 +800,8 @@
 +[Service]
 +ExecStart=
 +ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ config_file }} $FLAGS
---- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-24 03:44:09.475005084 +0000
-+++ ./data/templates/login/default_motd.j2	2026-04-24 03:44:05.003511131 +0000
+--- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-24 06:54:22.105275437 +0000
++++ ./data/templates/login/default_motd.j2	2026-04-24 06:54:17.670558385 +0000
 @@ -1,8 +1,8 @@
 -Welcome to VyOS!
 +Welcome to TBM VyOS!
