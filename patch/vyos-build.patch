@@ -1,5 +1,5 @@
---- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-24 06:54:22.284138981 +0000
-+++ ./docker/Dockerfile	2026-04-24 06:54:17.672830767 +0000
+--- ../../upstream/vyos-build/./docker/Dockerfile	2026-04-24 08:49:27.617686217 +0000
++++ ./docker/Dockerfile	2026-04-24 08:49:22.739117347 +0000
 @@ -114,7 +114,10 @@
        gdisk \
        sbsigntool \
@@ -12,8 +12,8 @@
  
  # Packages for TPM test
  RUN apt-get update && apt-get install -y swtpm
---- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-24 06:54:22.285000799 +0000
-+++ ./scripts/check-qemu-install	2026-04-24 06:54:17.672830767 +0000
+--- ../../upstream/vyos-build/./scripts/check-qemu-install	2026-04-24 08:49:27.618546982 +0000
++++ ./scripts/check-qemu-install	2026-04-24 08:49:22.739117347 +0000
 @@ -44,12 +44,14 @@
  import shutil
  import json
@@ -164,8 +164,8 @@
          if i == 0:
              log.info('Configtest finished successfully!')
              pass
---- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-24 06:54:22.285000799 +0000
-+++ ./scripts/image-build/build-vyos-image	2026-04-24 06:54:17.673291635 +0000
+--- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image	2026-04-24 08:49:27.618546982 +0000
++++ ./scripts/image-build/build-vyos-image	2026-04-24 08:49:22.739792314 +0000
 @@ -339,7 +339,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
@@ -210,15 +210,15 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./data/build-types/tbm.toml	2026-04-24 06:54:17.672472823 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./data/build-types/tbm.toml	2026-04-24 08:49:22.738278884 +0000
 @@ -0,0 +1,4 @@
 +packages = [
 +  "tailscale",
 +  "vyos-1x-smoketest"
 +]
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./data/live-build-config/archives/tailscale.key.chroot	2026-04-24 06:54:17.672663417 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./data/live-build-config/archives/tailscale.key.chroot	2026-04-24 08:49:22.738941098 +0000
 @@ -0,0 +1,53 @@
 +-----BEGIN PGP PUBLIC KEY BLOCK-----
 +
@@ -273,12 +273,12 @@
 +=AIVM
 +-----END PGP PUBLIC KEY BLOCK-----
 +
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./data/live-build-config/archives/tailscale.list.chroot	2026-04-24 06:54:17.672830767 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./data/live-build-config/archives/tailscale.list.chroot	2026-04-24 08:49:22.739117347 +0000
 @@ -0,0 +1 @@
 +deb https://pkgs.tailscale.com/stable/debian bookworm main
---- ../../upstream/vyos-build/./data/defaults.toml	2026-04-24 06:54:22.277958129 +0000
-+++ ./data/defaults.toml	2026-04-24 06:54:17.672472823 +0000
+--- ../../upstream/vyos-build/./data/defaults.toml	2026-04-24 08:49:27.611733189 +0000
++++ ./data/defaults.toml	2026-04-24 08:49:22.738278884 +0000
 @@ -21,7 +21,7 @@
  squashfs_compression_type = "xz -Xbcj x86 -b 256k -always-use-fragments -no-recovery"
  

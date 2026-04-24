@@ -1,5 +1,5 @@
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./interface-definitions/service_tailscale.xml.in	2026-04-24 06:54:17.670558385 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./interface-definitions/service_tailscale.xml.in	2026-04-24 08:49:22.736043267 +0000
 @@ -0,0 +1,173 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -174,8 +174,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-24 06:54:22.219874883 +0000
-+++ ./src/conf_mode/system_login_banner.py	2026-04-24 06:54:17.671813128 +0000
+--- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-24 08:49:27.553540919 +0000
++++ ./src/conf_mode/system_login_banner.py	2026-04-24 08:49:22.737546188 +0000
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
@@ -185,9 +185,9 @@
      'issue_net': ''
  }
  
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./src/conf_mode/service_tailscale.py	2026-04-24 06:54:17.671666389 +0000
-@@ -0,0 +1,206 @@
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./src/conf_mode/service_tailscale.py	2026-04-24 08:49:22.737341357 +0000
+@@ -0,0 +1,213 @@
 +#!/usr/bin/env python3
 +#
 +# Copyright VyOS maintainers and contributors <maintainers@vyos.io>
@@ -214,6 +214,7 @@
 +from vyos.config import Config
 +from vyos.template import render
 +from vyos.utils.file import write_file
++from vyos.utils.process import cmd
 +from vyos.utils.process import call
 +from vyos import ConfigError
 +from vyos import airbag
@@ -262,7 +263,7 @@
 +def _build_config(tailscale: dict) -> dict:
 +    config = {
 +        'version': 'alpha0',
-+        'locked': True,
++        'locked': False,
 +        'enabled': 'disable' not in tailscale,
 +    }
 +
@@ -313,6 +314,11 @@
 +        config['advertiseRoutes'] = routes
 +
 +    return config
++
++
++def _sync_disable_snat(tailscale):
++    value = 'false' if 'disable_snat' in tailscale else 'true'
++    cmd(['tailscale', 'set', f'--snat-subnet-routes={value}'], raising=ConfigError)
 +
 +
 +def get_config(config=None):
@@ -381,6 +387,7 @@
 +        call(f'systemctl stop {systemd_service}')
 +    else:
 +        call(f'systemctl restart {systemd_service}')
++        _sync_disable_snat(tailscale)
 +
 +    return None
 +
@@ -394,8 +401,8 @@
 +    except ConfigError as e:
 +        print(e)
 +        exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-24 06:54:22.243874999 +0000
-+++ ./src/op_mode/image_installer.py	2026-04-24 06:54:17.671813128 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-24 08:49:27.578540923 +0000
++++ ./src/op_mode/image_installer.py	2026-04-24 08:49:22.737546188 +0000
 @@ -88,8 +88,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -407,8 +414,8 @@
  MSG_INFO_INSTALL_SUCCESS: str = 'The image installed successfully; please reboot now.'
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./src/op_mode/tailscale.py	2026-04-24 06:54:17.672313445 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./src/op_mode/tailscale.py	2026-04-24 08:49:22.738096494 +0000
 @@ -0,0 +1,96 @@
 +#!/usr/bin/env python3
 +#
@@ -506,8 +513,8 @@
 +    except (ValueError, vyos.opmode.Error) as e:
 +        print(e)
 +        sys.exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-24 06:54:22.248875023 +0000
-+++ ./src/op_mode/version.py	2026-04-24 06:54:17.672313445 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-24 08:49:27.583540924 +0000
++++ ./src/op_mode/version.py	2026-04-24 08:49:22.738096494 +0000
 @@ -31,7 +31,7 @@
  from jinja2 import Template
  
@@ -530,8 +537,8 @@
          print(e)
          sys.exit(1)
 -
---- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 06:54:22.198874782 +0000
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 06:54:17.671419430 +0000
+--- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 08:49:27.535540917 +0000
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 08:49:22.737019326 +0000
 @@ -29,7 +29,7 @@
          tmp = self.op_mode(base_path + ['version'])
          # Validate
@@ -541,8 +548,8 @@
  
      def test_op_mode_show_version_kernel(self):
          # Retrieve output of "show version" OP-mode command
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-24 06:54:17.671537336 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-24 08:49:22.737169657 +0000
 @@ -0,0 +1,161 @@
 +#!/usr/bin/env python3
 +#
@@ -627,7 +634,7 @@
 +
 +        config = json.loads(read_file(TAILSCALED_CONFIG, sudo=True))
 +        self.assertEqual(config['version'], 'alpha0')
-+        self.assertTrue(config['locked'])
++        self.assertFalse(config['locked'])
 +        self.assertTrue(config['enabled'])
 +        self.assertFalse(config['acceptDNS'])
 +        self.assertTrue(config['acceptRoutes'])
@@ -705,8 +712,8 @@
 +
 +if __name__ == '__main__':
 +    unittest.main(verbosity=2, failfast=VyOSUnitTestSHIM.TestCase.debug_on())
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-24 06:54:17.670558385 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-24 08:49:22.736043267 +0000
 @@ -0,0 +1,26 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -734,8 +741,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./op-mode-definitions/tailscale.xml.in	2026-04-24 06:54:17.671332891 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./op-mode-definitions/tailscale.xml.in	2026-04-24 08:49:22.736910403 +0000
 @@ -0,0 +1,53 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -790,8 +797,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-24 06:53:44.284461427 +0000
-+++ ./data/templates/tailscale/override.conf.j2	2026-04-24 06:54:17.670558385 +0000
+--- /dev/null	2026-04-24 08:46:47.109818487 +0000
++++ ./data/templates/tailscale/override.conf.j2	2026-04-24 08:49:22.736043267 +0000
 @@ -0,0 +1,7 @@
 +[Unit]
 +After=vyos-router.service
@@ -800,8 +807,8 @@
 +[Service]
 +ExecStart=
 +ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ config_file }} $FLAGS
---- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-24 06:54:22.105275437 +0000
-+++ ./data/templates/login/default_motd.j2	2026-04-24 06:54:17.670558385 +0000
+--- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-24 08:49:27.441211070 +0000
++++ ./data/templates/login/default_motd.j2	2026-04-24 08:49:22.736043267 +0000
 @@ -1,8 +1,8 @@
 -Welcome to VyOS!
 +Welcome to TBM VyOS!
