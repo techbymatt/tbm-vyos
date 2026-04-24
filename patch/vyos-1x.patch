@@ -1,5 +1,5 @@
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./interface-definitions/service_tailscale.xml.in	2026-04-24 03:29:53.849673663 +0000
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./interface-definitions/service_tailscale.xml.in	2026-04-24 03:44:05.003511131 +0000
 @@ -0,0 +1,173 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -174,8 +174,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-24 03:29:59.199505407 +0000
-+++ ./src/conf_mode/system_login_banner.py	2026-04-24 03:29:53.850249340 +0000
+--- ../../upstream/vyos-1x/./src/conf_mode/system_login_banner.py	2026-04-24 03:44:09.587503288 +0000
++++ ./src/conf_mode/system_login_banner.py	2026-04-24 03:44:05.004409147 +0000
 @@ -31,7 +31,7 @@
  POSTLOGIN_VYOS_FILE = r'/run/motd.d/01-vyos-nonproduction'
  
@@ -185,8 +185,8 @@
      'issue_net': ''
  }
  
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./src/conf_mode/service_tailscale.py	2026-04-24 03:29:53.850198069 +0000
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./src/conf_mode/service_tailscale.py	2026-04-24 03:44:05.004328817 +0000
 @@ -0,0 +1,206 @@
 +#!/usr/bin/env python3
 +#
@@ -394,8 +394,8 @@
 +    except ConfigError as e:
 +        print(e)
 +        exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-24 03:29:59.215505455 +0000
-+++ ./src/op_mode/image_installer.py	2026-04-24 03:29:53.850249340 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/image_installer.py	2026-04-24 03:44:09.612503350 +0000
++++ ./src/op_mode/image_installer.py	2026-04-24 03:44:05.004409147 +0000
 @@ -88,8 +88,8 @@
  MSG_ERR_MISSING_FLAVOR: str = 'The new image version data does not specify flavor, cannot check compatibility (is it a legacy release image?)'
  MSG_ERR_CORRUPT_CURRENT_IMAGE: str = 'Version data in the current image is malformed: missing flavor and/or architecture fields. Upgrade compatibility cannot be checked.'
@@ -407,9 +407,9 @@
  MSG_INFO_INSTALL_SUCCESS: str = 'The image installed successfully; please reboot now.'
  MSG_INFO_INSTALL_DISKS_LIST: str = 'The following disks were found:'
  MSG_INFO_INSTALL_DISK_SELECT: str = 'Which one should be used for installation?'
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./src/op_mode/tailscale.py	2026-04-24 03:29:53.850592432 +0000
-@@ -0,0 +1,92 @@
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./src/op_mode/tailscale.py	2026-04-24 03:44:05.004773648 +0000
+@@ -0,0 +1,96 @@
 +#!/usr/bin/env python3
 +#
 +# Copyright VyOS maintainers and contributors <maintainers@vyos.io>
@@ -466,6 +466,8 @@
 +
 +
 +def show_status(raw: bool):
++    _verify_service_enabled()
++
 +    if raw:
 +        return _run_json(['tailscale', 'status', '--json'])
 +
@@ -473,6 +475,8 @@
 +
 +
 +def show_prefs(raw: bool):
++    _verify_service_enabled()
++
 +    if raw:
 +        return _run_json(['tailscale', 'debug', 'prefs'])
 +
@@ -502,8 +506,8 @@
 +    except (ValueError, vyos.opmode.Error) as e:
 +        print(e)
 +        sys.exit(1)
---- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-24 03:29:59.219505468 +0000
-+++ ./src/op_mode/version.py	2026-04-24 03:29:53.850592432 +0000
+--- ../../upstream/vyos-1x/./src/op_mode/version.py	2026-04-24 03:44:09.617503362 +0000
++++ ./src/op_mode/version.py	2026-04-24 03:44:05.004773648 +0000
 @@ -31,7 +31,7 @@
  from jinja2 import Template
  
@@ -526,8 +530,8 @@
          print(e)
          sys.exit(1)
 -
---- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 03:29:59.185505365 +0000
-+++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 03:29:53.850088696 +0000
+--- ../../upstream/vyos-1x/./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 03:44:09.569503243 +0000
++++ ./smoketest/scripts/cli/test_op-mode_show.py	2026-04-24 03:44:05.004104148 +0000
 @@ -29,7 +29,7 @@
          tmp = self.op_mode(base_path + ['version'])
          # Validate
@@ -537,8 +541,8 @@
  
      def test_op_mode_show_version_kernel(self):
          # Retrieve output of "show version" OP-mode command
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-24 03:29:53.850138325 +0000
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./smoketest/scripts/cli/test_service_tailscale.py	2026-04-24 03:44:05.004238458 +0000
 @@ -0,0 +1,150 @@
 +#!/usr/bin/env python3
 +#
@@ -690,8 +694,8 @@
 +
 +if __name__ == '__main__':
 +    unittest.main(verbosity=2, failfast=VyOSUnitTestSHIM.TestCase.debug_on())
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-24 03:29:53.849673663 +0000
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./op-mode-definitions/execute-tailscale.xml.in	2026-04-24 03:44:05.003511131 +0000
 @@ -0,0 +1,26 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -719,8 +723,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./op-mode-definitions/tailscale.xml.in	2026-04-24 03:29:53.850055952 +0000
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./op-mode-definitions/tailscale.xml.in	2026-04-24 03:44:05.004031131 +0000
 @@ -0,0 +1,53 @@
 +<?xml version="1.0"?>
 +<interfaceDefinition>
@@ -775,8 +779,8 @@
 +    </children>
 +  </node>
 +</interfaceDefinition>
---- /dev/null	2026-04-24 03:26:15.684796831 +0000
-+++ ./data/templates/tailscale/override.conf.j2	2026-04-24 03:29:53.849673663 +0000
+--- /dev/null	2026-04-24 03:42:24.643032880 +0000
++++ ./data/templates/tailscale/override.conf.j2	2026-04-24 03:44:05.003511131 +0000
 @@ -0,0 +1,7 @@
 +[Unit]
 +After=vyos-router.service
@@ -785,8 +789,8 @@
 +[Service]
 +ExecStart=
 +ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ config_file }} $FLAGS
---- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-24 03:29:59.119020049 +0000
-+++ ./data/templates/login/default_motd.j2	2026-04-24 03:29:53.849673663 +0000
+--- ../../upstream/vyos-1x/./data/templates/login/default_motd.j2	2026-04-24 03:44:09.475005084 +0000
++++ ./data/templates/login/default_motd.j2	2026-04-24 03:44:05.003511131 +0000
 @@ -1,8 +1,8 @@
 -Welcome to VyOS!
 +Welcome to TBM VyOS!
