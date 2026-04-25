@@ -68,8 +68,8 @@ jobs:
       - id: patch_vyos_build
         name: Patch vyos-build
         run: |
-          patch -p1 < ../patch/patch-vyos-build.patch
-          patch -p1 < ../patch/new-vyos-build.patch
+          patch -p1 < ../patch/vyos-build_changes.patch
+          patch -p1 < ../patch/vyos-build_new.patch
         working-directory: vyos-build
       - if: ${{ !inputs.build_run }}
         name: Download image artifact

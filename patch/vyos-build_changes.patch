@@ -210,13 +210,6 @@
  
      manifest['artifacts'] = list(filter(is_artifact, manifest['artifacts']))
  
---- /dev/null
-+++ ./data/build-types/tbm.toml
-@@ -0,0 +1,4 @@
-+packages = [
-+  "tailscale",
-+  "vyos-1x-smoketest"
-+]
 --- ../../upstream/vyos-build/./data/defaults.toml
 +++ ./data/defaults.toml
 @@ -21,7 +21,7 @@
