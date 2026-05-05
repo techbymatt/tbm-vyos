@@ -166,7 +166,7 @@
              pass
 --- ../../upstream/vyos-build/./scripts/image-build/build-vyos-image
 +++ ./scripts/image-build/build-vyos-image
-@@ -339,7 +339,7 @@
+@@ -341,7 +341,7 @@
  
      ## Convert the image_format field to a single-item list if it's a scalar
      ## (like `image_format = "iso"`)
@@ -175,7 +175,7 @@
          build_config["image_format"] = [ build_config["image_format"] ]
  
      ## If the user didn't explicitly specify what extensions build artifact should have,
-@@ -350,7 +350,7 @@
+@@ -352,7 +352,7 @@
          build_config["artifact_format"] = build_config["image_format"]
      else:
          # If the option is there, also make it list if it's a scalar
@@ -184,7 +184,7 @@
              build_config["artifact_format"] = [ build_config["artifact_format"] ]
  
      ## Dump the complete config if the user enabled debug mode
-@@ -466,12 +466,12 @@
+@@ -468,12 +468,12 @@
  
          # Multi line strings needs to be un-indented to not have leading
          # whitespaces in the resulting file
@@ -200,7 +200,7 @@
  BUILD_ID="{build_git}"
  HOME_URL="{build_defaults['website_url']}"
  SUPPORT_URL="{build_defaults['support_url']}"
-@@ -757,7 +757,8 @@
+@@ -776,7 +776,8 @@
  
      # os.path.splitext returns extensions with dots,
      # so we need to remove the dots, hence [1:]
