@@ -241,5 +241,8 @@ on:
       release_filename_arm64:
         description: File name of the ARM64 release ISO
         value: ${{ jobs.build.outputs.release_filename_arm64 }}
+      run_id:
+        description: Run ID of the build workflow
+        value: ${{ github.run_id }}
 permissions:
   contents: read
