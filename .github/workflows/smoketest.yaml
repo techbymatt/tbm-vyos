@@ -41,6 +41,19 @@ jobs:
           username: ${{ github.actor }}
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout repository techbymatt/tbm-vyos-patch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: techbymatt/tbm-vyos-patch
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy patch files
+        run: |
+          rm -r *.patch
+          cp ../tbm-vyos-patch/vyos-1x_changes.patch .
+          cp ../tbm-vyos-patch/vyos-1x_new.patch .
+          cp ../tbm-vyos-patch/vyos-build_changes.patch .
+          cp ../tbm-vyos-patch/vyos-build_new.patch .
+        working-directory: patch
       - name: Checkout repository vyos/vyos-build
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
