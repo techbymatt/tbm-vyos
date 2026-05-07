@@ -45,6 +45,7 @@ jobs:
       actions: read
       contents: read
       packages: write
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
