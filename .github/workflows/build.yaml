@@ -22,19 +22,28 @@ jobs:
           username: ${{ github.actor }}
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Checkout repository techbymatt/tbm-vyos-patch
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          repository: techbymatt/tbm-vyos-patch
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Copy patch files
+      - name: Download patch files
+        env:
+          GH_TOKEN: ${{ secrets.TBM_VYOS_PATCH_TOKEN }}
         run: |
-          rm -r *.patch
-          cp ../tbm-vyos-patch/vyos-1x_changes.patch .
-          cp ../tbm-vyos-patch/vyos-1x_new.patch .
-          cp ../tbm-vyos-patch/vyos-build_changes.patch .
-          cp ../tbm-vyos-patch/vyos-build_new.patch .
-        working-directory: patch
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "TBM_VYOS_PATCH_TOKEN is required to read techbymatt/tbm-vyos-patch" >&2
+            exit 1
+          fi
+
+          rm -f patch/*.patch
+          for file in \
+            vyos-1x_changes.patch \
+            vyos-1x_new.patch \
+            vyos-build_changes.patch \
+            vyos-build_new.patch; do
+            gh api \
+              --header "Accept: application/vnd.github.raw" \
+              "/repos/techbymatt/tbm-vyos-patch/contents/${file}" \
+              > "patch/${file}"
+          done
       - name: Checkout repository vyos/vyos-build
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -215,6 +224,10 @@ on:
         description: List of vyos/vyos-build PR IDs to merge (optional)
         required: false
         type: string
+    secrets:
+      TBM_VYOS_PATCH_TOKEN:
+        description: Token with contents read access to techbymatt/tbm-vyos-patch
+        required: true
     outputs:
       result_amd64:
         description: Exit code of the AMD64 ISO build process
