@@ -180,10 +180,10 @@ jobs:
 
             ### Upstream Comparison
             Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}
-            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...current
+            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...rolling
 
             Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.gather_data.outputs.vyos_1x_commit }}
-            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...current
+            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...rolling
           draft: true
           name: TBM VyOS ${{ needs.gather_data.outputs.version }}
           omitDraftDuringUpdate: true
