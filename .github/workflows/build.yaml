@@ -33,7 +33,7 @@ jobs:
             exit 1
           fi
 
-          rm -f patch/*.patch
+          mkdir -p patch/
           for file in \
             vyos-1x_changes.patch \
             vyos-1x_new.patch \
