@@ -104,7 +104,7 @@ jobs:
         uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/vyos-build
-          tags: type=raw,value=current
+          tags: type=raw,value=rolling
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
@@ -112,7 +112,7 @@ jobs:
             $(printf 'ghcr.io/${{ github.repository_owner }}/vyos-build@sha256:%s ' *)
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/vyos-build:current
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/vyos-build:rolling
     timeout-minutes: 10
 name: Container
 on:
@@ -123,7 +123,7 @@ on:
         required: false
         type: string
       vyos_build_ref:
-        default: current
+        default: rolling
         description: The vyos/vyos-build git ref to checkout
         required: false
         type: string
