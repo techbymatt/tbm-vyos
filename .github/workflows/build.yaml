@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: write
       packages: write
-    runs-on: ${{ inputs.runner_os }}
+    runs-on: ${{ inputs.runner_label }}
     steps:
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -177,8 +177,13 @@ on:
         description: CPU architecture of the ISO build
         required: true
         type: string
-      runner_os:
-        description: Runner OS to use
+      runner_group:
+        default: tbm-vyos
+        description: Runner group to use
+        required: false
+        type: string
+      runner_label:
+        description: Runner label to use
         required: true
         type: string
       version:

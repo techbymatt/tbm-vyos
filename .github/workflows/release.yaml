@@ -23,13 +23,13 @@ jobs:
         arch: [amd64, arm64]
         include:
           - arch: amd64
-            runner_os: ubuntu-24.04
+            runner_label: ubuntu-24.04-64core
           - arch: arm64
-            runner_os: ubuntu-24.04-arm
+            runner_label: ubuntu-24.04-32core-arm
     uses: ./.github/workflows/build.yaml
     with:
       arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner_os }}
+      runner_label: ${{ matrix.runner_label }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_1x_commit_sha: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
       vyos_1x_pr: ${{ inputs.vyos_1x_pr }}
@@ -63,9 +63,9 @@ jobs:
           ]
         include:
           - arch: amd64
-            runner_os: ubuntu-24.04
+            runner_label: ubuntu-24.04-64core
           - arch: arm64
-            runner_os: ubuntu-24.04-arm
+            runner_label: ubuntu-24.04-32core-arm
           - test: cli
             test_cmd: make test-no-interfaces-no-vpp
             test_timeout: 180
@@ -93,7 +93,7 @@ jobs:
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
-      runner_os: ${{ matrix.runner_os }}
+      runner_label: ${{ matrix.runner_label }}
       test: ${{ matrix.test }}
       test_cmd: ${{ matrix.test_cmd }}
       test_timeout: ${{ matrix.test_timeout }}
