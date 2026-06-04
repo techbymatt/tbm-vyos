@@ -170,7 +170,6 @@ jobs:
                 --build-comment 'Please direct all support queries to support@tech.bymatt.au' \
                 --build-type tbm \
                 --version ${{ inputs.version }} \
-                --custom-package vyos-1x-smoketest \
               generic; then
               echo "result_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
               exit 0
