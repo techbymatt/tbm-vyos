@@ -46,8 +46,11 @@ jobs:
             echo "TBM_VYOS_PATCH_TOKEN is required to read techbymatt/tbm-vyos-patch" >&2
             exit 1
           fi
-
-          rm -f patch/*.patch
+ 
+          sudo apt update
+          sudo apt install --no-install-recommends --yes gh
+  
+          mkdir -p patch/
           for file in \
             vyos-1x_changes.patch \
             vyos-1x_new.patch \
