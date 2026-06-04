@@ -23,8 +23,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TBM_VYOS_PATCH_TOKEN }}
         run: |
-          set -euo pipefail
-
           if [ -z "${GH_TOKEN:-}" ]; then
             echo "TBM_VYOS_PATCH_TOKEN is required to read techbymatt/tbm-vyos-patch" >&2
             exit 1
