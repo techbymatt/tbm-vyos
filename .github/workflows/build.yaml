@@ -42,12 +42,10 @@ jobs:
               "/repos/techbymatt/tbm-vyos-patch/contents/${file}" \
               > "patch/${file}"
           done
-          
+ 
+          echo ""
           echo "Contents of $(pwd)/patch:"
           ls -halp patch/
-          echo ""
-          echo "Contents of /home/runner/work/tbm-vyos/tbm-vyos/patch:"
-          ls -halp /home/runner/work/tbm-vyos/tbm-vyos/patch/ 
       - name: Checkout repository vyos/vyos-build
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -96,14 +94,14 @@ jobs:
       - id: patch_vyos_build
         name: Patch vyos-build
         run: |
-          patch -p1 < ${{ github.workspace }}/patch/vyos-build_changes.patch
-          patch -p1 < ${{ github.workspace }}/patch/vyos-build_new.patch
+          patch -p1 < ../patch/vyos-build_changes.patch
+          patch -p1 < ../patch/vyos-build_new.patch
         working-directory: vyos-build
       - id: patch_vyos_1x
         name: Patch vyos-1x
         run: |
-          patch -p1 < ${{ github.workspace }}/patch/vyos-1x_changes.patch
-          patch -p1 < ${{ github.workspace }}/patch/vyos-1x_new.patch
+          patch -p1 < ../../../patch/vyos-1x_changes.patch
+          patch -p1 < ../../../patch/vyos-1x_new.patch
         working-directory: vyos-build/build/vyos-1x
       - id: add_minisign_pub
         name: Add TBM Minisign public key
