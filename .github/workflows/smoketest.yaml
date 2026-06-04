@@ -6,6 +6,9 @@ jobs:
         TZ: Australia/Brisbane
       image: ghcr.io/techbymatt/vyos-build:rolling
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    defaults:
+      run:
+        shell: bash
     name: Smoketest
     outputs:
       result_cli_amd64: ${{ steps.run_smoketest.outputs.result_cli_amd64 }}
@@ -31,9 +34,9 @@ jobs:
     runs-on: ${{ inputs.runner_os }}
     steps:
       - if: github.event_name == 'workflow_call'
-        - name: Random delay (1–5 minutes)
+        - name: Random delay (0–5 minutes)
         env:
-          MIN_DELAY: 60
+          MIN_DELAY: 0
           MAX_DELAY: 300
         run: |
           DELAY=$((MIN_DELAY + RANDOM % (MAX_DELAY - MIN_DELAY + 1)))

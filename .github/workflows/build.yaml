@@ -6,6 +6,9 @@ jobs:
         TZ: Australia/Brisbane
       image: ghcr.io/techbymatt/vyos-build:rolling
       options: "--privileged --sysctl net.ipv6.conf.lo.disable_ipv6=0"
+    defaults:
+      run:
+        shell: bash
     name: Build ISO
     outputs:
       result_amd64: ${{ steps.build_iso.outputs.result_amd64 }}
