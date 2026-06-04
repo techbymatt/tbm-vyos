@@ -50,53 +50,15 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-        test:
-          [
-            cli,
-            cli-interfaces,
-            cli-vpp,
-            config,
-            config-vpp,
-            raid,
-            secureboot,
-            tpm,
-          ]
         include:
           - arch: amd64
             runner_label: ubuntu-24.04-64core
           - arch: arm64
             runner_label: ubuntu-24.04-32core-arm
-          - test: cli
-            test_cmd: make test-no-interfaces-no-vpp
-            test_timeout: 180
-          - test: cli-interfaces
-            test_cmd: make test-interfaces
-            test_timeout: 180
-          - test: cli-vpp
-            test_cmd: make test-vpp
-            test_timeout: 180
-          - test: config
-            test_cmd: make testc
-            test_timeout: 90
-          - test: config-vpp
-            test_cmd: make testcvpp
-            test_timeout: 60
-          - test: raid
-            test_cmd: make testraid
-            test_timeout: 20
-          - test: secureboot
-            test_cmd: make testsb
-            test_timeout: 20
-          - test: tpm
-            test_cmd: make testtpm
-            test_timeout: 20
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
       runner_label: ${{ matrix.runner_label }}
-      test: ${{ matrix.test }}
-      test_cmd: ${{ matrix.test_cmd }}
-      test_timeout: ${{ matrix.test_timeout }}
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
