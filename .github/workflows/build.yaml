@@ -177,11 +177,6 @@ on:
         description: CPU architecture of the ISO build
         required: true
         type: string
-      runner_group:
-        default: tbm-vyos
-        description: Runner group to use
-        required: false
-        type: string
       runner_label:
         description: Runner label to use
         required: true
