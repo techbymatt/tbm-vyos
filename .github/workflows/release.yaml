@@ -23,9 +23,9 @@ jobs:
         arch: [amd64, arm64]
         include:
           - arch: amd64
-            runner_label: ubuntu-24.04-64core
+            runner_label: ubuntu-24.04
           - arch: arm64
-            runner_label: ubuntu-24.04-32core-arm
+            runner_label: ubuntu-24.04-arm
     uses: ./.github/workflows/build.yaml
     with:
       arch: ${{ matrix.arch }}
@@ -63,9 +63,9 @@ jobs:
           ]
         include:
           - arch: amd64
-            runner_label: ubuntu-24.04-64core
+            runner_label: ubuntu-24.04
           - arch: arm64
-            runner_label: ubuntu-24.04-32core-arm
+            runner_label: ubuntu-24.04-arm
           - test: cli
             test_cmd: make test-no-interfaces-no-vpp
             test_timeout: 180

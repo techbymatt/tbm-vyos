@@ -31,19 +31,8 @@ jobs:
       actions: read
       contents: read
       packages: write
-    runs-on:
-      group: ${{ matrix.runner_group }}
-      labels: ${{ matrix.runner_label }}
+    runs-on: ${{ inputs.runner_label }}
     steps:
-      # - if: github.event_name == 'workflow_call'
-      #   name: Random delay (0-5 minutes)
-      #   env:
-      #     MIN_DELAY: 0
-      #     MAX_DELAY: 300
-      #   run: |
-      #     DELAY=$((MIN_DELAY + RANDOM % (MAX_DELAY - MIN_DELAY + 1)))
-      #     echo "Sleeping for $DELAY seconds..."
-      #     sleep $DELAY
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Download patch files
@@ -83,12 +72,7 @@ jobs:
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
-          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
-              jq -r .title)
+          for pr in ${{ inputs.vyos_build_pr }}; do
             git config user.email "tbm-vyos@tech.bymatt.au"
             git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"

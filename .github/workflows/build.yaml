@@ -59,12 +59,7 @@ jobs:
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
-          for pr in $(echo "${{ inputs.vyos_build_pr }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-build/pulls/${pr}" | \
-              jq -r .title)
+          for pr in ${{ inputs.vyos_build_pr }}; do
             git config user.email "tbm-vyos@tech.bymatt.au"
             git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
@@ -82,12 +77,7 @@ jobs:
       - if: inputs.vyos_1x_pr != ''
         name: Merge requested PRs from vyos/vyos-1x
         run: |
-          for pr in $(echo "${{ inputs.vyos_1x_pr }}"); do
-            title=$(curl -s \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/vyos/vyos-1x/pulls/${pr}" | \
-              jq -r .title)
+          for pr in ${{ inputs.vyos_1x_pr }}; do
             git config user.email "tbm-vyos@tech.bymatt.au"
             git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
@@ -176,11 +166,6 @@ on:
       arch:
         description: CPU architecture of the ISO build
         required: true
-        type: string
-      runner_group:
-        default: tbm-vyos
-        description: Runner group to use
-        required: false
         type: string
       runner_label:
         description: Runner label to use
