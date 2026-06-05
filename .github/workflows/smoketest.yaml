@@ -33,15 +33,6 @@ jobs:
       packages: write
     runs-on: ${{ inputs.runner_label }}
     steps:
-      # - if: github.event_name == 'workflow_call'
-      #   name: Random delay (0-5 minutes)
-      #   env:
-      #     MIN_DELAY: 0
-      #     MAX_DELAY: 300
-      #   run: |
-      #     DELAY=$((MIN_DELAY + RANDOM % (MAX_DELAY - MIN_DELAY + 1)))
-      #     echo "Sleeping for $DELAY seconds..."
-      #     sleep $DELAY
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Download patch files
@@ -52,10 +43,10 @@ jobs:
             echo "TBM_VYOS_PATCH_TOKEN is required to read techbymatt/tbm-vyos-patch" >&2
             exit 1
           fi
-
+ 
           sudo apt update
           sudo apt install --no-install-recommends --yes gh
-
+  
           mkdir patch/
           for file in \
             vyos-1x_changes.patch \
@@ -67,7 +58,7 @@ jobs:
               "/repos/techbymatt/tbm-vyos-patch/contents/${file}" \
               > "patch/${file}"
           done
-
+ 
           echo ""
           echo "Contents of $(pwd)/patch:"
           ls -halp patch/
@@ -111,86 +102,16 @@ jobs:
           path: vyos-build/build
           run-id: ${{ fromJson(inputs.build_run) }}
       - id: run_smoketest
-        name: Run smoketests
-        working-directory: vyos-build
+        name: Run smoketest
         run: |
-          sudo make test-no-interfaces-no-vpp &
-          pid_cli=$!
-          sudo make test-interfaces &
-          pid_cli_interfaces=$!
-          sudo make test-vpp &
-          pid_cli_vpp=$!
-          sudo make testc &
-          pid_config=$!
-          sudo make testcvpp &
-          pid_config_vpp=$!
-          sudo make testraid &
-          pid_raid=$!
-          sudo make testsb &
-          pid_secureboot=$!
-          sudo make testtpm &
-          pid_tpm=$!
-
-          fail=0
-
-          if wait "$pid_cli"; then
-            echo "result_cli_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
+          if sudo ${{ inputs.test_cmd }}; then
+                echo "result_${{ inputs.test }}_${{ inputs.arch }}=success" >> $GITHUB_OUTPUT
+                exit 0
           else
-            echo "result_cli_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
+            echo "result_${{ inputs.test }}_${{ inputs.arch }}=fail" >> $GITHUB_OUTPUT
+            exit 1
           fi
-
-          if wait "$pid_cli_interfaces"; then
-            echo "result_cli-interfaces_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_cli-interfaces_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          if wait "$pid_cli_vpp"; then
-            echo "result_cli-vpp_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_cli-vpp_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          if wait "$pid_config"; then
-            echo "result_config_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_config_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          if wait "$pid_config_vpp"; then
-            echo "result_config-vpp_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_config-vpp_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          if wait "$pid_raid"; then
-            echo "result_raid_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_raid_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          if wait "$pid_secureboot"; then
-            echo "result_secureboot_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_secureboot_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          if wait "$pid_tpm"; then
-            echo "result_tpm_${{ inputs.arch }}=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "result_tpm_${{ inputs.arch }}=fail" >> "$GITHUB_OUTPUT"
-            fail=1
-          fi
-
-          exit "$fail"
-        timeout-minutes: 180
+        timeout-minutes: ${{ inputs.build_run && fromJson(inputs.test_timeout) || inputs.test_timeout }}
 name: Smoketest
 on:
   workflow_call:
@@ -208,6 +129,18 @@ on:
         description: Runner label to use
         required: true
         type: string
+      test:
+        description: Name of the smoketest
+        required: true
+        type: string
+      test_cmd:
+        description: Smoketest command to execute
+        required: true
+        type: string
+      test_timeout:
+        description: Timeout for the smoketest
+        required: true
+        type: number
       version:
         description: The version string to use when building the ISO
         required: true
@@ -293,6 +226,18 @@ on:
         description: Runner label to use
         required: true
         type: string
+      test:
+        description: Name of the smoketest
+        required: true
+        type: string
+      test_cmd:
+        description: Smoketest command to execute
+        required: true
+        type: string
+      test_timeout:
+        description: Timeout for the smoketest in minutes
+        required: true
+        type: number
       version:
         description: The version string of the built ISO
         required: true
