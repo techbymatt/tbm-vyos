@@ -112,6 +112,7 @@ jobs:
             exit 1
           fi
         timeout-minutes: ${{ inputs.build_run && fromJson(inputs.test_timeout) || inputs.test_timeout }}
+        working-directory: vyos-build
 name: Smoketest
 on:
   workflow_call:
