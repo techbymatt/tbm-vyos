@@ -301,7 +301,7 @@ jobs:
 name: Release
 on:
   schedule:
-    - cron: "0 22 1,8,15,22,29 * *"
+    - cron: "42 22 1,8,15,22,29 * *"
   workflow_dispatch:
     inputs:
       debug_mode:
