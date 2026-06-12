@@ -35,33 +35,6 @@ jobs:
     steps:
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Download patch files
-        env:
-          GH_TOKEN: ${{ secrets.TBM_VYOS_PATCH_TOKEN }}
-        run: |
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "TBM_VYOS_PATCH_TOKEN is required to read techbymatt/tbm-vyos-patch" >&2
-            exit 1
-          fi
- 
-          sudo apt update
-          sudo apt install --no-install-recommends --yes gh
-  
-          mkdir patch/
-          for file in \
-            vyos-1x_changes.patch \
-            vyos-1x_new.patch \
-            vyos-build_changes.patch \
-            vyos-build_new.patch; do
-            gh api \
-              --header "Accept: application/vnd.github.raw" \
-              "/repos/techbymatt/tbm-vyos-patch/contents/${file}" \
-              > "patch/${file}"
-          done
- 
-          echo ""
-          echo "Contents of $(pwd)/patch:"
-          ls -halp patch/
       - name: Checkout repository vyos/vyos-build
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -69,6 +42,14 @@ jobs:
           path: vyos-build
           ref: ${{ inputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
+      - id: checkout_patch
+        name: Checkout the tbm-vyos-patch repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          path: tbm-vyos-patch
+          ref: main
+          repository: techbymatt/tbm-vyos-patch
+          token: ${{ secrets.TBM_VYOS_PATCH_TOKEN }}
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
@@ -84,8 +65,8 @@ jobs:
       - id: patch_vyos_build
         name: Patch vyos-build
         run: |
-          patch -p1 < ../patch/vyos-build_changes.patch
-          patch -p1 < ../patch/vyos-build_new.patch
+          cp --verbose ../tbm-vyos-patch/patches/vyos-build/*.patch .
+          git apply *.patch
         working-directory: vyos-build
       - if: ${{ !inputs.build_run }}
         name: Download image artifact
