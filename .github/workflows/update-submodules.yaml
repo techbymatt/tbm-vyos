@@ -1,0 +1,51 @@
+---
+jobs:
+  update:
+    name: Update
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Checkout update branch
+        run: git checkout -B actions/update-submodule
+      - name: Update submodules
+        run: git submodule update --init --remote
+      - name: Commit changes
+        id: commit
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: update submodules"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Push update branch
+        if: steps.commit.outputs.changed == 'true'
+        run: git push --force-with-lease origin actions/update-submodule
+      - name: Open pull request
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr view actions/update-submodule --json number --jq .number >/dev/null 2>&1 || \
+            gh pr create \
+              --base "${{ github.event.repository.default_branch }}" \
+              --head actions/update-submodule \
+              --title "chore: update submodules" \
+              --body "Updates submodules to their latest configured remote revisions." \
+              --assignee MattKobayashi
+name: Submodules
+on:
+  schedule:
+    - cron: "42 19 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
