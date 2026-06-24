@@ -158,7 +158,7 @@ jobs:
             ### Build Log
             https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
-            ### Smoketest Results (amd64)
+            ### Smoketest Results [`amd64`]
             * CLI: ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}
             * CLI (interfaces): ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}
             * CLI (VPP): ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}
@@ -168,7 +168,7 @@ jobs:
             * Secure Boot: ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}
             * TPM Encryption: ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}
 
-            ### Smoketest Results (arm64)
+            ### Smoketest Results [`arm64`]
             * CLI: ${{ needs.smoketest.outputs.result_cli_arm64 == 'success' && '✅ passed' || '❌ failed' }}
             * CLI (interfaces): ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 == 'success' && '✅ passed' || '❌ failed' }}
             * CLI (VPP): ${{ needs.smoketest.outputs.result_cli-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}
@@ -179,11 +179,10 @@ jobs:
             * TPM Encryption: ${{ needs.smoketest.outputs.result_tpm_arm64 == 'success' && '✅ passed' || '❌ failed' }}
 
             ### Upstream Comparison
-            Latest included `vyos-build` commit: https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}
-            Commits to `vyos-build` since this build: https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...rolling
-
-            Latest included `vyos-1x` commit: https://github.com/vyos/vyos-1x/commit/${{ needs.gather_data.outputs.vyos_1x_commit }}
-            Commits to `vyos-1x` since this build: https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...rolling
+            |                          | `vyos-1x`                                                                                         | `vyos-build`                                                                                            |
+            | ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+            | Latest included commit   | https://github.com/vyos/vyos-1x/commit/${{ needs.gather_data.outputs.vyos_1x_commit }}            | https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}            |
+            | Commits since this build | https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...rolling | https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...rolling |
           draft: true
           name: TBM VyOS ${{ needs.gather_data.outputs.version }}
           omitDraftDuringUpdate: true
