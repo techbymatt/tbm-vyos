@@ -34,13 +34,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr view actions/update-submodule --json number --jq .number >/dev/null 2>&1 || \
+          if [ -z "$(gh pr list --head actions/update-submodule --state open --json number --jq '.[0].number')" ]; then
             gh pr create \
               --base "${{ github.event.repository.default_branch }}" \
               --head actions/update-submodule \
               --title "chore: update submodules" \
               --body "Updates submodules to their latest configured remote revisions." \
               --assignee MattKobayashi
+          fi
 name: Submodules
 on:
   schedule:
