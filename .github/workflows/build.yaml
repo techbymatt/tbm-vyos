@@ -26,6 +26,9 @@ jobs:
         with:
           client-id: ${{ secrets.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: |
+            tbm-vyos
+            tbm-vyos-patch
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Checkout repository vyos/vyos-build
