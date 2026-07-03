@@ -20,6 +20,12 @@ jobs:
       packages: write
     runs-on: ${{ inputs.runner_label }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Checkout repository techbymatt/tbm-vyos
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Checkout repository vyos/vyos-build
@@ -36,7 +42,7 @@ jobs:
           path: tbm-vyos-patch
           ref: main
           repository: techbymatt/tbm-vyos-patch
-          token: ${{ secrets.TBM_VYOS_PATCH_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
@@ -173,8 +179,11 @@ on:
         required: false
         type: string
     secrets:
-      TBM_VYOS_PATCH_TOKEN:
-        description: Token with contents read access to techbymatt/tbm-vyos-patch
+      APP_CLIENT_ID:
+        description: TBM VyOS GitHub App client ID
+        required: true
+      APP_PRIVATE_KEY:
+        description: TBM VyOS GitHub App client ID
         required: true
     outputs:
       result_amd64:
