@@ -54,7 +54,7 @@ jobs:
         name: Enable auto-merge
         if: steps.commit.outputs.changed == 'true'
         run: |
-          gh pr merge --auto --rebase actions/update-submodule
+          gh pr merge --auto --squash actions/update-submodule
 name: Submodules
 on:
   schedule:
