@@ -49,6 +49,12 @@ jobs:
               --body "Updates submodules to their latest configured remote revisions." \
               --assignee MattKobayashi
           fi
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        name: Enable auto-merge
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          gh pr merge --auto --rebase actions/update-submodule
 name: Submodules
 on:
   schedule:
