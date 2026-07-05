@@ -160,24 +160,29 @@ jobs:
             https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
             ### Smoketest Results [`amd64`]
-            * CLI: ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (interfaces): ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (VPP): ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load: ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load (VPP): ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * RAID1 Installation: ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * Secure Boot: ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}
-            * TPM Encryption: ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}
+            | Test                      | Result                                                                                                |
+            | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+            | CLI                       | ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
+            | CLI (interfaces)          | ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}   |
+            | CLI (VPP)                 | ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}          |
+            | Configuration Load        | ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
+            | Configuration Load (VPP)  | ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
+            | RAID1 Installation        | ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}             |
+            | Secure Boot               | ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
+            | TPM Encryption            | ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
 
             ### Smoketest Results [`arm64`]
-            * CLI: ${{ needs.smoketest.outputs.result_cli_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (interfaces): ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * CLI (VPP): ${{ needs.smoketest.outputs.result_cli-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load: ${{ needs.smoketest.outputs.result_config_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * Configuration Load (VPP): ${{ needs.smoketest.outputs.result_config-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * RAID1 Installation: ${{ needs.smoketest.outputs.result_raid_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * Secure Boot: ${{ needs.smoketest.outputs.result_secureboot_arm64 == 'success' && '✅ passed' || '❌ failed' }}
-            * TPM Encryption: ${{ needs.smoketest.outputs.result_tpm_arm64 == 'success' && '✅ passed' || '❌ failed' }}
+            | Test                      | Result                                                                                                |
+            | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+            | CLI                       | ${{ needs.smoketest.outputs.result_cli_arm64 == 'success' && '✅ passed' || '❌ failed' }}              |
+            | CLI (interfaces)          | ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 == 'success' && '✅ passed' || '❌ failed' }}   |
+            | CLI (VPP)                 | ${{ needs.smoketest.outputs.result_cli-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}          |
+            | Configuration Load        | ${{ needs.smoketest.outputs.result_config_arm64 == 'success' && '✅ passed' || '❌ failed' }}           |
+            | Configuration Load (VPP)  | ${{ needs.smoketest.outputs.result_config-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}       |
+            | RAID1 Installation        | ${{ needs.smoketest.outputs.result_raid_arm64 == 'success' && '✅ passed' || '❌ failed' }}             |
+            | Secure Boot               | ${{ needs.smoketest.outputs.result_secureboot_arm64 == 'success' && '✅ passed' || '❌ failed' }}       |
+            | TPM Encryption            | ${{ needs.smoketest.outputs.result_tpm_arm64 == 'success' && '✅ passed' || '❌ failed' }}              |
+
 
             ### Upstream Comparison
             |                          | `vyos-1x`                                                                                         | `vyos-build`                                                                                            |
