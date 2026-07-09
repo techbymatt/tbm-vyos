@@ -73,7 +73,7 @@ jobs:
         name: Patch vyos-build
         run: |
           cp --verbose ../tbm-vyos-patch/patches/vyos-build/*.patch .
-          git apply -3 --verbose *.patch
+          git apply --3way --verbose *.patch
         working-directory: vyos-build
       - if: ${{ !inputs.build_run }}
         name: Download image artifact
