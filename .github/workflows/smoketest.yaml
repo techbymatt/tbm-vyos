@@ -34,15 +34,20 @@ jobs:
       packages: write
     runs-on: ${{ inputs.runner_label }}
     steps:
-      - name: Generate GitHub App token
-        id: app-token
+      - id: app-token
+        name: Generate GitHub App token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ secrets.APP_CLIENT_ID }}
           owner: techbymatt
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      - name: Checkout repository techbymatt/tbm-vyos
+      - name: Checkout the tbm-vyos-patch repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: tbm-vyos-patch
+          ref: main
+          repository: techbymatt/tbm-vyos-patch
+          token: ${{ steps.app-token.outputs.token }}
       - name: Checkout repository vyos/vyos-build
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -50,14 +55,6 @@ jobs:
           path: vyos-build
           ref: ${{ inputs.vyos_build_commit_sha }}
           repository: vyos/vyos-build
-      - id: checkout_patch
-        name: Checkout the tbm-vyos-patch repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          path: tbm-vyos-patch
-          ref: main
-          repository: techbymatt/tbm-vyos-patch
-          token: ${{ steps.app-token.outputs.token }}
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |

@@ -13,6 +13,13 @@ jobs:
       contents: read
     runs-on: ubuntu-24.04
     steps:
+      - id: app-token
+        name: Generate GitHub App token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          owner: techbymatt
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - id: version_string
         name: Generate version string
         run: |
@@ -22,40 +29,32 @@ jobs:
         name: Add patch string
         run: |
           echo "version=${{ steps.version_string.outputs.version }}-${{ inputs.patch_string }}" >> "$GITHUB_OUTPUT"
-      - id: checkout_vyos_build
-        name: Checkout repository vyos/vyos-build
+      - name: Checkout the tbm-vyos-patch repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          path: vyos-build
-          ref: rolling
-          repository: vyos/vyos-build
+          repository: techbymatt/tbm-vyos-patch
+          submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}
       - id: get_vyos_build_commit
-        name: Get latest commit to vyos/vyos-build
+        name: Get latest vyos-build commit
         run: |
           echo "vyos_build_commit=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build
       - id: get_vyos_build_commit_sha
-        name: Get latest commit to vyos/vyos-build (full SHA)
+        name: Get latest vyos-build commit (full SHA)
         run: |
           echo "vyos_build_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
         working-directory: vyos-build
-      - id: checkout_vyos_1x
-        name: Checkout repository vyos/vyos-1x
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          path: vyos-build/build/vyos-1x
-          ref: rolling
-          repository: vyos/vyos-1x
       - id: get_vyos_1x_commit
         name: Get latest commit to vyos/vyos-1x
         run: |
           echo "vyos_1x_commit=$(git --no-pager log --pretty=format:%h --max-count=1)" >> "$GITHUB_OUTPUT"
-        working-directory: vyos-build/build/vyos-1x
+        working-directory: vyos-1x
       - id: get_vyos_1x_commit_sha
         name: Get latest commit to vyos/vyos-1x (full SHA)
         run: |
           echo "vyos_1x_commit_sha=$(git --no-pager log --pretty=format:%H --max-count=1)" >> "$GITHUB_OUTPUT"
-        working-directory: vyos-build/build/vyos-1x
+        working-directory: vyos-1x
     timeout-minutes: 5
 name: Data
 on:
