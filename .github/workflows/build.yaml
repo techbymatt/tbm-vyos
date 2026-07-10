@@ -21,54 +21,39 @@ jobs:
       packages: write
     runs-on: ${{ inputs.runner_label }}
     steps:
-      - name: Generate GitHub App token
-        id: app-token
+      - id: app-token
+        name: Generate GitHub App token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ secrets.APP_CLIENT_ID }}
           owner: techbymatt
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      - name: Checkout repository techbymatt/tbm-vyos
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Checkout repository vyos/vyos-build
+      - name: Checkout the tbm-vyos-patch repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
-          path: vyos-build
-          ref: ${{ inputs.vyos_build_commit_sha }}
-          repository: vyos/vyos-build
-      - id: checkout_patch
-        name: Checkout the tbm-vyos-patch repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          path: tbm-vyos-patch
-          ref: main
           repository: techbymatt/tbm-vyos-patch
+          submodules: recursive
           token: ${{ steps.app-token.outputs.token }}
+      - name: Move vyos-1x directory
+        run: |
+          git config --global --add safe.directory $(pwd)
+          git config --global user.email "tbm-vyos@tech.bymatt.au"
+          git config --global user.name "TBM VyOS"
+          mkdir -p vyos-build/build
+          git mv vyos-1x vyos-build/build/vyos-1x
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           for pr in ${{ inputs.vyos_build_pr }}; do
-            git config user.email "tbm-vyos@tech.bymatt.au"
-            git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git merge --no-commit "pr-${pr}"
           done
         working-directory: vyos-build
-      - name: Checkout repository vyos/vyos-1x
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          fetch-depth: 0
-          path: vyos-build/build/vyos-1x
-          ref: ${{ inputs.vyos_1x_commit_sha }}
-          repository: vyos/vyos-1x
-          submodules: recursive
       - if: inputs.vyos_1x_pr != ''
         name: Merge requested PRs from vyos/vyos-1x
         run: |
           for pr in ${{ inputs.vyos_1x_pr }}; do
-            git config user.email "tbm-vyos@tech.bymatt.au"
-            git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git merge --no-commit "pr-${pr}"
           done
@@ -76,13 +61,13 @@ jobs:
       - id: patch_vyos_build
         name: Patch vyos-build
         run: |
-          cp --verbose ../tbm-vyos-patch/patches/vyos-build/*.patch .
+          cp --verbose ../patches/vyos-build/*.patch .
           git apply --3way --verbose *.patch
         working-directory: vyos-build
       - id: patch_vyos_1x
         name: Patch vyos-1x
         run: |
-          cp --verbose ../../../tbm-vyos-patch/patches/vyos-1x/*.patch .
+          cp --verbose ../../../patches/vyos-1x/*.patch .
           git apply -3 --verbose *.patch
         working-directory: vyos-build/build/vyos-1x
       - id: add_minisign_pub
