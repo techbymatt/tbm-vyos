@@ -66,7 +66,7 @@ jobs:
       - id: patch_vyos_1x
         name: Patch vyos-1x
         run: |
-          cp --verbose ../../patches/vyos-1x/*.patch .
+          cp --verbose ../../../patches/vyos-1x/*.patch .
           git apply -3 --verbose *.patch
         working-directory: vyos-build/build/vyos-1x
       - id: add_minisign_pub
