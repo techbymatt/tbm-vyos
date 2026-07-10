@@ -36,14 +36,15 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - name: Move vyos-1x directory
         run: |
+          git config --global --add safe.directory $(pwd)
+          git config --global user.email "tbm-vyos@tech.bymatt.au"
+          git config --global user.name "TBM VyOS"
           mkdir -p vyos-build/build
           git mv vyos-1x vyos-build/build/vyos-1x
       - if: inputs.vyos_build_pr != ''
         name: Merge requested PRs from vyos/vyos-build
         run: |
           for pr in ${{ inputs.vyos_build_pr }}; do
-            git config user.email "tbm-vyos@tech.bymatt.au"
-            git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git merge --no-commit "pr-${pr}"
           done
@@ -52,8 +53,6 @@ jobs:
         name: Merge requested PRs from vyos/vyos-1x
         run: |
           for pr in ${{ inputs.vyos_1x_pr }}; do
-            git config user.email "tbm-vyos@tech.bymatt.au"
-            git config user.name "TBM VyOS"
             git fetch origin "pull/${pr}/head:pr-${pr}"
             git merge --no-commit "pr-${pr}"
           done
