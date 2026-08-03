@@ -91,7 +91,7 @@ jobs:
           - test: tpm
             test_cmd: make testtpm
             test_timeout: 20
-      max-parallel: 4
+      max-parallel: 8
     uses: ./.github/workflows/smoketest.yaml
     with:
       arch: ${{ matrix.arch }}
