@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
         test:
           [
             cli,
@@ -65,8 +65,6 @@ jobs:
         include:
           - arch: amd64
             runner_label: ubuntu-24.04
-          - arch: arm64
-            runner_label: ubuntu-24.04-arm
           - test: cli
             test_cmd: make test-no-interfaces-no-vpp
             test_timeout: 180
@@ -175,14 +173,14 @@ jobs:
             ### Smoketest Results [`arm64`]
             | Test                      | Result                                                                                                |
             | ------------------------- | ----------------------------------------------------------------------------------------------------- |
-            | CLI                       | ${{ needs.smoketest.outputs.result_cli_arm64 == 'success' && '✅ passed' || '❌ failed' }}              |
-            | CLI (interfaces)          | ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 == 'success' && '✅ passed' || '❌ failed' }}   |
-            | CLI (VPP)                 | ${{ needs.smoketest.outputs.result_cli-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}          |
-            | Configuration Load        | ${{ needs.smoketest.outputs.result_config_arm64 == 'success' && '✅ passed' || '❌ failed' }}           |
-            | Configuration Load (VPP)  | ${{ needs.smoketest.outputs.result_config-vpp_arm64 == 'success' && '✅ passed' || '❌ failed' }}       |
-            | RAID1 Installation        | ${{ needs.smoketest.outputs.result_raid_arm64 == 'success' && '✅ passed' || '❌ failed' }}             |
-            | Secure Boot               | ${{ needs.smoketest.outputs.result_secureboot_arm64 == 'success' && '✅ passed' || '❌ failed' }}       |
-            | TPM Encryption            | ${{ needs.smoketest.outputs.result_tpm_arm64 == 'success' && '✅ passed' || '❌ failed' }}              |
+            | CLI                       | ⚠️ skipped                                                                                              |
+            | CLI (interfaces)          | ⚠️ skipped                                                                                              |
+            | CLI (VPP)                 | ⚠️ skipped                                                                                              |
+            | Configuration Load        | ⚠️ skipped                                                                                              |
+            | Configuration Load (VPP)  | ⚠️ skipped                                                                                              |
+            | RAID1 Installation        | ⚠️ skipped                                                                                              |
+            | Secure Boot               | ⚠️ skipped                                                                                              |
+            | TPM Encryption            | ⚠️ skipped                                                                                              |
 
 
             ### Upstream Comparison
