@@ -182,7 +182,6 @@ jobs:
             | Secure Boot               | ⚠️ skipped                                                                                              |
             | TPM Encryption            | ⚠️ skipped                                                                                              |
 
-
             ### Upstream Comparison
             |                          | `vyos-1x`                                                                                         | `vyos-build`                                                                                            |
             | ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -210,7 +209,7 @@ jobs:
             --form-string "token=${{ secrets.PO_APP_TOKEN }}" \
             --form-string "user=${{ secrets.PO_USER_KEY }}" \
             --form-string "message=A new draft release has been created!" \
-            --form-string "url=${{ needs.draft_release.outputs.release_url }}" \
+            --form-string "url=${{ needs.draft_release.outputs.html_url }}" \
             https://api.pushover.net/1/messages.json
   debug_data:
     if: |
