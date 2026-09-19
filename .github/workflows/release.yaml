@@ -110,7 +110,7 @@ jobs:
       release_url: ${{ steps.draft_release.outputs.html_url }}
     permissions:
       contents: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - id: download_artifact_amd64
         name: Download AMD64 live image artifact
@@ -200,7 +200,7 @@ jobs:
     needs: [draft_release]
     permissions:
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - id: pushover
         name: Pushover
@@ -219,7 +219,7 @@ jobs:
     needs: [gather_data, build, smoketest]
     permissions:
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - id: debug_data
         name: Print debug data
