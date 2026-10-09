@@ -75,25 +75,25 @@ jobs:
         run: |
           echo "${{ secrets.MINISIGN_PUB }}" > vyos-build/data/live-build-config/includes.chroot/usr/share/vyos/keys/tbm.minisign.pub
       - env:
-          CA_DIR: data/certificates
-          SHIM_CERT_NAME: vyos-dev-2025-shim
-          VYOS_KERNEL_CERT_NAME: vyos-dev-2025-linux
+          SB_CA_DIR: data/certificates
+          SB_CA_KEY_NAME: vyos-dev-2025-shim
+          SB_CA_CERT_NAME: vyos-dev-2025-linux
         id: secure_boot_certs
         name: Generate Secure Boot certificates
         run: |
-          # Shim
-          echo "${{ secrets.VYOS_DEV_2025_SHIM }}" > ${CA_DIR}/${SHIM_CERT_NAME}.key
-          openssl req -new -x509 -key ${CA_DIR}/${SHIM_CERT_NAME}.key -out ${CA_DIR}/${SHIM_CERT_NAME}.der \
+          # Key
+          echo "${{ secrets.VYOS_DEV_2025_SHIM }}" > ${SB_CA_DIR}/${SB_CA_KEY_NAME}.key
+          openssl req -new -x509 -key ${SB_CA_DIR}/${SB_CA_KEY_NAME}.key -out ${SB_CA_DIR}/${SB_CA_KEY_NAME}.der \
             -outform DER -days 36500 -subj "/CN=Tech By Matt Secure Boot CA/" -nodes
-          openssl x509 -inform der -in ${CA_DIR}/${SHIM_CERT_NAME}.der -out ${CA_DIR}/${SHIM_CERT_NAME}.pem
-          # Kernel
-          echo "${{ secrets.VYOS_DEV_2025_LINUX }}" > ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key
-          openssl req -new -sha256 -key ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.key -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr \
+          openssl x509 -inform der -in ${SB_CA_DIR}/${SB_CA_KEY_NAME}.der -out ${SB_CA_DIR}/${SB_CA_KEY_NAME}.pem
+          # Certificate
+          echo "${{ secrets.VYOS_DEV_2025_LINUX }}" > ${SB_CA_DIR}/${SB_CA_CERT_NAME}.key
+          openssl req -new -sha256 -key ${SB_CA_DIR}/${SB_CA_CERT_NAME}.key -out ${SB_CA_DIR}/${SB_CA_CERT_NAME}.csr \
             -outform PEM -days 3650 -subj "/CN=Tech By Matt Secure Boot Signer 2025 - linux/"
-          openssl x509 -req -in ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.csr -CA ${CA_DIR}/${SHIM_CERT_NAME}.pem \
-            -CAkey ${CA_DIR}/${SHIM_CERT_NAME}.key -CAcreateserial -out ${CA_DIR}/${VYOS_KERNEL_CERT_NAME}.pem -days 3650 -sha256
+          openssl x509 -req -in ${SB_CA_DIR}/${SB_CA_CERT_NAME}.csr -CA ${SB_CA_DIR}/${SB_CA_KEY_NAME}.pem \
+            -CAkey ${SB_CA_DIR}/${SB_CA_KEY_NAME}.key -CAcreateserial -out ${SB_CA_DIR}/${SB_CA_CERT_NAME}.pem -days 3650 -sha256
           # Cleanup
-          rm -f ${CA_DIR}/${SHIM_CERT_NAME}.key
+          rm -f ${SB_CA_DIR}/${SB_CA_KEY_NAME}.key
         working-directory: vyos-build
       - id: build_vyos_1x
         name: Build vyos-1x package
