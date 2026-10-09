@@ -82,6 +82,13 @@ jobs:
           name: tbm-vyos-${{ inputs.arch }}-${{ inputs.version }}-liveimage
           path: vyos-build/build
           run-id: ${{ fromJson(inputs.build_run) }}
+      - name: Select custom CA Secure Boot test path
+        if: inputs.test == 'secureboot'
+        working-directory: vyos-build
+        run: |
+          mkdir -p data/certificates
+          touch data/certificates/vyos-dev-2025-linux.key \
+                data/certificates/vyos-dev-2025-linux.pem
       - id: run_smoketest
         name: Run smoketest
         run: |
