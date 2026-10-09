@@ -58,6 +58,7 @@ jobs:
             cli-vpp,
             config,
             config-vpp,
+            ifname,
             raid,
             secureboot,
             tpm,
@@ -80,11 +81,14 @@ jobs:
           - test: config-vpp
             test_cmd: make testcvpp
             test_timeout: 60
+          - test: ifname
+            test_cmd: make testifname
+            test_timeout: 20
           - test: raid
             test_cmd: make testraid
             test_timeout: 20
           - test: secureboot
-            test_cmd: make testsb
+            test_cmd: make test-secure-boot
             test_timeout: 20
           - test: tpm
             test_cmd: make testtpm
@@ -159,28 +163,30 @@ jobs:
             https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
             ### Smoketest Results [`amd64`]
-            | Test                      | Result                                                                                                |
-            | ------------------------- | ----------------------------------------------------------------------------------------------------- |
-            | CLI                       | ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
-            | CLI (interfaces)          | ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}   |
-            | CLI (VPP)                 | ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}          |
-            | Configuration Load        | ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
-            | Configuration Load (VPP)  | ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
-            | RAID1 Installation        | ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}             |
-            | Secure Boot               | ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
-            | TPM Encryption            | ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
+            | Test                       | Result                                                                                                |
+            | -------------------------- | ----------------------------------------------------------------------------------------------------- |
+            | CLI                        | ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
+            | CLI (interfaces)           | ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}   |
+            | CLI (VPP)                  | ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}          |
+            | Configuration Load         | ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
+            | Configuration Load (VPP)   | ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
+            | Interface Name Persistence | ${{ needs.smoketest.outputs.result_ifname_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
+            | RAID1 Installation         | ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}             |
+            | Secure Boot                | ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
+            | TPM Encryption             | ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
 
             ### Smoketest Results [`arm64`]
-            | Test                      | Result                                                                                                |
-            | ------------------------- | ----------------------------------------------------------------------------------------------------- |
-            | CLI                       | ⚠️ skipped                                                                                              |
-            | CLI (interfaces)          | ⚠️ skipped                                                                                              |
-            | CLI (VPP)                 | ⚠️ skipped                                                                                              |
-            | Configuration Load        | ⚠️ skipped                                                                                              |
-            | Configuration Load (VPP)  | ⚠️ skipped                                                                                              |
-            | RAID1 Installation        | ⚠️ skipped                                                                                              |
-            | Secure Boot               | ⚠️ skipped                                                                                              |
-            | TPM Encryption            | ⚠️ skipped                                                                                              |
+            | Test                       | Result                                                                                                |
+            | -------------------------- | ----------------------------------------------------------------------------------------------------- |
+            | CLI                        | ⚠️ skipped                                                                                              |
+            | CLI (interfaces)           | ⚠️ skipped                                                                                              |
+            | CLI (VPP)                  | ⚠️ skipped                                                                                              |
+            | Configuration Load         | ⚠️ skipped                                                                                              |
+            | Configuration Load (VPP)   | ⚠️ skipped                                                                                              |
+            | Interface Name Persistence | ⚠️ skipped                                                                                              |
+            | RAID1 Installation         | ⚠️ skipped                                                                                              |
+            | Secure Boot                | ⚠️ skipped                                                                                              |
+            | TPM Encryption             | ⚠️ skipped                                                                                              |
 
             ### Upstream Comparison
             |                          | `vyos-1x`                                                                                         | `vyos-build`                                                                                            |
@@ -282,6 +288,12 @@ jobs:
           echo "----------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_config-vpp_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_config-vpp_arm64 }}"
+          echo ""
+          echo "----------------"
+          echo "smoketest_ifname"
+          echo "----------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_ifname_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_ifname_arm64 }}"
           echo ""
           echo "----------------"
           echo "smoketest_raid"

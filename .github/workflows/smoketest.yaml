@@ -22,6 +22,8 @@ jobs:
       result_config_arm64: ${{ steps.run_smoketest.outputs.result_config_arm64 }}
       result_config-vpp_amd64: ${{ steps.run_smoketest.outputs.result_config-vpp_amd64 }}
       result_config-vpp_arm64: ${{ steps.run_smoketest.outputs.result_config-vpp_arm64 }}
+      result_ifname_amd64: ${{ steps.run_smoketest.outputs.result_ifname_amd64 }}
+      result_ifname_arm64: ${{ steps.run_smoketest.outputs.result_ifname_arm64 }}
       result_raid_amd64: ${{ steps.run_smoketest.outputs.result_raid_amd64 }}
       result_raid_arm64: ${{ steps.run_smoketest.outputs.result_raid_arm64 }}
       result_secureboot_amd64: ${{ steps.run_smoketest.outputs.result_secureboot_amd64 }}
@@ -171,6 +173,12 @@ on:
       result_config-vpp_arm64:
         description: Result of the `config-vpp` smoketest on `arm64` arch
         value: ${{ jobs.smoketest.outputs.result_config-vpp_arm64 }}
+      result_ifname_amd64:
+        description: Result of the `ifname` smoketest on `amd64` arch
+        value: ${{ jobs.smoketest.outputs.result_ifname_amd64 }}
+      result_ifname_arm64:
+        description: Result of the `ifname` smoketest on `arm64` arch
+        value: ${{ jobs.smoketest.outputs.result_ifname_arm64 }}
       result_raid_amd64:
         description: Result of the `raid` smoketest on `amd64` arch
         value: ${{ jobs.smoketest.outputs.result_raid_amd64 }}
