@@ -104,7 +104,7 @@ jobs:
       version: ${{ needs.gather_data.outputs.version }}
       vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
       vyos_build_pr: ${{ inputs.vyos_build_pr }}
-  draft_release:
+  release:
     if: |
       !cancelled() &&
       needs.smoketest.result == 'success' &&
@@ -112,7 +112,7 @@ jobs:
     name: Draft release
     needs: [gather_data, build, smoketest]
     outputs:
-      release_url: ${{ steps.draft_release.outputs.html_url }}
+      release_url: ${{ steps.release.outputs.html_url }}
     permissions:
       contents: write
     runs-on: ubuntu-26.04
@@ -151,11 +151,10 @@ jobs:
           echo | minisign -Sm ${{ needs.build.outputs.release_filename_amd64 }}
           echo | minisign -Sm ${{ needs.build.outputs.release_filename_arm64 }}
         working-directory: build
-      - id: draft_release
+      - id: release
         name: Create draft release
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
-          allowUpdates: false
           artifactContentType: application/x-iso9660-image
           artifactErrorsFailBuild: true
           artifacts: "build/tbm-vyos-*.iso, build/tbm-vyos-*.iso.minisig"
@@ -194,17 +193,15 @@ jobs:
             | ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
             | Latest included commit   | https://github.com/vyos/vyos-1x/commit/${{ needs.gather_data.outputs.vyos_1x_commit }}            | https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}            |
             | Commits since this build | https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...rolling | https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...rolling |
-          draft: true
           name: TBM VyOS ${{ needs.gather_data.outputs.version }}
-          omitDraftDuringUpdate: true
           tag: ${{ needs.gather_data.outputs.version }}
   notify_release:
     if: |
       !cancelled() &&
-      needs.draft_release.result == 'success' &&
+      needs.release.result == 'success' &&
       !inputs.debug_mode
     name: Release notifications
-    needs: [draft_release]
+    needs: [release]
     permissions:
       contents: read
     runs-on: ubuntu-26.04
@@ -215,8 +212,8 @@ jobs:
           curl -s \
             --form-string "token=${{ secrets.PO_APP_TOKEN }}" \
             --form-string "user=${{ secrets.PO_USER_KEY }}" \
-            --form-string "message=A new draft release has been created!" \
-            --form-string "url=${{ needs.draft_release.outputs.release_url }}" \
+            --form-string "message=A new release has been created!" \
+            --form-string "url=${{ needs.release.outputs.release_url }}" \
             https://api.pushover.net/1/messages.json
   debug_data:
     if: |
