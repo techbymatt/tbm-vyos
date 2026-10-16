@@ -117,6 +117,39 @@ jobs:
       contents: write
     runs-on: ubuntu-26.04
     steps:
+      - name: Checkout release scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test upstream changelog generator
+        run: node --test .github/scripts/upstream-changelog.test.cjs
+      - id: upstream_changelog
+        name: Generate upstream changelog
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RELEASE_VERSION: ${{ needs.gather_data.outputs.version }}
+          VYOS_1X_SHA: ${{ needs.gather_data.outputs.vyos_1x_commit_sha }}
+          VYOS_BUILD_SHA: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}
+          VYOS_1X_PRS: ${{ inputs.vyos_1x_pr }}
+          VYOS_BUILD_PRS: ${{ inputs.vyos_build_pr }}
+        with:
+          retries: 3
+          script: |
+            const { generateChangelog } = require('./.github/scripts/upstream-changelog.cjs');
+            const markdown = await generateChangelog({
+              github,
+              ...context.repo,
+              version: process.env.RELEASE_VERSION,
+              currentShas: {
+                'vyos-1x': process.env.VYOS_1X_SHA,
+                'vyos-build': process.env.VYOS_BUILD_SHA,
+              },
+              requestedPrs: {
+                'vyos-1x': process.env.VYOS_1X_PRS,
+                'vyos-build': process.env.VYOS_BUILD_PRS,
+              },
+            });
+            core.setOutput('markdown', markdown);
       - id: download_artifact_amd64
         name: Download AMD64 live image artifact
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -193,6 +226,8 @@ jobs:
             | ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
             | Latest included commit   | https://github.com/vyos/vyos-1x/commit/${{ needs.gather_data.outputs.vyos_1x_commit }}            | https://github.com/vyos/vyos-build/commit/${{ needs.gather_data.outputs.vyos_build_commit }}            |
             | Commits since this build | https://github.com/vyos/vyos-1x/compare/${{ needs.gather_data.outputs.vyos_1x_commit }}...rolling | https://github.com/vyos/vyos-build/compare/${{ needs.gather_data.outputs.vyos_build_commit }}...rolling |
+
+            ${{ steps.upstream_changelog.outputs.markdown }}
           name: TBM VyOS ${{ needs.gather_data.outputs.version }}
           tag: ${{ needs.gather_data.outputs.version }}
   notify_release:
