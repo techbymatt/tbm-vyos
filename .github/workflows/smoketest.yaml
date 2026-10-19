@@ -86,9 +86,10 @@ jobs:
         if: inputs.test == 'secureboot'
         working-directory: vyos-build
         run: |
+          SB_CA_YEAR="$(date +%Y)"
           mkdir -p data/certificates
-          touch data/certificates/vyos-dev-2025-linux.key \
-                data/certificates/vyos-dev-2025-linux.pem
+          touch "data/certificates/vyos-dev-${SB_CA_YEAR}-linux.key" \
+                "data/certificates/vyos-dev-${SB_CA_YEAR}-linux.pem"
       - id: run_smoketest
         name: Run smoketest
         run: |
