@@ -141,7 +141,7 @@ test("malformed metadata fails rather than silently using an incorrect baseline"
   assert.throws(() => previousUpstreamShas(metadata([])), /Invalid upstream revision metadata/);
 });
 
-test("deduplicates, filters, and sorts PRs by merge time without padding a short list", async () => {
+test("deduplicates, filters, and sorts PRs by merge time", async () => {
   const newest = pull("vyos-1x", 2, { merged_at: "2026-10-13T00:00:00Z" });
   const oldest = pull("vyos-1x", 1);
   const excluded = [
@@ -167,7 +167,7 @@ test("deduplicates, filters, and sorts PRs by merge time without padding a short
   assert.equal(calls.find((call) => call.name === "compare").basehead, `${PREVIOUS["vyos-1x"]}...${CURRENT["vyos-1x"]}`);
 });
 
-test("applies the latest-15 limit independently to each repository and links full comparisons", async () => {
+test("lists all merged PRs for both repositories without truncation, newest first", async () => {
   const previous = { "vyos-1x": sha(900), "vyos-build": sha(1900) };
   const comparisons = {};
   const associations = {};
@@ -182,14 +182,17 @@ test("applies the latest-15 limit independently to each repository and links ful
   }
   const { github } = fakeGithub({ releases: [release({ body: metadata(previous) })], comparisons, associations });
   const markdown = await generate(github);
-  assert.equal((markdown.match(/Showing the latest 15 of 17 merged PRs\./g) || []).length, 2);
-  assert.equal((markdown.match(/^- \[#/gm) || []).length, 30);
+  assert.ok(!markdown.includes("Showing the latest"));
+  assert.equal((markdown.match(/^- \[#/gm) || []).length, 34);
   assert.equal((markdown.match(/\[Full comparison\]/g) || []).length, 2);
-  assert.ok(!markdown.includes("[#1]"));
-  assert.ok(!markdown.includes("[#2]"));
   for (const repository of Object.keys(CURRENT)) {
     assert.ok(markdown.includes(`#### \`${repository}\``));
     assert.ok(markdown.includes(`/compare/${previous[repository]}...${CURRENT[repository]}`));
+    const section = markdown.split(`#### \`${repository}\``)[1].split("\n#### ")[0];
+    assert.deepEqual(
+      [...section.matchAll(/^- \[#(\d+)\]/gm)].map((match) => Number(match[1])),
+      Array.from({ length: 17 }, (_, index) => 17 - index),
+    );
   }
 });
 

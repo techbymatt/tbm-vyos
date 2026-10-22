@@ -1,7 +1,6 @@
 "use strict";
 
 const REPOSITORIES = ["vyos-1x", "vyos-build"];
-const PR_LIMIT = 15;
 const FULL_SHA = /^[0-9a-f]{40}$/i;
 
 function fullSha(value, description) {
@@ -156,10 +155,7 @@ async function repositoryChanges(github, repository, previous, current) {
     if (!pulls.length) {
       lines.push("No new merged PRs.");
     } else {
-      if (pulls.length > PR_LIMIT) {
-        lines.push(`Showing the latest ${PR_LIMIT} of ${pulls.length} merged PRs.`, "");
-      }
-      lines.push(...pulls.slice(0, PR_LIMIT).map((pull) => pullRequestLine(repository, pull)));
+      lines.push(...pulls.map((pull) => pullRequestLine(repository, pull)));
     }
   }
   lines.push("", `[Full comparison](${comparison})`);
