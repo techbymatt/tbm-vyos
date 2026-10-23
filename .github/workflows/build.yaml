@@ -47,7 +47,7 @@ jobs:
         run: |
           for pr in ${{ inputs.vyos_build_pr }}; do
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git merge --no-commit "pr-${pr}"
+            git merge --no-edit "pr-${pr}"
           done
         working-directory: vyos-build
       - if: inputs.vyos_1x_pr != ''
@@ -55,7 +55,7 @@ jobs:
         run: |
           for pr in ${{ inputs.vyos_1x_pr }}; do
             git fetch origin "pull/${pr}/head:pr-${pr}"
-            git merge --no-commit "pr-${pr}"
+            git merge --no-edit "pr-${pr}"
           done
         working-directory: vyos-build/build/vyos-1x
       - id: patch_vyos_build
