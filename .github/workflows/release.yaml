@@ -82,7 +82,7 @@ jobs:
             test_cmd: make testcvpp
             test_timeout: 60
           - test: ifname
-            test_cmd: make testifname
+            test_cmd: make test-ifname
             test_timeout: 20
           - test: raid
             test_cmd: make testraid
