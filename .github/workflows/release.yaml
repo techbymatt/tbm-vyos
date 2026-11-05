@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64]
+        arch: [amd64, arm64]
         test:
           [
             cli,
@@ -67,6 +67,8 @@ jobs:
         include:
           - arch: amd64
             runner_label: ubuntu-26.04
+          - arch: arm64
+            runner_label: ubuntu-26.04-arm
           - test: cli
             test_cmd: make test-no-interfaces-no-vpp
             test_timeout: 180
@@ -214,18 +216,18 @@ jobs:
             | TPM Encryption                      | ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ Pass' || '❌ Fail' }}            |
 
             ### Smoketest Results [`arm64`]
-            | Test                                | Result      |
-            | ----------------------------------- | ----------- |
-            | CLI                                 | ⚠️ Skipped  |
-            | CLI (interfaces)                    | ⚠️ Skipped  |
-            | CLI (VPP)                           | ⚠️ Skipped  |
-            | Configuration Load                  | ⚠️ Skipped  |
-            | Configuration Load (VPP)            | ⚠️ Skipped  |
-            | Interface Name Persistence          | ⚠️ Skipped  |
-            | Interface Name Persistence (VMware) | ⚠️ Skipped  |
-            | RAID1 Installation                  | ⚠️ Skipped  |
-            | Secure Boot                         | ⚠️ Skipped  |
-            | TPM Encryption                      | ⚠️ Skipped  |
+            | Test                                | Result                                                                                            |
+            | ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+            | CLI                                 | ${{ needs.smoketest.outputs.result_cli_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}            |
+            | CLI (interfaces)                    | ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 == 'success' && '✅ Pass' || '❌ Fail' }} |
+            | CLI (VPP)                           | ${{ needs.smoketest.outputs.result_cli-vpp_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}        |
+            | Configuration Load                  | ${{ needs.smoketest.outputs.result_config_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}         |
+            | Configuration Load (VPP)            | ${{ needs.smoketest.outputs.result_config-vpp_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}     |
+            | Interface Name Persistence          | ${{ needs.smoketest.outputs.result_ifname_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}         |
+            | Interface Name Persistence (VMware) | ${{ needs.smoketest.outputs.result_ifname-vmware_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}  |
+            | RAID1 Installation                  | ${{ needs.smoketest.outputs.result_raid_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}           |
+            | Secure Boot                         | ${{ needs.smoketest.outputs.result_secureboot_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}     |
+            | TPM Encryption                      | ${{ needs.smoketest.outputs.result_tpm_arm64 == 'success' && '✅ Pass' || '❌ Fail' }}            |
 
             ### Upstream Comparison
             |                          | `vyos-1x`                                                                                         | `vyos-build`                                                                                            |
