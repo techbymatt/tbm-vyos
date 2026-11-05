@@ -59,6 +59,7 @@ jobs:
             config,
             config-vpp,
             ifname,
+            ifname-vmware,
             raid,
             secureboot,
             tpm,
@@ -82,7 +83,10 @@ jobs:
             test_cmd: make testcvpp
             test_timeout: 60
           - test: ifname
-            test_cmd: make test-ifname
+            test_cmd: make test-interface-naming
+            test_timeout: 20
+          - test: ifname-vmware
+            test_cmd: make test-interface-naming-vmware
             test_timeout: 20
           - test: raid
             test_cmd: make testraid
@@ -196,30 +200,32 @@ jobs:
             https://github.com/techbymatt/tbm-vyos/actions/runs/${{ github.run_id }}
 
             ### Smoketest Results [`amd64`]
-            | Test                       | Result                                                                                                |
-            | -------------------------- | ----------------------------------------------------------------------------------------------------- |
-            | CLI                        | ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
-            | CLI (interfaces)           | ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }}   |
-            | CLI (VPP)                  | ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}          |
-            | Configuration Load         | ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
-            | Configuration Load (VPP)   | ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
-            | Interface Name Persistence | ${{ needs.smoketest.outputs.result_ifname_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
-            | RAID1 Installation         | ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}             |
-            | Secure Boot                | ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}       |
-            | TPM Encryption             | ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}              |
+            | Test                                | Result                                                                                                |
+            | ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
+            | CLI                                 | ${{ needs.smoketest.outputs.result_cli_amd64 == 'success' && '✅ passed' || '❌ failed' }}            |
+            | CLI (interfaces)                    | ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 == 'success' && '✅ passed' || '❌ failed' }} |
+            | CLI (VPP)                           | ${{ needs.smoketest.outputs.result_cli-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}        |
+            | Configuration Load                  | ${{ needs.smoketest.outputs.result_config_amd64 == 'success' && '✅ passed' || '❌ failed' }}         |
+            | Configuration Load (VPP)            | ${{ needs.smoketest.outputs.result_config-vpp_amd64 == 'success' && '✅ passed' || '❌ failed' }}     |
+            | Interface Name Persistence          | ${{ needs.smoketest.outputs.result_ifname_amd64 == 'success' && '✅ passed' || '❌ failed' }}         |
+            | Interface Name Persistence (VMware) | ${{ needs.smoketest.outputs.result_ifname-vmware_amd64 == 'success' && '✅ passed' || '❌ failed' }}  |
+            | RAID1 Installation                  | ${{ needs.smoketest.outputs.result_raid_amd64 == 'success' && '✅ passed' || '❌ failed' }}           |
+            | Secure Boot                         | ${{ needs.smoketest.outputs.result_secureboot_amd64 == 'success' && '✅ passed' || '❌ failed' }}     |
+            | TPM Encryption                      | ${{ needs.smoketest.outputs.result_tpm_amd64 == 'success' && '✅ passed' || '❌ failed' }}            |
 
             ### Smoketest Results [`arm64`]
-            | Test                       | Result                                                                                                |
-            | -------------------------- | ----------------------------------------------------------------------------------------------------- |
-            | CLI                        | ⚠️ skipped                                                                                              |
-            | CLI (interfaces)           | ⚠️ skipped                                                                                              |
-            | CLI (VPP)                  | ⚠️ skipped                                                                                              |
-            | Configuration Load         | ⚠️ skipped                                                                                              |
-            | Configuration Load (VPP)   | ⚠️ skipped                                                                                              |
-            | Interface Name Persistence | ⚠️ skipped                                                                                              |
-            | RAID1 Installation         | ⚠️ skipped                                                                                              |
-            | Secure Boot                | ⚠️ skipped                                                                                              |
-            | TPM Encryption             | ⚠️ skipped                                                                                              |
+            | Test                                | Result      |
+            | ----------------------------------- | ----------- |
+            | CLI                                 | ⚠️ skipped  |
+            | CLI (interfaces)                    | ⚠️ skipped  |
+            | CLI (VPP)                           | ⚠️ skipped  |
+            | Configuration Load                  | ⚠️ skipped  |
+            | Configuration Load (VPP)            | ⚠️ skipped  |
+            | Interface Name Persistence          | ⚠️ skipped  |
+            | Interface Name Persistence (VMware) | ⚠️ skipped  |
+            | RAID1 Installation                  | ⚠️ skipped  |
+            | Secure Boot                         | ⚠️ skipped  |
+            | TPM Encryption                      | ⚠️ skipped  |
 
             ### Upstream Comparison
             |                          | `vyos-1x`                                                                                         | `vyos-build`                                                                                            |
@@ -284,29 +290,29 @@ jobs:
           echo "vyos_build_commit: ${{ needs.gather_data.outputs.vyos_build_commit }}"
           echo "vyos_build_commit_sha: ${{ needs.gather_data.outputs.vyos_build_commit_sha }}"
           echo ""
-          echo "----------------"
+          echo "-----"
           echo "build"
-          echo "----------------"
+          echo "-----"
           echo "result_amd64: ${{ needs.build.outputs.result_amd64 }}"
           echo "result_arm64: ${{ needs.build.outputs.result_arm64 }}"
           echo "release_filename_amd64: ${{ needs.build.outputs.release_filename_amd64 }}"
           echo "release_filename_arm64: ${{ needs.build.outputs.release_filename_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "--------------"
           echo "smoketest_cli"
-          echo "----------------"
+          echo "--------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_cli_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_cli_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "------------------------"
           echo "smoketest_cli-interfaces"
-          echo "----------------"
+          echo "------------------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_cli-interfaces_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_cli-interfaces_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "-----------------"
           echo "smoketest_cli-vpp"
-          echo "----------------"
+          echo "-----------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_cli-vpp_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_cli-vpp_arm64 }}"
           echo ""
@@ -316,9 +322,9 @@ jobs:
           echo "result_amd64: ${{ needs.smoketest.outputs.result_config_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_config_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "--------------------"
           echo "smoketest_config-vpp"
-          echo "----------------"
+          echo "--------------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_config-vpp_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_config-vpp_arm64 }}"
           echo ""
@@ -328,21 +334,27 @@ jobs:
           echo "result_amd64: ${{ needs.smoketest.outputs.result_ifname_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_ifname_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "-----------------------"
+          echo "smoketest_ifname-vmware"
+          echo "-----------------------"
+          echo "result_amd64: ${{ needs.smoketest.outputs.result_ifname-vmware_amd64 }}"
+          echo "result_arm64: ${{ needs.smoketest.outputs.result_ifname-vmware_arm64 }}"
+          echo ""
+          echo "--------------"
           echo "smoketest_raid"
-          echo "----------------"
+          echo "--------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_raid_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_raid_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "--------------------"
           echo "smoketest_secureboot"
-          echo "----------------"
+          echo "--------------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_secureboot_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_secureboot_arm64 }}"
           echo ""
-          echo "----------------"
+          echo "-------------"
           echo "smoketest_tpm"
-          echo "----------------"
+          echo "-------------"
           echo "result_amd64: ${{ needs.smoketest.outputs.result_tpm_amd64 }}"
           echo "result_arm64: ${{ needs.smoketest.outputs.result_tpm_arm64 }}"
           echo ""
